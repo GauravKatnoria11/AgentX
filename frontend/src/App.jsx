@@ -29,7 +29,6 @@ import FollowupsPage from './pages/FollowupsPage';
 import AIGuidePage from './pages/AIGuidePage';
 import MapsPage from './pages/MapsPage';
 import EmergencyPage from './pages/EmergencyPage';
-import AdminPortal from './pages/AdminPortal';
 import HospitalSecurePortal from './pages/HospitalSecurePortal';
 import DoctorDrawer from './components/DoctorDrawer';
 
@@ -60,24 +59,21 @@ function App() {
       portalParam === 'hospital' ||
       portalParam === 'hospital-secure' ||
       portalParam === 'facility' ||
+      portalParam === 'admin' ||
       window.location.pathname.includes('/hospital-portal') ||
       window.location.pathname.includes('/facility-admin') ||
       window.location.pathname.includes('/hosp-login') ||
+      window.location.pathname.includes('/admin') ||
       window.location.hash.includes('hospital-portal') ||
-      window.location.hash.includes('hospital-secure')
+      window.location.hash.includes('hospital-secure') ||
+      window.location.hash.includes('admin')
     ) {
       setCurrentPage('hospital-portal');
-    } else if (window.location.pathname.includes('/admin') || window.location.hash.includes('admin')) {
-      setCurrentPage('admin');
     }
 
-    // Secret keyboard shortcuts:
-    // Alt+A: Central System Admin
+    // Secret keyboard shortcut:
     // Alt+H: Isolated Hospital Authority Portal
     const handleKeyDown = (e) => {
-      if (e.altKey && (e.key === 'a' || e.key === 'A')) {
-        setCurrentPage((prev) => (prev === 'admin' ? 'hospitals' : 'admin'));
-      }
       if (e.altKey && (e.key === 'h' || e.key === 'H')) {
         setCurrentPage((prev) => (prev === 'hospital-portal' ? 'hospitals' : 'hospital-portal'));
       }
@@ -166,24 +162,18 @@ function App() {
     return <HospitalSecurePortal onExitPortal={() => setCurrentPage('hospitals')} />;
   }
 
-  // If in Central Admin Mode, render the standalone Admin Portal layout completely
-  if (currentPage === 'admin') {
-    return <AdminPortal onExitAdmin={() => setCurrentPage('hospitals')} />;
-  }
-
   const meta = getPageMeta();
 
   return (
     <div className="app-container">
       {/* Sidebar Navigation */}
       <aside className="sidebar">
-        {/* Brand Header (Zero mention of admin, clicking opens hospitals page) */}
+        {/* Brand Header */}
         <div
           className="brand-header"
           style={{ cursor: 'pointer' }}
           onClick={() => handleNavigate('hospitals')}
-          onDoubleClick={() => setCurrentPage('admin')}
-          title="HealthNexus Patient Portal (Double click for gateway)"
+          title="HealthNexus Patient Portal"
         >
           <div className="brand-icon">
             <Building2 size={20} />

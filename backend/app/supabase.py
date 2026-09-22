@@ -540,6 +540,23 @@ MOCK_DATA = {
     ],
     "appointments": [
         {
+            "id": "app-completed-1",
+            "patient_id": "11111111-1111-1111-1111-111111111111",
+            "patient_name": "John Doe",
+            "patient_phone": "+91-98765-43210",
+            "doctor_id": "doc-hsp-1",
+            "hospital_id": "hosp-hoshiarpur-2",
+            "department_id": "dept-1",
+            "appointment_date": "2026-09-18",
+            "appointment_time": "10:30:00",
+            "status": "completed",
+            "reason": "Cardiovascular evaluation & Holter monitor review",
+            "queue_number": 1,
+            "notes": "Consultation concluded successfully. Prescribed Telmisartan regimen.",
+            "reminder_sent": True,
+            "created_at": "2026-09-15T10:00:00Z"
+        },
+        {
             "id": "app-hsp-1",
             "patient_id": "11111111-1111-1111-1111-111111111111",
             "patient_name": "John Doe",
@@ -553,7 +570,25 @@ MOCK_DATA = {
             "reason": "Cardiac follow-up and blood pressure monitoring",
             "queue_number": 2,
             "notes": "Patient requested morning slot.",
+            "reminder_sent": False,
             "created_at": "2026-09-21T10:00:00Z"
+        },
+        {
+            "id": "app-today-remind",
+            "patient_id": "11111111-1111-1111-1111-111111111111",
+            "patient_name": "John Doe",
+            "patient_phone": "+91-98765-43210",
+            "doctor_id": "doc-hsp-1",
+            "hospital_id": "hosp-hoshiarpur-2",
+            "department_id": "dept-1",
+            "appointment_date": "2026-09-22",
+            "appointment_time": "11:45:00",
+            "status": "confirmed",
+            "reason": "Routine Blood Pressure & Lipid Checkup",
+            "queue_number": 3,
+            "notes": "Same-day consultation slot",
+            "reminder_sent": False,
+            "created_at": "2026-09-22T07:00:00Z"
         },
         {
             "id": "app-hsp-req-1",
@@ -569,6 +604,7 @@ MOCK_DATA = {
             "reason": "Severe knee arthritis and mobility difficulty. Requesting earliest doctor evaluation.",
             "queue_number": None,
             "notes": "Awaiting admin timing confirmation",
+            "reminder_sent": False,
             "created_at": "2026-09-22T08:00:00Z"
         }
     ],
@@ -996,6 +1032,50 @@ MOCK_DATA = {
             "type": "appointment",
             "is_read": False,
             "created_at": "2026-09-21T10:05:00Z"
+        }
+    ],
+    "doctor_reviews": [
+        {
+            "id": "rev-1",
+            "doctor_id": "doc-hsp-1",
+            "doctor_name": "Dr. Gurinder Singh",
+            "patient_id": "99999999-9999-9999-9999-999999999999",
+            "patient_name": "Harpreet Singh",
+            "appointment_id": "app-historical-1",
+            "hospital_id": "hosp-hoshiarpur-2",
+            "rating": 5,
+            "comment": "Exceptional cardiologist! Dr. Gurinder carefully analyzed my ECG and adjusted my blood pressure medication with clear morning/night schedules.",
+            "tags": ["Accurate Diagnosis", "Compassionate Care", "Clear Medicine Schedule"],
+            "verified_consultation": True,
+            "created_at": "2026-09-16T14:30:00Z"
+        },
+        {
+            "id": "rev-2",
+            "doctor_id": "doc-hsp-1",
+            "doctor_name": "Dr. Gurinder Singh",
+            "patient_id": "88888888-8888-8888-8888-888888888888",
+            "patient_name": "Sunita Verma",
+            "appointment_id": "app-historical-2",
+            "hospital_id": "hosp-hoshiarpur-2",
+            "rating": 5,
+            "comment": "Very polite and attentive doctor. Minimal wait time at Ivy Hospital reception and great explanation of my diet plan.",
+            "tags": ["Minimal Wait Time", "Friendly & Empathetic", "Helpful Diet Plan"],
+            "verified_consultation": True,
+            "created_at": "2026-09-17T16:00:00Z"
+        },
+        {
+            "id": "rev-3",
+            "doctor_id": "doc-hsp-2",
+            "doctor_name": "Dr. Ravinder Saini",
+            "patient_id": "77777777-7777-7777-7777-777777777777",
+            "patient_name": "Balwinder Kaur",
+            "appointment_id": "app-historical-3",
+            "hospital_id": "hosp-hoshiarpur-4",
+            "rating": 5,
+            "comment": "Outstanding orthopedic specialist. Replaced my mother's knee joint with rapid post-op recovery.",
+            "tags": ["Experienced Surgeon", "Trauma Expertise"],
+            "verified_consultation": True,
+            "created_at": "2026-09-12T11:00:00Z"
         }
     ],
     "audit_logs": []

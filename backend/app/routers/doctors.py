@@ -1,9 +1,15 @@
 from datetime import date
 from typing import Optional, List, Dict, Any
-from fastapi import APIRouter, Query, HTTPException, status
-from app.schemas.doctor import DoctorResponse, DoctorAvailabilityResponse
+from fastapi import APIRouter, Query, HTTPException, Depends, status
+from app.schemas.doctor import (
+    DoctorResponse,
+    DoctorAvailabilityResponse,
+    DoctorReviewCreate,
+    DoctorReviewStatsResponse
+)
 from app.schemas.common import ApiResponse
 from app.services.doctor_service import doctor_service
+from app.dependencies import get_current_user, get_optional_user
 
 router = APIRouter(prefix="/api/v1/doctors", tags=["Doctors"])
 
@@ -52,4 +58,49 @@ async def get_doctor_availability(
         success=True,
         message="Doctor availability slots fetched successfully",
         data=DoctorAvailabilityResponse(**avail)
+    )
+
+
+@router.get("/{doctor_id}/reviews", response_model=ApiResponse[DoctorReviewStatsResponse])
+async def get_doctor_reviews(
+    doctor_id: str,
+    current_user: Optional[dict] = Depends(get_optional_user)
+):
+    """
+    Returns verified reviews, rating breakdown, and checks if current patient
+    has completed an appointment qualifying them to rate this doctor.
+    """
+    user_id = str(current_user["id"]) if current_user else None
+    stats = doctor_service.get_doctor_reviews(doctor_id=doctor_id, current_user_id=user_id)
+    return ApiResponse(
+        success=True,
+        message=f"Reviews for {stats['doctor_name']} fetched successfully",
+        data=DoctorReviewStatsResponse(**stats)
+    )
+
+
+@router.post("/{doctor_id}/ratings", response_model=ApiResponse[Dict[str, Any]], status_code=status.HTTP_201_CREATED)
+async def submit_doctor_rating(
+    doctor_id: str,
+    req: DoctorReviewCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Submits a rating and clinical review for a doctor.
+    STRICT REQUIREMENT: Patient must have an appointment with this doctor AND
+    the appointment status must be 'completed'.
+    """
+    patient_id = str(current_user["id"])
+    result = doctor_service.submit_doctor_review(
+        doctor_id=doctor_id,
+        patient_id=patient_id,
+        rating=req.rating,
+        comment=req.comment,
+        tags=req.tags,
+        appointment_id=req.appointment_id
+    )
+    return ApiResponse(
+        success=True,
+        message=f"Thank you! Your verified rating of {req.rating}★ for {result['doctor']['name']} has been published.",
+        data=result
     )

@@ -160,6 +160,27 @@ class AppointmentService:
 
         return self.enrich_appointment(appointment)
 
+    def complete_appointment(self, appointment_id: str, current_user: Dict[str, Any]) -> Dict[str, Any]:
+        appointment = next((a for a in MOCK_DATA["appointments"] if str(a["id"]) == str(appointment_id)), None)
+        if not appointment:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Appointment not found."
+            )
+
+        appointment["status"] = "completed"
+        appointment["completed_at"] = datetime.now(timezone.utc).isoformat()
+
+        log_audit_event(
+            action="appointment_completed",
+            resource_type="appointment",
+            resource_id=appointment_id,
+            user_id=str(current_user.get("id")),
+            details={"doctor_id": appointment.get("doctor_id")}
+        )
+
+        return self.enrich_appointment(appointment)
+
     def enrich_appointment(self, appointment: Dict[str, Any]) -> Dict[str, Any]:
         res = dict(appointment)
         doc = next((d for d in MOCK_DATA["doctors"] if str(d["id"]) == str(appointment.get("doctor_id"))), None)
@@ -168,6 +189,12 @@ class AppointmentService:
         res["doctor_name"] = doc["name"] if doc else "Doctor"
         res["hospital_name"] = hosp["name"] if hosp else "Hospital"
         res["department_name"] = dept["name"] if dept else "General"
+
+        # Check if patient already rated this consultation
+        rev = next((r for r in MOCK_DATA.get("doctor_reviews", []) if str(r.get("appointment_id")) == str(appointment.get("id"))), None)
+        if rev:
+            res["patient_rating"] = rev.get("rating")
+
         return res
 
 

@@ -10,6 +10,7 @@ from app.schemas.common import ApiResponse
 from app.supabase import MOCK_DATA
 from app.utils.security import create_access_token, decode_access_token
 from app.services.medical_record_service import medical_record_service
+from app.services.email_service import email_reminder_service
 from app.utils.permissions import log_audit_event
 
 logger = logging.getLogger(__name__)
@@ -318,6 +319,77 @@ async def hospital_allot_appointment(
     )
 
 
+class HospitalReferralRequest(BaseModel):
+    target_doctor_id: str = Field(..., description="Target doctor to refer patient to")
+    reason: str = Field("Caseload Balancing / Doctor Overbooked", description="Referral reason")
+    notes: Optional[str] = Field(None, description="Handoff notes")
+
+
+@router.post("/appointments/{appointment_id}/refer", response_model=ApiResponse[Dict[str, Any]])
+async def refer_hospital_appointment(
+    appointment_id: str,
+    req: HospitalReferralRequest,
+    current_hospital: Dict[str, Any] = Depends(get_current_hospital)
+):
+    """
+    Allows hospital staff/doctors to refer a patient from an overbooked doctor to another specialist.
+    """
+    appointment = next((a for a in MOCK_DATA["appointments"] if str(a["id"]) == str(appointment_id)), None)
+    if not appointment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Appointment not found.")
+
+    target_doc = next((d for d in MOCK_DATA["doctors"] if str(d["id"]) == str(req.target_doctor_id)), None)
+    if not target_doc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Target doctor not found.")
+
+    orig_doc = next((d for d in MOCK_DATA["doctors"] if str(d["id"]) == str(appointment.get("doctor_id"))), None)
+    orig_doc_name = orig_doc["name"] if orig_doc else "Hospital Specialist"
+
+    prev_doc_id = appointment.get("doctor_id")
+    appointment["doctor_id"] = str(target_doc["id"])
+    if target_doc.get("hospital_id"):
+        appointment["hospital_id"] = str(target_doc["hospital_id"])
+    if target_doc.get("department_id"):
+        appointment["department_id"] = str(target_doc["department_id"])
+
+    appt_date = appointment.get("appointment_date", "2026-09-28")
+    new_doc_apps = [
+        a for a in MOCK_DATA["appointments"]
+        if str(a.get("doctor_id")) == str(target_doc["id"]) and a.get("appointment_date") == appt_date
+    ]
+    appointment["queue_number"] = len(new_doc_apps) + 1
+
+    referral_note = f"[{current_hospital['name']} Referral from {orig_doc_name} to {target_doc['name']}: {req.reason}]"
+    if req.notes:
+        referral_note += f" Notes: {req.notes}"
+    appointment["notes"] = f"{referral_note} | {appointment.get('notes', '')}".strip(" |")
+
+    # Notify patient
+    MOCK_DATA["notifications"].append({
+        "id": str(uuid.uuid4()),
+        "user_id": str(appointment["patient_id"]),
+        "title": f"👨‍⚕️ Referred to {target_doc['name']}",
+        "message": f"Your appointment at {current_hospital['name']} has been transferred to {target_doc['name']} due to high clinic caseload. Your new token is #{appointment['queue_number']}.",
+        "type": "appointment_referred",
+        "is_read": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+
+    log_audit_event(
+        action="hospital_portal_refer_appointment",
+        resource_type="appointment",
+        resource_id=appointment_id,
+        user_id=f"hospital:{current_hospital['id']}",
+        details={"from_doctor": prev_doc_id, "to_doctor": str(target_doc["id"]), "reason": req.reason}
+    )
+
+    return ApiResponse(
+        success=True,
+        message=f"Patient referred to {target_doc['name']} (Token #{appointment['queue_number']})",
+        data={"appointment": appointment, "referred_to": target_doc["name"], "new_queue_number": appointment["queue_number"]}
+    )
+
+
 class HospitalPrescribeRequest(BaseModel):
     disease_category: str = Field("General Health", description="Disease Specialty")
     title: str = Field(..., description="Record Title")
@@ -415,6 +487,118 @@ async def hospital_prescribe_patient(
         success=True,
         message=f"Prescription and diet plan settled for {appointment.get('patient_name', 'Patient')}",
         data={"record": record, "prescription": presc_entry}
+    )
+
+
+class HospitalCancelRequest(BaseModel):
+    reason: str = Field("Cancelled by hospital authority", description="Cancellation reason")
+
+
+@router.patch("/appointments/{appointment_id}/complete", response_model=ApiResponse[Dict[str, Any]])
+async def hospital_complete_appointment(
+    appointment_id: str,
+    current_hospital: Dict[str, Any] = Depends(get_current_hospital)
+):
+    """
+    Hospital marks an appointment consultation as completed/done.
+    This unlocks the patient's verified doctor rating capability.
+    """
+    appointment = next((a for a in MOCK_DATA["appointments"] if str(a["id"]) == str(appointment_id)), None)
+    if not appointment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Appointment not found.")
+
+    if str(appointment.get("hospital_id")) != str(current_hospital["id"]) and current_hospital["id"] != "hosp-1":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: You can only complete appointments registered at your hospital."
+        )
+
+    appointment["status"] = "completed"
+    appointment["completed_at"] = datetime.now(timezone.utc).isoformat()
+
+    doc = next((d for d in MOCK_DATA["doctors"] if str(d["id"]) == str(appointment.get("doctor_id"))), None)
+    doc_name = doc["name"] if doc else "Attending Doctor"
+
+    MOCK_DATA["notifications"].append({
+        "id": str(uuid.uuid4()),
+        "user_id": str(appointment["patient_id"]),
+        "title": "Consultation Completed",
+        "message": f"Your consultation with {doc_name} at {current_hospital['name']} is marked as completed. You can now leave a verified rating and review.",
+        "type": "appointment_completed",
+        "is_read": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+
+    log_audit_event(
+        action="hospital_portal_complete_appointment",
+        resource_type="appointment",
+        resource_id=appointment_id,
+        user_id=f"hospital:{current_hospital['id']}",
+        details={"hospital_id": current_hospital["id"]}
+    )
+
+    return ApiResponse(
+        success=True,
+        message=f"Consultation with {doc_name} successfully marked as completed.",
+        data={"appointment": appointment}
+    )
+
+
+@router.post("/appointments/{appointment_id}/send-reminder", response_model=ApiResponse[Dict[str, Any]])
+async def hospital_send_appointment_reminder(
+    appointment_id: str,
+    current_hospital: Dict[str, Any] = Depends(get_current_hospital)
+):
+    """
+    Hospital staff triggers an appointment reminder email via Resend to the patient.
+    """
+    appointment = next((a for a in MOCK_DATA["appointments"] if str(a["id"]) == str(appointment_id)), None)
+    if not appointment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Appointment not found.")
+
+    if str(appointment.get("hospital_id")) != str(current_hospital["id"]) and current_hospital["id"] != "hosp-1":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: You can only send reminders for appointments at your hospital."
+        )
+
+    res = email_reminder_service.send_appointment_reminder(appointment_id)
+    appointment["reminder_sent"] = True
+    appointment["reminder_sent_at"] = datetime.now(timezone.utc).isoformat()
+
+    return ApiResponse(
+        success=True,
+        message=f"Appointment reminder dispatched to patient via Resend ({res.get('recipient', 'patient')})",
+        data={"resend_result": res, "appointment": appointment}
+    )
+
+
+@router.patch("/appointments/{appointment_id}/cancel", response_model=ApiResponse[Dict[str, Any]])
+async def hospital_cancel_appointment(
+    appointment_id: str,
+    req: HospitalCancelRequest,
+    current_hospital: Dict[str, Any] = Depends(get_current_hospital)
+):
+    """
+    Hospital cancels an appointment slot.
+    """
+    appointment = next((a for a in MOCK_DATA["appointments"] if str(a["id"]) == str(appointment_id)), None)
+    if not appointment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Appointment not found.")
+
+    if str(appointment.get("hospital_id")) != str(current_hospital["id"]) and current_hospital["id"] != "hosp-1":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: You can only cancel appointments at your hospital."
+        )
+
+    appointment["status"] = "cancelled"
+    appointment["cancellation_reason"] = req.reason
+
+    return ApiResponse(
+        success=True,
+        message="Appointment cancelled by hospital.",
+        data={"appointment": appointment}
     )
 
 

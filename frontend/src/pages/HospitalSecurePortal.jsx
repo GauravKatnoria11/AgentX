@@ -25,7 +25,10 @@ import {
   KeyRound,
   Check,
   Activity,
-  AlertTriangle
+  AlertTriangle,
+  Send,
+  Mail,
+  Star
 } from 'lucide-react';
 import {
   loginHospitalPortal,
@@ -33,7 +36,11 @@ import {
   allotHospitalAppointment,
   prescribeHospitalPatient,
   updateHospitalPortalBeds,
-  updateHospitalEmergencyCase
+  updateHospitalEmergencyCase,
+  referHospitalAppointment,
+  completeHospitalAppointment,
+  sendHospitalAppointmentReminder,
+  cancelHospitalAppointment
 } from '../api';
 
 export default function HospitalSecurePortal({ onExitPortal }) {
@@ -61,6 +68,17 @@ export default function HospitalSecurePortal({ onExitPortal }) {
   const [allotNotes, setAllotNotes] = useState('');
   const [isSubmittingAllot, setIsSubmittingAllot] = useState(false);
   const [allotSuccessMsg, setAllotSuccessMsg] = useState('');
+  const [sendingReminderId, setSendingReminderId] = useState(null);
+  const [actionNotice, setActionNotice] = useState('');
+
+  // Doctor Referral Modal State
+  const [selectedReferApp, setSelectedReferApp] = useState(null);
+  const [referTargetDoctorId, setReferTargetDoctorId] = useState('');
+  const [referReason, setReferReason] = useState('High Patient Caseload / Doctor Overbooked');
+  const [referNotes, setReferNotes] = useState('');
+  const [isSubmittingReferral, setIsSubmittingReferral] = useState(false);
+  const [referralSuccessMsg, setReferralSuccessMsg] = useState('');
+  const [referralErrMsg, setReferralErrMsg] = useState('');
 
   // Prescribe Regimen & Diet Modal State
   const [selectedAppForPrescribe, setSelectedAppForPrescribe] = useState(null);
@@ -199,6 +217,97 @@ export default function HospitalSecurePortal({ onExitPortal }) {
       console.error(err);
     } finally {
       setIsSubmittingAllot(false);
+    }
+  };
+
+  // Open Referral Modal
+  const handleOpenReferModal = (app) => {
+    setSelectedReferApp(app);
+    const docs = dashboardData?.doctors || [];
+    const altDoc = docs.find(d => String(d.id) !== String(app.doctor_id)) || docs[0];
+    setReferTargetDoctorId(altDoc ? altDoc.id : '');
+    setReferReason('High Patient Caseload / Doctor Overbooked');
+    setReferNotes('');
+    setReferralSuccessMsg('');
+    setReferralErrMsg('');
+  };
+
+  const handleConfirmReferral = async (e) => {
+    e.preventDefault();
+    if (!selectedReferApp || !referTargetDoctorId) return;
+    setIsSubmittingReferral(true);
+    setReferralErrMsg('');
+    try {
+      const res = await referHospitalAppointment(
+        selectedReferApp.id,
+        {
+          target_doctor_id: referTargetDoctorId,
+          reason: referReason,
+          notes: referNotes
+        },
+        hospitalToken
+      );
+      if (res.success) {
+        setReferralSuccessMsg(res.message || 'Patient successfully referred!');
+        loadDashboard(hospitalToken);
+        setTimeout(() => {
+          setSelectedReferApp(null);
+          setReferralSuccessMsg('');
+        }, 1500);
+      } else {
+        setReferralErrMsg(res.message || 'Failed to refer patient.');
+      }
+    } catch (err) {
+      setReferralErrMsg('Error submitting doctor referral.');
+    } finally {
+      setIsSubmittingReferral(false);
+    }
+  };
+
+  // Complete consultation (Doctor finished - unlocks patient verified rating)
+  const handleCompleteAppointment = async (appId) => {
+    try {
+      const res = await completeHospitalAppointment(appId, hospitalToken);
+      if (res.success) {
+        setActionNotice('Consultation marked as completed! Patient can now leave verified review.');
+        loadDashboard(hospitalToken);
+        setTimeout(() => setActionNotice(''), 3000);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // Send Resend reminder email
+  const handleSendReminder = async (app) => {
+    setSendingReminderId(app.id);
+    try {
+      const res = await sendHospitalAppointmentReminder(app.id, hospitalToken);
+      if (res.success) {
+        setActionNotice(`Resend reminder email dispatched to ${app.patient_name || 'Patient'}!`);
+        loadDashboard(hospitalToken);
+        setTimeout(() => setActionNotice(''), 3000);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSendingReminderId(null);
+    }
+  };
+
+  // Cancel appointment
+  const handleCancelAppointment = async (appId) => {
+    const reason = window.prompt('Enter cancellation reason for patient:', 'Doctor unavailable / Clinic rescheduling');
+    if (!reason) return;
+    try {
+      const res = await cancelHospitalAppointment(appId, reason, hospitalToken);
+      if (res.success) {
+        setActionNotice('Appointment slot cancelled.');
+        loadDashboard(hospitalToken);
+        setTimeout(() => setActionNotice(''), 3000);
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -382,8 +491,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
   const filteredAppointments = appointments.filter(app => {
     const matchesFilter = 
       statusFilter === 'all' || 
-      (statusFilter === 'pending' && app.status === 'pending') ||
-      (statusFilter === 'confirmed' && (app.status === 'confirmed' || app.status === 'completed'));
+      app.status === statusFilter;
 
     const q = searchQuery.toLowerCase().trim();
     if (!q) return matchesFilter;
@@ -739,7 +847,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
               {/* Filter Pills */}
               <div style={{ display: 'flex', gap: '6px' }}>
-                {['all', 'pending', 'confirmed'].map((f) => (
+                {['all', 'pending', 'confirmed', 'completed', 'cancelled'].map((f) => (
                   <button
                     key={f}
                     onClick={() => setStatusFilter(f)}
@@ -787,132 +895,254 @@ export default function HospitalSecurePortal({ onExitPortal }) {
         {/* TAB 1: PATIENTS & APPOINTMENTS (ISOLATED TO THIS FACILITY) */}
         {/* ==================================================== */}
         {activeTab === 'patients' && (
-          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
-              <thead>
-                <tr style={{ background: '#090e1c', borderBottom: '1px solid #1e293b', color: '#94a3b8', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  <th style={{ padding: '14px 20px' }}>Patient Details</th>
-                  <th style={{ padding: '14px 20px' }}>Consultation Reason</th>
-                  <th style={{ padding: '14px 20px' }}>Scheduled Date & Time</th>
-                  <th style={{ padding: '14px 20px' }}>Attending Doctor</th>
-                  <th style={{ padding: '14px 20px' }}>Status & Token</th>
-                  <th style={{ padding: '14px 20px', textAlign: 'right' }}>Facility Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredAppointments.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
-                      No patients or appointments found for {hospital.name}.
-                    </td>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {actionNotice && (
+              <div style={{ padding: '12px 18px', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid #10b981', color: '#34d399', borderRadius: '10px', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CheckCircle2 size={16} /> {actionNotice}
+              </div>
+            )}
+            <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', overflow: 'hidden' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
+                <thead>
+                  <tr style={{ background: '#090e1c', borderBottom: '1px solid #1e293b', color: '#94a3b8', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <th style={{ padding: '14px 20px' }}>Patient Details</th>
+                    <th style={{ padding: '14px 20px' }}>Consultation Reason</th>
+                    <th style={{ padding: '14px 20px' }}>Scheduled Date & Time</th>
+                    <th style={{ padding: '14px 20px' }}>Attending Doctor</th>
+                    <th style={{ padding: '14px 20px' }}>Status & Token</th>
+                    <th style={{ padding: '14px 20px', textAlign: 'right' }}>Facility Actions</th>
                   </tr>
-                ) : (
-                  filteredAppointments.map((app) => {
-                    const isPending = app.status === 'pending';
-                    const isCompleted = app.status === 'completed';
-                    return (
-                      <tr key={app.id} style={{ borderBottom: '1px solid #1e293b' }}>
-                        <td style={{ padding: '14px 20px' }}>
-                          <div style={{ fontWeight: 800, color: '#ffffff', fontSize: '14px' }}>
-                            {app.patient_name || 'Patient'}
-                          </div>
-                          <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
-                            ☎ {app.patient_phone} • Blood: <span style={{ color: '#f87171' }}>{app.patient_blood_group}</span>
-                          </div>
-                        </td>
-
-                        <td style={{ padding: '14px 20px', maxWidth: '240px' }}>
-                          <div style={{ color: '#cbd5e1', fontSize: '13px' }}>
-                            {app.reason || 'General Consultation'}
-                          </div>
-                          {app.notes && (
-                            <div style={{ fontSize: '11px', color: '#60a5fa', marginTop: '2px' }}>
-                              📝 {app.notes}
+                </thead>
+                <tbody>
+                  {filteredAppointments.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
+                        No patients or appointments found for {hospital.name}.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredAppointments.map((app) => {
+                      const isPending = app.status === 'pending';
+                      const isCompleted = app.status === 'completed';
+                      const isCancelled = app.status === 'cancelled';
+                      return (
+                        <tr key={app.id} style={{ borderBottom: '1px solid #1e293b' }}>
+                          <td style={{ padding: '14px 20px' }}>
+                            <div style={{ fontWeight: 800, color: '#ffffff', fontSize: '14px' }}>
+                              {app.patient_name || 'Patient'}
                             </div>
-                          )}
-                        </td>
+                            <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
+                              ☎ {app.patient_phone} • Blood: <span style={{ color: '#f87171' }}>{app.patient_blood_group}</span>
+                            </div>
+                          </td>
 
-                        <td style={{ padding: '14px 20px' }}>
-                          <div style={{ color: '#ffffff', fontWeight: 600 }}>
-                            📅 {app.appointment_date}
-                          </div>
-                          <div style={{ fontSize: '12px', color: '#38bdf8' }}>
-                            ⏰ {app.appointment_time ? app.appointment_time.slice(0, 5) : 'Awaiting Slot'}
-                          </div>
-                        </td>
-
-                        <td style={{ padding: '14px 20px' }}>
-                          <div style={{ color: '#ffffff', fontWeight: 600 }}>{app.doctor_name}</div>
-                          <div style={{ fontSize: '11px', color: '#64748b' }}>{app.doctor_specialization}</div>
-                        </td>
-
-                        <td style={{ padding: '14px 20px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span
-                              style={{
-                                padding: '3px 10px',
-                                borderRadius: '9999px',
-                                fontSize: '11px',
-                                fontWeight: 700,
-                                background: isPending ? 'rgba(234, 179, 8, 0.15)' : isCompleted ? 'rgba(59, 130, 246, 0.15)' : 'rgba(16, 185, 129, 0.15)',
-                                color: isPending ? '#facc15' : isCompleted ? '#60a5fa' : '#34d399',
-                                border: `1px solid ${isPending ? 'rgba(234, 179, 8, 0.3)' : isCompleted ? 'rgba(59, 130, 246, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`
-                              }}
-                            >
-                              {isPending ? '● Pending Slot' : isCompleted ? '✓ Completed' : '● Confirmed'}
-                            </span>
-                            {app.queue_number && (
-                              <span style={{ fontSize: '11px', background: '#080e1e', padding: '2px 8px', borderRadius: '6px', color: '#34d399', fontWeight: 700 }}>
-                                Token #{app.queue_number}
-                              </span>
+                          <td style={{ padding: '14px 20px', maxWidth: '240px' }}>
+                            <div style={{ color: '#cbd5e1', fontSize: '13px' }}>
+                              {app.reason || 'General Consultation'}
+                            </div>
+                            {app.notes && (
+                              <div style={{ fontSize: '11px', color: '#60a5fa', marginTop: '2px' }}>
+                                📝 {app.notes}
+                              </div>
                             )}
-                          </div>
-                        </td>
+                          </td>
 
-                        <td style={{ padding: '14px 20px', textAlign: 'right' }}>
-                          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', alignItems: 'center' }}>
-                            <button
-                              onClick={() => handleOpenAllotModal(app)}
-                              style={{
-                                padding: '7px 12px',
-                                borderRadius: '8px',
-                                border: 'none',
-                                background: isPending ? '#2563eb' : '#1e293b',
-                                color: '#ffffff',
-                                fontSize: '12px',
-                                fontWeight: 700,
-                                cursor: 'pointer'
-                              }}
-                            >
-                              {isPending ? 'Allot Timing' : 'Reschedule'}
-                            </button>
+                          <td style={{ padding: '14px 20px' }}>
+                            <div style={{ color: '#ffffff', fontWeight: 600 }}>
+                              📅 {app.appointment_date}
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#38bdf8' }}>
+                              ⏰ {app.appointment_time ? app.appointment_time.slice(0, 5) : 'Awaiting Slot'}
+                            </div>
+                          </td>
 
-                            <button
-                              onClick={() => handleOpenPrescribeModal(app)}
-                              style={{
-                                padding: '7px 12px',
-                                borderRadius: '8px',
-                                border: '1px solid #059669',
-                                background: 'rgba(5, 150, 105, 0.15)',
-                                color: '#34d399',
-                                fontSize: '12px',
-                                fontWeight: 700,
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '5px'
-                              }}
-                            >
-                              <Pill size={13} /> Prescribe Regimen
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                          <td style={{ padding: '14px 20px' }}>
+                            <div style={{ color: '#ffffff', fontWeight: 600 }}>{app.doctor_name}</div>
+                            <div style={{ fontSize: '11px', color: '#64748b' }}>{app.doctor_specialization}</div>
+                          </td>
+
+                          <td style={{ padding: '14px 20px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span
+                                style={{
+                                  padding: '3px 10px',
+                                  borderRadius: '9999px',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  background: isCancelled
+                                    ? 'rgba(239, 68, 68, 0.15)'
+                                    : isPending
+                                    ? 'rgba(234, 179, 8, 0.15)'
+                                    : isCompleted
+                                    ? 'rgba(59, 130, 246, 0.15)'
+                                    : 'rgba(16, 185, 129, 0.15)',
+                                  color: isCancelled
+                                    ? '#f87171'
+                                    : isPending
+                                    ? '#facc15'
+                                    : isCompleted
+                                    ? '#60a5fa'
+                                    : '#34d399',
+                                  border: `1px solid ${
+                                    isCancelled
+                                      ? 'rgba(239, 68, 68, 0.3)'
+                                      : isPending
+                                      ? 'rgba(234, 179, 8, 0.3)'
+                                      : isCompleted
+                                      ? 'rgba(59, 130, 246, 0.3)'
+                                      : 'rgba(16, 185, 129, 0.3)'
+                                  }`
+                                }}
+                              >
+                                {isCancelled ? '✕ Cancelled' : isPending ? '● Pending Slot' : isCompleted ? '✓ Completed' : '● Confirmed'}
+                              </span>
+                              {app.queue_number && (
+                                <span style={{ fontSize: '11px', background: '#080e1e', padding: '2px 8px', borderRadius: '6px', color: '#34d399', fontWeight: 700 }}>
+                                  Token #{app.queue_number}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+
+                          <td style={{ padding: '14px 20px', textAlign: 'right' }}>
+                            <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end', alignItems: 'center', flexWrap: 'wrap' }}>
+                              {/* 1. Allot Slot / Reschedule */}
+                              {!isCancelled && (
+                                <button
+                                  onClick={() => handleOpenAllotModal(app)}
+                                  style={{
+                                    padding: '6px 10px',
+                                    borderRadius: '8px',
+                                    border: 'none',
+                                    background: isPending ? '#2563eb' : '#1e293b',
+                                    color: '#ffffff',
+                                    fontSize: '11px',
+                                    fontWeight: 700,
+                                    cursor: 'pointer'
+                                  }}
+                                  title="Allot or change date and time slot"
+                                >
+                                  {isPending ? 'Allot Timing' : 'Reschedule'}
+                                </button>
+                              )}
+
+                              {/* 2. Mark Consultation Done (Doctor Completed) */}
+                              {!isCompleted && !isCancelled && (
+                                <button
+                                  onClick={() => handleCompleteAppointment(app.id)}
+                                  style={{
+                                    padding: '6px 10px',
+                                    borderRadius: '8px',
+                                    border: '1px solid #10b981',
+                                    background: 'rgba(16, 185, 129, 0.15)',
+                                    color: '#34d399',
+                                    fontSize: '11px',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px'
+                                  }}
+                                  title="Mark consultation done so patient can rate doctor"
+                                >
+                                  <Check size={12} /> Mark Done
+                                </button>
+                              )}
+
+                              {/* 3. Prescribe Regimen */}
+                              {!isCancelled && (
+                                <button
+                                  onClick={() => handleOpenPrescribeModal(app)}
+                                  style={{
+                                    padding: '6px 10px',
+                                    borderRadius: '8px',
+                                    border: '1px solid #059669',
+                                    background: 'rgba(5, 150, 105, 0.15)',
+                                    color: '#34d399',
+                                    fontSize: '11px',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px'
+                                  }}
+                                >
+                                  <Pill size={12} /> Prescribe
+                                </button>
+                              )}
+
+                              {/* 4. Refer Doctor */}
+                              {!isCancelled && !isCompleted && (
+                                <button
+                                  onClick={() => handleOpenReferModal(app)}
+                                  style={{
+                                    padding: '6px 10px',
+                                    borderRadius: '8px',
+                                    border: '1px solid #6366f1',
+                                    background: 'rgba(99, 102, 241, 0.15)',
+                                    color: '#a5b4fc',
+                                    fontSize: '11px',
+                                    fontWeight: 700,
+                                    cursor: 'pointer'
+                                  }}
+                                  title="Refer patient to another specialist due to high caseload"
+                                >
+                                  👨‍⚕️ Refer
+                                </button>
+                              )}
+
+                              {/* 5. Send Resend Reminder */}
+                              {!isCancelled && !isCompleted && (
+                                <button
+                                  onClick={() => handleSendReminder(app)}
+                                  disabled={sendingReminderId === app.id}
+                                  style={{
+                                    padding: '6px 10px',
+                                    borderRadius: '8px',
+                                    border: '1px solid #38bdf8',
+                                    background: 'rgba(56, 189, 248, 0.15)',
+                                    color: '#7dd3fc',
+                                    fontSize: '11px',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px'
+                                  }}
+                                  title="Send email reminder via Resend to patient"
+                                >
+                                  <Send size={11} /> {sendingReminderId === app.id ? 'Sending...' : 'Remind'}
+                                </button>
+                              )}
+
+                              {/* 6. Cancel Slot */}
+                              {!isCancelled && !isCompleted && (
+                                <button
+                                  onClick={() => handleCancelAppointment(app.id)}
+                                  style={{
+                                    padding: '6px 10px',
+                                    borderRadius: '8px',
+                                    border: '1px solid #ef4444',
+                                    background: 'rgba(239, 68, 68, 0.1)',
+                                    color: '#f87171',
+                                    fontSize: '11px',
+                                    fontWeight: 700,
+                                    cursor: 'pointer'
+                                  }}
+                                  title="Cancel this appointment"
+                                >
+                                  Cancel
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
@@ -1409,6 +1639,131 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* REFER DOCTOR MODAL */}
+      {selectedReferApp && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.75)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: '#0f172a',
+            border: '1px solid #334155',
+            borderRadius: '16px',
+            width: '100%',
+            maxWidth: '520px',
+            padding: '24px',
+            color: '#ffffff',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0 }}>👨‍⚕️ Doctor Referral & Reassignment</h3>
+                <p style={{ fontSize: '12px', color: '#94a3b8', margin: '4px 0 0' }}>
+                  Reassign patient <strong style={{ color: '#ffffff' }}>{selectedReferApp.patient_name}</strong> to balance clinical load
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedReferApp(null)}
+                style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '18px', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {referralErrMsg && (
+              <div style={{ padding: '10px 14px', background: '#fee2e2', color: '#b91c1c', borderRadius: '8px', fontSize: '13px', marginBottom: '14px' }}>
+                {referralErrMsg}
+              </div>
+            )}
+
+            {referralSuccessMsg && (
+              <div style={{ padding: '10px 14px', background: '#ecfdf5', color: '#065f46', borderRadius: '8px', fontSize: '13px', marginBottom: '14px' }}>
+                {referralSuccessMsg}
+              </div>
+            )}
+
+            <form onSubmit={handleConfirmReferral} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8', display: 'block', marginBottom: '6px' }}>
+                  Select Target Doctor (Specialist to Receive Patient)
+                </label>
+                <select
+                  value={referTargetDoctorId}
+                  onChange={(e) => setReferTargetDoctorId(e.target.value)}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #334155', background: '#1e293b', color: '#ffffff', fontSize: '13px' }}
+                >
+                  {(dashboardData?.doctors || []).map((doc) => {
+                    const isSame = String(doc.id) === String(selectedReferApp.doctor_id);
+                    return (
+                      <option key={doc.id} value={doc.id} disabled={isSame}>
+                        {doc.name} • {doc.specialization} {isSame ? '(Current Doctor)' : ''}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8', display: 'block', marginBottom: '6px' }}>
+                  Referral Reason
+                </label>
+                <select
+                  value={referReason}
+                  onChange={(e) => setReferReason(e.target.value)}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #334155', background: '#1e293b', color: '#ffffff', fontSize: '13px' }}
+                >
+                  <option value="High Patient Caseload / Doctor Overbooked">High Patient Caseload / Doctor Overbooked</option>
+                  <option value="Specialist Referral & Advanced Diagnostic Review">Specialist Referral & Advanced Diagnostic Review</option>
+                  <option value="Clinical Second Opinion Required">Clinical Second Opinion Required</option>
+                  <option value="Emergency Priority Escalation">Emergency Priority Escalation</option>
+                  <option value="Patient Preference / Schedule Conflict">Patient Preference / Schedule Conflict</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8', display: 'block', marginBottom: '6px' }}>
+                  Clinical Handoff Notes & Instructions
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="Notes for receiving specialist regarding symptoms, prior medications, or urgency..."
+                  value={referNotes}
+                  onChange={(e) => setReferNotes(e.target.value)}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #334155', background: '#1e293b', color: '#ffffff', fontSize: '13px' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+                <button
+                  type="button"
+                  onClick={() => setSelectedReferApp(null)}
+                  style={{ flex: 1, padding: '10px', borderRadius: '8px', background: '#1e293b', border: 'none', color: '#ffffff', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingReferral}
+                  style={{ flex: 2, padding: '10px', borderRadius: '8px', background: '#6366f1', border: 'none', color: '#ffffff', fontWeight: 800, cursor: 'pointer' }}
+                >
+                  {isSubmittingReferral ? 'Transferring...' : 'Confirm Referral & Transfer Patient'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

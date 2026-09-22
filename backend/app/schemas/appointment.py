@@ -33,4 +33,7 @@ class AppointmentResponse(BaseModel):
     queue_number: Optional[int] = None
     notes: Optional[str] = None
     cancellation_reason: Optional[str] = None
+    reminder_sent: Optional[bool] = False
+    reminder_sent_at: Optional[str] = None
+    patient_rating: Optional[float] = None
     created_at: Optional[str] = None

@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     GOOGLE_MAPS_API_KEY: str = Field(default="", description="Google Maps API Key")
     GOOGLE_MAP_API_KEY: str = Field(default="", description="Alternative alias for Google Maps API Key")
 
+    # Resend Email Service for Appointment Reminders
+    RESEND_API_KEY: str = Field(default="re_JgXyeiYh_AGbctPreY5vkLvoeCjAWTRbt", description="Resend API Key")
+    RESEND_FROM_EMAIL: str = Field(default="onboarding@resend.dev", description="Verified sender address on Resend")
+
     # App Settings
     APP_ENV: str = Field(default="development", description="Application Environment (development, staging, production)")
     FRONTEND_URL: str = Field(default="http://localhost:5173", description="Frontend Origin for CORS")

@@ -32,6 +32,22 @@ logging.basicConfig(
 )
 logger = logging.getLogger("healthcare-api")
 
+from contextlib import asynccontextmanager
+import asyncio
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("Initializing HealthNexus monorepo backend...")
+    try:
+        from app.services.email_service import email_reminder_service
+        res = email_reminder_service.trigger_auto_reminders_for_today()
+        logger.info(f"Automatic appointment date reminder scan completed: {res.get('total_reminders_triggered', 0)} reminders sent.")
+    except Exception as e:
+        logger.warning(f"Initial appointment reminder trigger check: {e}")
+    yield
+    logger.info("Shutting down HealthNexus monorepo backend...")
+
+
 app = FastAPI(
     title="AI Healthcare & Hospital Management Platform API",
     description=(
@@ -40,7 +56,8 @@ app = FastAPI(
     ),
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan
 )
 
 # 1. CORS Configuration (Section 34)
@@ -71,6 +88,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         content={
             "success": False,
             "message": str(exc.detail),
+            "detail": str(exc.detail),
             "error_code": code
         }
     )

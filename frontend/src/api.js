@@ -398,5 +398,106 @@ export const updateHospitalEmergencyCase = async (alertId, payload, hospitalToke
   return res.json();
 };
 
+// --- Doctor Rating & Verified Reviews ---
+export const fetchDoctorReviews = async (doctorId) => {
+  const token = getGuestToken();
+  const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+  const res = await fetch(`${API_BASE}/doctors/${doctorId}/reviews`, { headers });
+  return res.json();
+};
+
+export const submitDoctorRating = async (doctorId, payload) => {
+  const token = getGuestToken();
+  const res = await fetch(`${API_BASE}/doctors/${doctorId}/ratings`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+};
+
+// --- Appointment Completion & Resend Reminder ---
+export const completeAppointment = async (appointmentId) => {
+  const token = getGuestToken();
+  const res = await fetch(`${API_BASE}/appointments/${appointmentId}/complete`, {
+    method: 'PATCH',
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  return res.json();
+};
+
+export const sendAppointmentReminder = async (appointmentId, recipientEmail = null) => {
+  const token = getGuestToken();
+  const res = await fetch(`${API_BASE}/appointments/${appointmentId}/send-reminder`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(recipientEmail ? { recipient_email: recipientEmail } : {})
+  });
+  return res.json();
+};
+
+// --- Doctor Referral & Caseload Balancing ---
+export const referAppointmentDoctor = async (appointmentId, payload, adminToken) => {
+  const res = await fetch(`${API_BASE}/admin/appointments/${appointmentId}/refer`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${adminToken}`
+    },
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+};
+
+export const referHospitalAppointment = async (appointmentId, payload, hospitalToken) => {
+  const res = await fetch(`${API_BASE}/hospital-portal/appointments/${appointmentId}/refer`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${hospitalToken}`
+    },
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+};
+
+export const completeHospitalAppointment = async (appointmentId, hospitalToken) => {
+  const res = await fetch(`${API_BASE}/hospital-portal/appointments/${appointmentId}/complete`, {
+    method: 'PATCH',
+    headers: { 'Authorization': `Bearer ${hospitalToken}` }
+  });
+  return res.json();
+};
+
+export const sendHospitalAppointmentReminder = async (appointmentId, hospitalToken) => {
+  const res = await fetch(`${API_BASE}/hospital-portal/appointments/${appointmentId}/send-reminder`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${hospitalToken}`
+    }
+  });
+  return res.json();
+};
+
+export const cancelHospitalAppointment = async (appointmentId, reason, hospitalToken) => {
+  const res = await fetch(`${API_BASE}/hospital-portal/appointments/${appointmentId}/cancel`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${hospitalToken}`
+    },
+    body: JSON.stringify({ reason })
+  });
+  return res.json();
+};
+
+
 
 

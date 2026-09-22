@@ -141,6 +141,81 @@ async def allot_appointment_timing(
     )
 
 
+class AdminReferralRequest(BaseModel):
+    target_doctor_id: str = Field(..., description="ID of doctor to whom patient is referred")
+    reason: str = Field("High Patient Caseload / Doctor Overbooked", description="Reason for referral")
+    notes: Optional[str] = Field(None, description="Handoff notes or clinical guidance")
+
+
+@router.post("/appointments/{appointment_id}/refer", response_model=ApiResponse[Dict[str, Any]])
+async def refer_patient_to_doctor(
+    appointment_id: str,
+    req: AdminReferralRequest,
+    current_user: dict = Depends(require_role(["admin", "staff", "doctor"]))
+):
+    """
+    Enables Admin/Staff to refer a patient from an overbooked doctor to another available doctor.
+    """
+    appointment = next((a for a in MOCK_DATA["appointments"] if str(a["id"]) == str(appointment_id)), None)
+    if not appointment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Appointment not found.")
+
+    target_doc = next((d for d in MOCK_DATA["doctors"] if str(d["id"]) == str(req.target_doctor_id)), None)
+    if not target_doc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Target doctor for referral not found.")
+
+    orig_doc = next((d for d in MOCK_DATA["doctors"] if str(d["id"]) == str(appointment.get("doctor_id"))), None)
+    orig_doc_name = orig_doc["name"] if orig_doc else "Attending Doctor"
+
+    prev_doctor_id = appointment.get("doctor_id")
+    appointment["doctor_id"] = str(target_doc["id"])
+    if target_doc.get("hospital_id"):
+        appointment["hospital_id"] = str(target_doc["hospital_id"])
+    if target_doc.get("department_id"):
+        appointment["department_id"] = str(target_doc["department_id"])
+
+    appt_date = appointment.get("appointment_date", "2026-09-28")
+    new_doc_apps = [
+        a for a in MOCK_DATA["appointments"]
+        if str(a.get("doctor_id")) == str(target_doc["id"]) and a.get("appointment_date") == appt_date
+    ]
+    appointment["queue_number"] = len(new_doc_apps) + 1
+
+    referral_note = f"[Referred from {orig_doc_name} to {target_doc['name']} - Reason: {req.reason}]"
+    if req.notes:
+        referral_note += f" Notes: {req.notes}"
+    appointment["notes"] = f"{referral_note} | {appointment.get('notes', '')}".strip(" |")
+
+    # Patient Notification
+    MOCK_DATA["notifications"].append({
+        "id": str(uuid.uuid4()),
+        "user_id": str(appointment["patient_id"]),
+        "title": "👨‍⚕️ Appointment Referred to New Specialist",
+        "message": f"Your consultation has been referred from {orig_doc_name} to {target_doc['name']} ({target_doc['specialization']}) due to: {req.reason}. Your new token position is #{appointment['queue_number']}.",
+        "type": "appointment_referred",
+        "is_read": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+
+    log_audit_event(
+        action="admin_refer_appointment",
+        resource_type="appointment",
+        resource_id=appointment_id,
+        user_id=str(current_user.get("id")),
+        details={"from_doctor": prev_doctor_id, "to_doctor": str(target_doc["id"]), "reason": req.reason}
+    )
+
+    return ApiResponse(
+        success=True,
+        message=f"Patient successfully referred from {orig_doc_name} to {target_doc['name']} (Token #{appointment['queue_number']})",
+        data={
+            "appointment": appointment,
+            "referred_to": target_doc["name"],
+            "new_queue_number": appointment["queue_number"]
+        }
+    )
+
+
 @router.get("/audit-logs", response_model=ApiResponse[List[AuditLogItem]])
 async def get_audit_logs(
     limit: int = Query(50, ge=1, le=200),
