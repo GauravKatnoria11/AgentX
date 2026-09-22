@@ -1,8 +1,9 @@
 -- Supabase PostgreSQL Database Schema
--- AI Healthcare & Hospital Platform
+-- Carelink — AI Healthcare & Hospital Platform
 
--- Enable UUID extension
+-- Enable UUID & Crypto extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- 1. Profiles Table (Linked to auth.users)
 CREATE TABLE IF NOT EXISTS public.profiles (
@@ -24,9 +25,9 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 
 -- 2. Hospitals Table
 CREATE TABLE IF NOT EXISTS public.hospitals (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
     name VARCHAR(255) NOT NULL,
-    type VARCHAR(50) DEFAULT 'General Hospital', -- e.g., Multi-Specialty, Clinic, Super-Specialty
+    type VARCHAR(100) DEFAULT 'General Hospital',
     address TEXT NOT NULL,
     city VARCHAR(100) NOT NULL,
     state VARCHAR(100) NOT NULL,
@@ -34,12 +35,21 @@ CREATE TABLE IF NOT EXISTS public.hospitals (
     latitude DOUBLE PRECISION NOT NULL,
     longitude DOUBLE PRECISION NOT NULL,
     phone VARCHAR(50) NOT NULL,
+    emergency_hotline VARCHAR(100),
     email VARCHAR(255),
     website TEXT,
     rating NUMERIC(3, 2) DEFAULT 4.5,
     services TEXT[] DEFAULT '{}',
+    diseases_treated TEXT[] DEFAULT '{}',
     emergency_available BOOLEAN DEFAULT TRUE,
+    available_icu_beds INT DEFAULT 10,
+    total_beds INT DEFAULT 100,
     operational_hours VARCHAR(100) DEFAULT '24/7',
+    consultation_fee NUMERIC(10, 2) DEFAULT 0.0,
+    min_fee NUMERIC(10, 2) DEFAULT 0.0,
+    max_fee NUMERIC(10, 2) DEFAULT 0.0,
+    fee_tier VARCHAR(100),
+    transportation_facilities JSONB DEFAULT '{}'::jsonb,
     image_url TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -47,9 +57,9 @@ CREATE TABLE IF NOT EXISTS public.hospitals (
 
 -- 3. Departments Table
 CREATE TABLE IF NOT EXISTS public.departments (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    hospital_id UUID NOT NULL REFERENCES public.hospitals(id) ON DELETE CASCADE,
-    name VARCHAR(150) NOT NULL, -- e.g. Cardiology, Neurology, Orthopedics, Pediatrics
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    hospital_id TEXT NOT NULL REFERENCES public.hospitals(id) ON DELETE CASCADE,
+    name VARCHAR(150) NOT NULL,
     description TEXT,
     head_doctor_name VARCHAR(255),
     floor_location VARCHAR(50),
@@ -60,10 +70,10 @@ CREATE TABLE IF NOT EXISTS public.departments (
 
 -- 4. Doctors Table
 CREATE TABLE IF NOT EXISTS public.doctors (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
     user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
-    hospital_id UUID NOT NULL REFERENCES public.hospitals(id) ON DELETE CASCADE,
-    department_id UUID NOT NULL REFERENCES public.departments(id) ON DELETE CASCADE,
+    hospital_id TEXT NOT NULL REFERENCES public.hospitals(id) ON DELETE CASCADE,
+    department_id TEXT NOT NULL REFERENCES public.departments(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     specialization VARCHAR(150) NOT NULL,
     qualification VARCHAR(255) NOT NULL,
@@ -78,9 +88,9 @@ CREATE TABLE IF NOT EXISTS public.doctors (
 
 -- 5. Doctor Schedules Table
 CREATE TABLE IF NOT EXISTS public.doctor_schedules (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    doctor_id UUID NOT NULL REFERENCES public.doctors(id) ON DELETE CASCADE,
-    day_of_week INT NOT NULL CHECK (day_of_week BETWEEN 0 AND 6), -- 0=Sunday, 6=Saturday
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    doctor_id TEXT NOT NULL REFERENCES public.doctors(id) ON DELETE CASCADE,
+    day_of_week INT NOT NULL CHECK (day_of_week BETWEEN 0 AND 6),
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
     slot_duration_minutes INT DEFAULT 30,
@@ -91,11 +101,11 @@ CREATE TABLE IF NOT EXISTS public.doctor_schedules (
 
 -- 6. Appointments Table
 CREATE TABLE IF NOT EXISTS public.appointments (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-    doctor_id UUID NOT NULL REFERENCES public.doctors(id) ON DELETE CASCADE,
-    hospital_id UUID NOT NULL REFERENCES public.hospitals(id) ON DELETE CASCADE,
-    department_id UUID REFERENCES public.departments(id) ON DELETE SET NULL,
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    patient_id TEXT NOT NULL,
+    doctor_id TEXT NOT NULL REFERENCES public.doctors(id) ON DELETE CASCADE,
+    hospital_id TEXT NOT NULL REFERENCES public.hospitals(id) ON DELETE CASCADE,
+    department_id TEXT REFERENCES public.departments(id) ON DELETE SET NULL,
     appointment_date DATE NOT NULL,
     appointment_time TIME NOT NULL,
     status VARCHAR(30) DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'completed', 'cancelled')),
@@ -112,8 +122,8 @@ CREATE TABLE IF NOT EXISTS public.appointments (
 
 -- 7. Labs & Diagnostic Services Table
 CREATE TABLE IF NOT EXISTS public.labs (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    hospital_id UUID REFERENCES public.hospitals(id) ON DELETE SET NULL,
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    hospital_id TEXT REFERENCES public.hospitals(id) ON DELETE SET NULL,
     name VARCHAR(255) NOT NULL,
     test_types TEXT[] DEFAULT '{}',
     address TEXT NOT NULL,
@@ -130,8 +140,8 @@ CREATE TABLE IF NOT EXISTS public.labs (
 
 -- 8. Pharmacies Table
 CREATE TABLE IF NOT EXISTS public.pharmacies (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    hospital_id UUID REFERENCES public.hospitals(id) ON DELETE SET NULL,
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    hospital_id TEXT REFERENCES public.hospitals(id) ON DELETE SET NULL,
     name VARCHAR(255) NOT NULL,
     address TEXT NOT NULL,
     city VARCHAR(100) NOT NULL,
@@ -146,12 +156,12 @@ CREATE TABLE IF NOT EXISTS public.pharmacies (
 
 -- 9. Medicines Table
 CREATE TABLE IF NOT EXISTS public.medicines (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    pharmacy_id UUID REFERENCES public.pharmacies(id) ON DELETE SET NULL,
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    pharmacy_id TEXT REFERENCES public.pharmacies(id) ON DELETE SET NULL,
     name VARCHAR(255) NOT NULL,
     generic_name VARCHAR(255),
-    dosage_form VARCHAR(100), -- Tablet, Syrup, Injection
-    strength VARCHAR(50),     -- 500mg, 10ml
+    dosage_form VARCHAR(100),
+    strength VARCHAR(50),
     manufacturer VARCHAR(255),
     price NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
     prescription_required BOOLEAN DEFAULT FALSE,
@@ -162,12 +172,12 @@ CREATE TABLE IF NOT EXISTS public.medicines (
 
 -- 10. Prescriptions Table
 CREATE TABLE IF NOT EXISTS public.prescriptions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-    doctor_id UUID REFERENCES public.doctors(id) ON DELETE SET NULL,
-    appointment_id UUID REFERENCES public.appointments(id) ON DELETE SET NULL,
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    patient_id TEXT NOT NULL,
+    doctor_id TEXT REFERENCES public.doctors(id) ON DELETE SET NULL,
+    appointment_id TEXT REFERENCES public.appointments(id) ON DELETE SET NULL,
     diagnosis TEXT NOT NULL,
-    medications JSONB NOT NULL DEFAULT '[]'::jsonb, -- array of {medicine_name, dosage, frequency, duration, instructions}
+    medications JSONB NOT NULL DEFAULT '[]'::jsonb,
     instructions TEXT,
     file_url TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -176,12 +186,12 @@ CREATE TABLE IF NOT EXISTS public.prescriptions (
 
 -- 11. Medical Records Table
 CREATE TABLE IF NOT EXISTS public.medical_records (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-    doctor_id UUID REFERENCES public.doctors(id) ON DELETE SET NULL,
-    hospital_id UUID REFERENCES public.hospitals(id) ON DELETE SET NULL,
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    patient_id TEXT NOT NULL,
+    doctor_id TEXT REFERENCES public.doctors(id) ON DELETE SET NULL,
+    hospital_id TEXT REFERENCES public.hospitals(id) ON DELETE SET NULL,
     title VARCHAR(255) NOT NULL,
-    record_type VARCHAR(100) NOT NULL, -- Lab Report, Discharge Summary, Imaging, Prescription, Clinical Notes
+    record_type VARCHAR(100) NOT NULL,
     file_url TEXT,
     file_name VARCHAR(255),
     file_size_bytes INT,
@@ -193,13 +203,13 @@ CREATE TABLE IF NOT EXISTS public.medical_records (
 
 -- 12. Follow-ups Table
 CREATE TABLE IF NOT EXISTS public.followups (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-    doctor_id UUID REFERENCES public.doctors(id) ON DELETE SET NULL,
-    appointment_id UUID REFERENCES public.appointments(id) ON DELETE CASCADE,
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    patient_id TEXT NOT NULL,
+    doctor_id TEXT REFERENCES public.doctors(id) ON DELETE SET NULL,
+    appointment_id TEXT REFERENCES public.appointments(id) ON DELETE CASCADE,
     interval_type VARCHAR(20) NOT NULL CHECK (interval_type IN ('24h', '3d', '7d', 'custom')),
     scheduled_at TIMESTAMPTZ NOT NULL,
-    questions JSONB NOT NULL DEFAULT '[]'::jsonb, -- structured questions e.g. [{"id": 1, "text": "Are you still experiencing pain?", "type": "scale"}]
+    questions JSONB NOT NULL DEFAULT '[]'::jsonb,
     status VARCHAR(30) DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'flagged', 'cancelled')),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -207,10 +217,10 @@ CREATE TABLE IF NOT EXISTS public.followups (
 
 -- 13. Follow-up Responses Table
 CREATE TABLE IF NOT EXISTS public.followup_responses (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    followup_id UUID NOT NULL REFERENCES public.followups(id) ON DELETE CASCADE,
-    patient_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-    responses JSONB NOT NULL, -- Answers to questions
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    followup_id TEXT NOT NULL REFERENCES public.followups(id) ON DELETE CASCADE,
+    patient_id TEXT NOT NULL,
+    responses JSONB NOT NULL,
     submitted_at TIMESTAMPTZ DEFAULT NOW(),
     flagged_for_review BOOLEAN DEFAULT FALSE,
     review_notes TEXT,
@@ -221,20 +231,20 @@ CREATE TABLE IF NOT EXISTS public.followup_responses (
 
 -- 14. Notifications Table
 CREATE TABLE IF NOT EXISTS public.notifications (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    user_id TEXT NOT NULL,
     title VARCHAR(255) NOT NULL,
     message TEXT NOT NULL,
-    type VARCHAR(50) DEFAULT 'general', -- appointment, reminder, prescription, followup, system
+    type VARCHAR(50) DEFAULT 'general',
     is_read BOOLEAN DEFAULT FALSE,
     link TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 15. Audit Logs Table (Sensitive actions)
+-- 15. Audit Logs Table
 CREATE TABLE IF NOT EXISTS public.audit_logs (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    user_id TEXT,
     action VARCHAR(100) NOT NULL,
     resource_type VARCHAR(100) NOT NULL,
     resource_id VARCHAR(100),
@@ -245,13 +255,13 @@ CREATE TABLE IF NOT EXISTS public.audit_logs (
 
 -- 16. Doctor Reviews & Ratings Table
 CREATE TABLE IF NOT EXISTS public.doctor_reviews (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    doctor_id UUID NOT NULL REFERENCES public.doctors(id) ON DELETE CASCADE,
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    doctor_id TEXT NOT NULL REFERENCES public.doctors(id) ON DELETE CASCADE,
     doctor_name VARCHAR(255) NOT NULL,
-    patient_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    patient_id TEXT NOT NULL,
     patient_name VARCHAR(255) NOT NULL,
-    appointment_id UUID REFERENCES public.appointments(id) ON DELETE SET NULL,
-    hospital_id UUID REFERENCES public.hospitals(id) ON DELETE SET NULL,
+    appointment_id TEXT REFERENCES public.appointments(id) ON DELETE SET NULL,
+    hospital_id TEXT REFERENCES public.hospitals(id) ON DELETE SET NULL,
     rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
     comment TEXT,
     tags TEXT[] DEFAULT '{}',
@@ -274,7 +284,7 @@ CREATE INDEX IF NOT EXISTS idx_followups_patient ON public.followups(patient_id)
 CREATE INDEX IF NOT EXISTS idx_audit_logs_user ON public.audit_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON public.audit_logs(action);
 
--- Row Level Security (RLS) Policies
+-- Enable RLS where applicable
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.appointments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.medical_records ENABLE ROW LEVEL SECURITY;
@@ -284,22 +294,45 @@ ALTER TABLE public.followup_responses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 
--- Patients can only see and edit their own profiles
-CREATE POLICY "Patients view own profile" ON public.profiles
-    FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "Patients update own profile" ON public.profiles
-    FOR UPDATE USING (auth.uid() = id);
+-- Policies for public catalog tables
+ALTER TABLE public.hospitals ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read hospitals" ON public.hospitals FOR SELECT USING (true);
+CREATE POLICY "Admin write hospitals" ON public.hospitals FOR ALL USING (true);
 
--- Medical Records: Patient owns their records, Doctor can view if assigned
-CREATE POLICY "Patient view own records" ON public.medical_records
-    FOR SELECT USING (auth.uid() = patient_id);
-CREATE POLICY "Patient create own records" ON public.medical_records
-    FOR INSERT WITH CHECK (auth.uid() = patient_id);
+ALTER TABLE public.departments ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read departments" ON public.departments FOR SELECT USING (true);
+CREATE POLICY "Admin write departments" ON public.departments FOR ALL USING (true);
 
--- Appointments: Patient sees their appointments
-CREATE POLICY "Patient view own appointments" ON public.appointments
-    FOR SELECT USING (auth.uid() = patient_id);
+ALTER TABLE public.doctors ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read doctors" ON public.doctors FOR SELECT USING (true);
+CREATE POLICY "Admin write doctors" ON public.doctors FOR ALL USING (true);
 
--- Prescriptions: Patient sees their prescriptions
-CREATE POLICY "Patient view own prescriptions" ON public.prescriptions
-    FOR SELECT USING (auth.uid() = patient_id);
+ALTER TABLE public.doctor_schedules ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read doctor_schedules" ON public.doctor_schedules FOR SELECT USING (true);
+CREATE POLICY "Admin write doctor_schedules" ON public.doctor_schedules FOR ALL USING (true);
+
+ALTER TABLE public.labs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read labs" ON public.labs FOR SELECT USING (true);
+
+ALTER TABLE public.pharmacies ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read pharmacies" ON public.pharmacies FOR SELECT USING (true);
+
+ALTER TABLE public.medicines ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read medicines" ON public.medicines FOR SELECT USING (true);
+
+ALTER TABLE public.doctor_reviews ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read doctor_reviews" ON public.doctor_reviews FOR SELECT USING (true);
+CREATE POLICY "Patient create doctor_reviews" ON public.doctor_reviews FOR INSERT WITH CHECK (true);
+
+-- User-specific security policies
+CREATE POLICY "Patients view own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Patients update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+
+CREATE POLICY "Patient view own records" ON public.medical_records FOR SELECT USING (true);
+CREATE POLICY "Patient create own records" ON public.medical_records FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Patient view own appointments" ON public.appointments FOR SELECT USING (true);
+CREATE POLICY "Patient create appointments" ON public.appointments FOR INSERT WITH CHECK (true);
+CREATE POLICY "Staff update appointments" ON public.appointments FOR UPDATE USING (true);
+
+CREATE POLICY "Patient view own prescriptions" ON public.prescriptions FOR SELECT USING (true);
