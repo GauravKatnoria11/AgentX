@@ -1,9 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { Stethoscope, Star, Calendar, Clock, DollarSign, Award, CheckCircle2, AlertCircle } from 'lucide-react';
-import { fetchDoctors, fetchDoctorAvailability, bookAppointment } from '../api';
+import {
+  Stethoscope,
+  Star,
+  Calendar,
+  Clock,
+  DollarSign,
+  Award,
+  CheckCircle2,
+  AlertCircle,
+  Building2,
+  MapPin,
+  X,
+  Filter,
+  ArrowRight,
+  Phone,
+  Droplet
+} from 'lucide-react';
+import { fetchDoctors, fetchDoctorAvailability, bookAppointment, fetchHospitals } from '../api';
 
-export default function DoctorsPage({ onSelectDoctor, preselectedHospital }) {
+export default function DoctorsPage({ currentUser, onSelectDoctor, preselectedHospital }) {
   const [doctors, setDoctors] = useState([]);
+  const [hospitalsList, setHospitalsList] = useState([]);
+  const [selectedHospitalId, setSelectedHospitalId] = useState(preselectedHospital?.id || 'all');
   const [specialization, setSpecialization] = useState('All');
   const [loading, setLoading] = useState(true);
 
@@ -13,13 +31,32 @@ export default function DoctorsPage({ onSelectDoctor, preselectedHospital }) {
   const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState('');
   const [reason, setReason] = useState('');
+  const [patientPhone, setPatientPhone] = useState('');
+  const [bloodGroup, setBloodGroup] = useState('');
   const [bookingSuccess, setBookingSuccess] = useState(null);
   const [bookingError, setBookingError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Load hospitals for the filter dropdown
+  useEffect(() => {
+    fetchHospitals().then((res) => {
+      if (res.success && res.data) {
+        setHospitalsList(res.data);
+      }
+    });
+  }, []);
+
+  // Sync preselectedHospital if prop changes
+  useEffect(() => {
+    if (preselectedHospital?.id) {
+      setSelectedHospitalId(preselectedHospital.id);
+    }
+  }, [preselectedHospital]);
+
+  // Load doctors filtered by hospital and specialization
   useEffect(() => {
     loadDoctors();
-  }, [specialization, preselectedHospital]);
+  }, [specialization, selectedHospitalId]);
 
   const loadDoctors = async () => {
     setLoading(true);
@@ -28,8 +65,8 @@ export default function DoctorsPage({ onSelectDoctor, preselectedHospital }) {
       if (specialization !== 'All') {
         params.specialization = specialization;
       }
-      if (preselectedHospital) {
-        params.hospital_id = preselectedHospital.id;
+      if (selectedHospitalId && selectedHospitalId !== 'all') {
+        params.hospital_id = selectedHospitalId;
       }
       const res = await fetchDoctors(params);
       if (res.success && res.data) {
@@ -48,6 +85,22 @@ export default function DoctorsPage({ onSelectDoctor, preselectedHospital }) {
     setBookingError('');
     setSelectedSlot('');
     setReason('');
+
+    // Pre-populate phone and blood group from logged in user if available
+    let activePhone = currentUser?.phone || '';
+    let activeBloodGroup = currentUser?.blood_group || '';
+    if (!activePhone || !activeBloodGroup) {
+      try {
+        const stored = JSON.parse(localStorage.getItem('hospital_current_user') || '{}');
+        if (!activePhone && stored.phone) activePhone = stored.phone;
+        if (!activeBloodGroup && stored.blood_group) activeBloodGroup = stored.blood_group;
+      } catch (err) {
+        // ignore JSON parse error
+      }
+    }
+    setPatientPhone(activePhone);
+    setBloodGroup(activeBloodGroup);
+
     await loadSlots(doc.id, appointmentDate);
   };
 
@@ -75,6 +128,15 @@ export default function DoctorsPage({ onSelectDoctor, preselectedHospital }) {
       setBookingError('Please select a time slot for your appointment.');
       return;
     }
+    if (!patientPhone.trim()) {
+      setBookingError('Please enter your mobile phone number for appointment confirmations.');
+      return;
+    }
+    if (!bloodGroup) {
+      setBookingError('Please select your blood group for clinical intake.');
+      return;
+    }
+
     setIsSubmitting(true);
     setBookingError('');
     try {
@@ -84,7 +146,9 @@ export default function DoctorsPage({ onSelectDoctor, preselectedHospital }) {
         department_id: bookingDoctor.department_id,
         appointment_date: appointmentDate,
         appointment_time: selectedSlot + ':00',
-        reason: reason || 'General Consultation'
+        reason: reason || 'General Consultation',
+        patient_phone: patientPhone.trim(),
+        blood_group: bloodGroup
       });
 
       if (res.success && res.data) {
@@ -99,90 +163,252 @@ export default function DoctorsPage({ onSelectDoctor, preselectedHospital }) {
     }
   };
 
-  const categories = ['All', 'Cardiology', 'Neurology', 'Pediatrics'];
+  const currentHospitalObj = hospitalsList.find(
+    (h) => String(h.id) === String(selectedHospitalId)
+  );
+
+  const categories = ['All', 'Cardiology', 'Neurology', 'Orthopedics', 'Gynecology', 'Pulmonology', 'Ophthalmology', 'Surgery', 'Emergency Medicine'];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      {/* Category Pills */}
-      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setSpecialization(cat)}
-            className={`pill-badge ${specialization === cat ? 'blue' : ''}`}
-            style={{
-              padding: '8px 18px',
-              fontSize: '13px',
-              cursor: 'pointer',
-              background: specialization === cat ? 'var(--primary-blue)' : '#ffffff',
-              color: specialization === cat ? '#ffffff' : 'var(--text-muted)',
-              border: '1px solid var(--border-subtle)',
-              boxShadow: specialization === cat ? '0 4px 12px rgba(37, 99, 235, 0.2)' : 'var(--shadow-sm)'
-            }}
-          >
-            {cat}
-          </button>
-        ))}
+      {/* Top Filter Controls: Specific Hospital Selector + Specialty Filter */}
+      <div
+        className="card"
+        style={{
+          padding: '20px 24px',
+          background: '#ffffff',
+          borderRadius: '16px',
+          border: '1px solid var(--border-subtle)',
+          boxShadow: 'var(--shadow-sm)'
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '16px' }}>
+          {/* Hospital Selector Dropdown */}
+          <div style={{ flex: '1 1 320px' }}>
+            <label style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+              <Building2 size={15} color="var(--primary-blue)" /> Filter by Specific Hospital
+            </label>
+            <select
+              value={selectedHospitalId}
+              onChange={(e) => setSelectedHospitalId(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '11px 16px',
+                borderRadius: '10px',
+                border: selectedHospitalId !== 'all' ? '2px solid #2563eb' : '1px solid var(--border-subtle)',
+                background: selectedHospitalId !== 'all' ? '#eff6ff' : '#f8fafc',
+                color: selectedHospitalId !== 'all' ? '#1e40af' : 'var(--text-main)',
+                fontSize: '14px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                outline: 'none'
+              }}
+            >
+              <option value="all">🏥 All Hospitals in Hoshiarpur (View All Specialists)</option>
+              {hospitalsList.map((h) => (
+                <option key={h.id} value={h.id}>
+                  🏥 {h.name} ({h.type})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Quick Active Hospital Indicator & Reset */}
+          {selectedHospitalId !== 'all' && currentHospitalObj && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '10px 16px', borderRadius: '12px' }}>
+              <div>
+                <div style={{ fontSize: '11px', fontWeight: 800, color: '#047857', textTransform: 'uppercase' }}>
+                  Active Hospital Focus
+                </div>
+                <div style={{ fontSize: '13px', fontWeight: 800, color: '#065f46' }}>
+                  {currentHospitalObj.name}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedHospitalId('all')}
+                style={{
+                  background: '#ffffff',
+                  border: '1px solid #6ee7b7',
+                  color: '#065f46',
+                  borderRadius: '6px',
+                  padding: '5px 10px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+              >
+                <X size={12} /> Show All Hospitals
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Specialization Pills */}
+        <div>
+          <label style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+            <Stethoscope size={13} /> Filter by Medical Specialty
+          </label>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setSpecialization(cat)}
+                style={{
+                  padding: '6px 14px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  borderRadius: '9999px',
+                  cursor: 'pointer',
+                  background: specialization === cat ? 'var(--primary-blue)' : '#f1f5f9',
+                  color: specialization === cat ? '#ffffff' : '#475569',
+                  border: specialization === cat ? '1px solid var(--primary-blue)' : '1px solid #e2e8f0',
+                  transition: 'all 0.1s ease'
+                }}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {preselectedHospital && (
-        <div style={{ fontSize: '13px', color: 'var(--primary-blue)', fontWeight: 600 }}>
-          Showing doctors affiliated with: {preselectedHospital.name}
+      {/* Hospital Context Banner if a specific hospital is selected */}
+      {currentHospitalObj && (
+        <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1e40af' }}>
+              <Building2 size={22} />
+            </div>
+            <div>
+              <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-main)' }}>
+                {currentHospitalObj.name}
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <MapPin size={12} /> {currentHospitalObj.address}, Hoshiarpur • Fee: <strong>₹{currentHospitalObj.consultation_fee}</strong>
+              </div>
+            </div>
+          </div>
+          <div style={{ fontSize: '12px', fontWeight: 700, color: '#1e40af', background: '#eff6ff', padding: '6px 12px', borderRadius: '8px' }}>
+            {doctors.length} Specialist{doctors.length === 1 ? '' : 's'} on Roster
+          </div>
         </div>
       )}
 
       {/* Doctors Grid */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-          Loading specialists...
+        <div style={{ textAlign: 'center', padding: '50px', color: 'var(--text-muted)' }}>
+          Loading specialists for selected hospital...
+        </div>
+      ) : doctors.length === 0 ? (
+        <div className="card" style={{ padding: '40px', textAlign: 'center' }}>
+          <Building2 size={40} color="var(--primary-blue)" style={{ margin: '0 auto 12px' }} />
+          <h3 style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-main)', margin: '0 0 6px 0' }}>
+            No Doctors Found for Selected Criteria
+          </h3>
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 16px 0' }}>
+            Try switching to "All Hospitals" or resetting your specialty filter.
+          </p>
+          <button
+            className="btn-primary"
+            onClick={() => { setSelectedHospitalId('all'); setSpecialization('All'); }}
+            style={{ margin: '0 auto' }}
+          >
+            Show All Doctors in All Hospitals
+          </button>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '20px' }}>
           {doctors.map((doc) => (
-            <div key={doc.id} className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div
+              key={doc.id}
+              className="card"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '16px',
+                padding: '22px'
+              }}
+            >
               <div>
-                <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+                {/* Specific Hospital Badge Header */}
+                <div style={{ marginBottom: '12px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedHospitalId(doc.hospital_id)}
+                    title={`Filter by ${doc.hospital_name}`}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      background: '#eff6ff',
+                      border: '1px solid #bfdbfe',
+                      color: '#1d4ed8',
+                      padding: '4px 10px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <Building2 size={13} style={{ flexShrink: 0 }} />
+                    <span>{doc.hospital_name || 'Hoshiarpur Hospital'}</span>
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                   <img
                     src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=120&auto=format&fit=crop&q=80"
                     alt={doc.name}
-                    style={{ width: '60px', height: '60px', borderRadius: '16px', objectFit: 'cover' }}
+                    style={{ width: '64px', height: '64px', borderRadius: '16px', objectFit: 'cover', flexShrink: 0 }}
                   />
                   <div>
-                    <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-main)' }}>{doc.name}</h3>
-                    <div style={{ fontSize: '13px', color: 'var(--primary-blue)', fontWeight: 500 }}>
-                      {doc.specialization} • {doc.department_name}
+                    <h3 style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-main)', margin: '0 0 2px 0' }}>
+                      {doc.name}
+                    </h3>
+                    <div style={{ fontSize: '13px', color: 'var(--primary-blue)', fontWeight: 700 }}>
+                      {doc.specialization}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#eab308', marginTop: '2px' }}>
-                      <Star size={13} fill="#eab308" /> {doc.rating || 4.9} ({doc.experience_years || 10}+ years exp)
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                      Dept: <strong>{doc.department_name}</strong> • {doc.qualification}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#eab308', marginTop: '4px' }}>
+                      <Star size={13} fill="#eab308" /> {doc.rating || 4.9} ({doc.experience_years || 10}+ years experience)
                     </div>
                   </div>
                 </div>
 
-                <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '14px', lineHeight: 1.4 }}>
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '14px', lineHeight: 1.5 }}>
                   {doc.bio || 'Compassionate care specialist dedicated to evidence-based healthcare delivery.'}
                 </p>
 
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #f1f5f9' }}>
-                  <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Consultation Fee</span>
-                  <span style={{ fontSize: '16px', fontWeight: 700, color: 'var(--primary-blue)' }}>₹{doc.consultation_fee}</span>
+                  <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Hospital Consultation Fee</span>
+                  <span style={{ fontSize: '17px', fontWeight: 800, color: 'var(--primary-blue)' }}>₹{doc.consultation_fee}</span>
                 </div>
-
               </div>
 
               <div style={{ display: 'flex', gap: '10px', marginTop: '18px' }}>
                 <button
                   className="btn-primary"
-                  style={{ flex: 1, justifyContent: 'center' }}
+                  style={{ flex: 1, justifyContent: 'center', fontSize: '13px' }}
                   onClick={() => openBookingModal(doc)}
                 >
                   <Calendar size={15} /> Book Slot
                 </button>
                 <button
                   className="btn-secondary"
-                  style={{ flex: 1, justifyContent: 'center' }}
+                  style={{ flex: 1, justifyContent: 'center', fontSize: '13px' }}
                   onClick={() => onSelectDoctor(doc)}
                 >
-                  View Profile
+                  View Dossier
                 </button>
               </div>
             </div>
@@ -195,26 +421,43 @@ export default function DoctorsPage({ onSelectDoctor, preselectedHospital }) {
         <div className="doctor-drawer-overlay" onClick={() => setBookingDoctor(null)}>
           <div
             className="card"
-            style={{ width: '480px', maxWidth: '90%', margin: 'auto', maxHeight: '90vh', overflowY: 'auto' }}
+            style={{ width: '500px', maxWidth: '92%', margin: 'auto', maxHeight: '90vh', overflowY: 'auto', borderRadius: '20px' }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '6px' }}>
-              Schedule Appointment with {bookingDoctor.name}
-            </h2>
-            <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '18px' }}>
-              {bookingDoctor.specialization} • {bookingDoctor.hospital_name || 'Hoshiarpur Medical Center'} • Consultation Fee: <strong>₹{bookingDoctor.consultation_fee}</strong>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+              <div>
+                <h2 style={{ fontSize: '19px', fontWeight: 800, margin: '0 0 4px 0' }}>
+                  Book Consultation with {bookingDoctor.name}
+                </h2>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#eff6ff', color: '#1e40af', padding: '3px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>
+                  <Building2 size={13} /> {bookingDoctor.hospital_name}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setBookingDoctor(null)}
+                style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '4px' }}
+              >
+                <X size={20} />
+              </button>
             </div>
 
+            <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px', background: '#f8fafc', padding: '10px 14px', borderRadius: '10px' }}>
+              Specialty: <strong>{bookingDoctor.specialization}</strong> • Department: <strong>{bookingDoctor.department_name}</strong> • Consultation Fee: <strong style={{ color: 'var(--primary-blue)' }}>₹{bookingDoctor.consultation_fee}</strong>
+            </div>
 
             {bookingSuccess ? (
               <div style={{ textAlign: 'center', padding: '24px 0' }}>
                 <CheckCircle2 size={48} color="#16a34a" style={{ margin: '0 auto 12px' }} />
-                <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#16a34a' }}>Booking Confirmed!</h3>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#16a34a' }}>Appointment Confirmed!</h3>
                 <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px' }}>
-                  Your appointment is confirmed for {bookingSuccess.appointment_date} at {bookingSuccess.appointment_time.slice(0, 5)}.
+                  Your appointment at <strong>{bookingDoctor.hospital_name}</strong> is scheduled for <strong>{bookingSuccess.appointment_date}</strong> at <strong>{bookingSuccess.appointment_time.slice(0, 5)}</strong>.
                 </p>
-                <div style={{ margin: '14px 0', padding: '10px', background: '#eff6ff', borderRadius: '10px', fontSize: '13px', color: 'var(--primary-blue)', fontWeight: 600 }}>
-                  Queue Number: #{bookingSuccess.queue_number || 1}
+                <div style={{ margin: '14px 0', padding: '12px', background: '#eff6ff', borderRadius: '10px', fontSize: '14px', color: 'var(--primary-blue)', fontWeight: 800 }}>
+                  Token Queue Number: #{bookingSuccess.queue_number || 1}
+                </div>
+                <div style={{ margin: '8px 0 16px 0', fontSize: '13px', color: '#475569' }}>
+                  Patient Mobile: <strong>{bookingSuccess.patient_phone || patientPhone}</strong> • Blood Group: <strong style={{ color: '#b91c1c' }}>{bookingSuccess.blood_group || bloodGroup}</strong>
                 </div>
                 <button className="btn-primary" style={{ width: '100%', justifyContent: 'center', marginTop: '10px' }} onClick={() => setBookingDoctor(null)}>
                   Done
@@ -229,7 +472,7 @@ export default function DoctorsPage({ onSelectDoctor, preselectedHospital }) {
                 )}
 
                 <div>
-                  <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Select Date</label>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)' }}>Consultation Date</label>
                   <input
                     type="date"
                     value={appointmentDate}
@@ -247,32 +490,99 @@ export default function DoctorsPage({ onSelectDoctor, preselectedHospital }) {
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Available Time Slots</label>
-                  {availableSlots.length === 0 ? (
-                    <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px' }}>
-                      No available slots for this date. Please pick another day.
-                    </div>
-                  ) : (
-                    <div className="slots-grid">
-                      {availableSlots.map((slot) => (
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)' }}>
+                    Hospital Consultation Slots for {appointmentDate}
+                  </label>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: '8px', marginTop: '6px' }}>
+                    {availableSlots.length > 0 ? (
+                      availableSlots.map((slot) => (
                         <button
                           key={slot}
                           type="button"
-                          className={`slot-chip ${selectedSlot === slot ? 'selected' : ''}`}
+                          className={`pill-badge ${selectedSlot === slot ? 'blue' : ''}`}
+                          style={{
+                            padding: '8px 10px',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            justifyContent: 'center',
+                            background: selectedSlot === slot ? 'var(--primary-blue)' : '#f8fafc',
+                            color: selectedSlot === slot ? '#ffffff' : 'var(--text-main)',
+                            border: '1px solid var(--border-subtle)'
+                          }}
                           onClick={() => setSelectedSlot(slot)}
                         >
-                          {slot}
+                          <Clock size={12} style={{ marginRight: '4px' }} /> {slot}
                         </button>
-                      ))}
-                    </div>
-                  )}
+                      ))
+                    ) : (
+                      <div style={{ gridColumn: '1 / -1', fontSize: '12px', color: 'var(--text-muted)', padding: '10px', background: '#f8fafc', borderRadius: '8px' }}>
+                        Loading doctor slots...
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Patient Mobile Number & Blood Group Intake */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <Phone size={13} color="var(--primary-blue)" /> Patient Mobile Number *
+                    </label>
+                    <input
+                      type="tel"
+                      placeholder="+91-98765-43210"
+                      value={patientPhone}
+                      onChange={(e) => setPatientPhone(e.target.value)}
+                      required
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        borderRadius: '10px',
+                        border: '1px solid var(--border-subtle)',
+                        marginTop: '6px',
+                        fontSize: '13px'
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <Droplet size={13} color="#ef4444" /> Blood Group *
+                    </label>
+                    <select
+                      value={bloodGroup}
+                      onChange={(e) => setBloodGroup(e.target.value)}
+                      required
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        borderRadius: '10px',
+                        border: '1px solid var(--border-subtle)',
+                        marginTop: '6px',
+                        fontSize: '13px',
+                        background: '#ffffff',
+                        fontWeight: 600
+                      }}
+                    >
+                      <option value="">Select Blood Group</option>
+                      <option value="A+">A+ (A Positive)</option>
+                      <option value="A-">A- (A Negative)</option>
+                      <option value="B+">B+ (B Positive)</option>
+                      <option value="B-">B- (B Negative)</option>
+                      <option value="AB+">AB+ (AB Positive)</option>
+                      <option value="AB-">AB- (AB Negative)</option>
+                      <option value="O+">O+ (O Positive)</option>
+                      <option value="O-">O- (O Negative)</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Reason for Visit (Optional)</label>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)' }}>Primary Symptoms or Reason for Visit</label>
                   <textarea
-                    rows={3}
-                    placeholder="Briefly describe your symptoms or visit reason..."
+                    rows={2}
+                    placeholder="e.g. Chest pain follow-up, knee pain evaluation, routine checkup..."
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
                     style={{
@@ -287,19 +597,14 @@ export default function DoctorsPage({ onSelectDoctor, preselectedHospital }) {
                   />
                 </div>
 
-                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                  <button className="btn-secondary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setBookingDoctor(null)}>
-                    Cancel
-                  </button>
-                  <button
-                    className="btn-primary"
-                    style={{ flex: 1, justifyContent: 'center' }}
-                    onClick={handleConfirmBooking}
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? 'Booking...' : 'Confirm Appointment'}
-                  </button>
-                </div>
+                <button
+                  className="btn-primary"
+                  style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: '14px', fontWeight: 800 }}
+                  onClick={handleConfirmBooking}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Confirming with Hospital...' : `Confirm Appointment at ${bookingDoctor.hospital_name}`}
+                </button>
               </div>
             )}
           </div>

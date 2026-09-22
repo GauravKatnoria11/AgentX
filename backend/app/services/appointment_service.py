@@ -16,7 +16,9 @@ class AppointmentService:
         appointment_date: date,
         appointment_time: time,
         reason: Optional[str] = None,
-        notes: Optional[str] = None
+        notes: Optional[str] = None,
+        patient_phone: Optional[str] = None,
+        blood_group: Optional[str] = None
     ) -> Dict[str, Any]:
         # 1. Validate date not in past
         if appointment_date < date.today():
@@ -72,11 +74,26 @@ class AppointmentService:
         ]
         queue_number = len(day_appointments) + 1
 
+        # Look up patient profile to get existing contact info or update it
+        patient_profile = next((p for p in MOCK_DATA.get("profiles", []) if str(p["id"]) == str(patient_id)), None)
+        if patient_profile:
+            if patient_phone:
+                patient_profile["phone"] = patient_phone
+            if blood_group:
+                patient_profile["blood_group"] = blood_group
+
+        effective_phone = patient_phone or (patient_profile.get("phone") if patient_profile else None)
+        effective_blood = blood_group or (patient_profile.get("blood_group") if patient_profile else None)
+        patient_name = patient_profile.get("full_name") if patient_profile else "Patient"
+
         # 6. Save appointment
         appointment_id = str(uuid.uuid4())
         new_appointment = {
             "id": appointment_id,
             "patient_id": str(patient_id),
+            "patient_name": patient_name,
+            "patient_phone": effective_phone,
+            "blood_group": effective_blood,
             "doctor_id": str(doctor_id),
             "hospital_id": str(hospital_id),
             "department_id": str(department_id) if department_id else doctor.get("department_id"),
@@ -186,9 +203,14 @@ class AppointmentService:
         doc = next((d for d in MOCK_DATA["doctors"] if str(d["id"]) == str(appointment.get("doctor_id"))), None)
         hosp = next((h for h in MOCK_DATA["hospitals"] if str(h["id"]) == str(appointment.get("hospital_id"))), None)
         dept = next((d for d in MOCK_DATA["departments"] if str(d["id"]) == str(appointment.get("department_id"))), None)
+        patient = next((p for p in MOCK_DATA.get("profiles", []) if str(p["id"]) == str(appointment.get("patient_id"))), None)
+        
         res["doctor_name"] = doc["name"] if doc else "Doctor"
         res["hospital_name"] = hosp["name"] if hosp else "Hospital"
         res["department_name"] = dept["name"] if dept else "General"
+        res["patient_name"] = res.get("patient_name") or (patient["full_name"] if patient else "Patient")
+        res["patient_phone"] = res.get("patient_phone") or (patient.get("phone") if patient else None)
+        res["blood_group"] = res.get("blood_group") or (patient.get("blood_group") if patient else None)
 
         # Check if patient already rated this consultation
         rev = next((r for r in MOCK_DATA.get("doctor_reviews", []) if str(r.get("appointment_id")) == str(appointment.get("id"))), None)

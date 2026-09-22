@@ -10,7 +10,8 @@ import {
   CheckCircle2,
   Lock,
   ThumbsUp,
-  Tag
+  Tag,
+  Building2
 } from 'lucide-react';
 import { fetchDoctorReviews, submitDoctorRating } from '../api';
 
@@ -112,6 +113,24 @@ export default function DoctorDrawer({ doctor, onClose, onBookClick, onChatClick
           />
           <h2 className="drawer-name">{doctor.name}</h2>
           <div className="drawer-handle">@{doctor.name.toLowerCase().replace(/[^a-z0-9]/g, '.')}</div>
+
+          {/* Specific Hospital Badge */}
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            marginTop: '8px',
+            background: '#eff6ff',
+            border: '1px solid #bfdbfe',
+            color: '#1d4ed8',
+            padding: '5px 12px',
+            borderRadius: '8px',
+            fontSize: '13px',
+            fontWeight: 700
+          }}>
+            <Building2 size={14} />
+            <span>{doctor.hospital_name || 'Hoshiarpur Hospital'}</span>
+          </div>
 
           {/* Rating Summary Header */}
           <div style={{

@@ -446,6 +446,7 @@ function App() {
 
           {currentPage === 'doctors' && (
             <DoctorsPage
+              currentUser={currentUser}
               onSelectDoctor={(doc) => setSelectedDoctor(doc)}
               preselectedHospital={preselectedHospital}
             />

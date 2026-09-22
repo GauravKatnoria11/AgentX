@@ -214,8 +214,8 @@ async def get_hospital_dashboard(
         a["doctor_name"] = doc["name"] if doc else "Hospital Specialist"
         a["doctor_specialization"] = doc.get("specialization", "General Medicine") if doc else ""
         a["patient_name"] = a.get("patient_name") or (patient["full_name"] if patient else "Patient")
-        a["patient_phone"] = a.get("patient_phone") or (patient.get("phone") if patient else "+91-98765-XXXXX")
-        a["patient_blood_group"] = patient.get("blood_group", "Unknown") if patient else "Unknown"
+        a["patient_blood_group"] = a.get("blood_group") or (patient.get("blood_group", "Unknown") if patient else "Unknown")
+        a["blood_group"] = a["patient_blood_group"]
 
     hosp_appointments.sort(key=lambda x: (x.get("status") != "pending", x.get("appointment_date", "")))
 

@@ -82,7 +82,15 @@ class HospitalService:
         # departments & doctors matching either ID
         dept_ids = {str(res["id"]), "hosp-1", "hosp-hoshiarpur-1"} if res["id"] in ("hosp-1", "hosp-hoshiarpur-1") else {str(res["id"])}
         res["departments"] = [d for d in MOCK_DATA["departments"] if str(d["hospital_id"]) in dept_ids]
-        res["doctors"] = [d for d in MOCK_DATA["doctors"] if str(d["hospital_id"]) in dept_ids]
+        doctors_list = []
+        for d in MOCK_DATA["doctors"]:
+            if str(d["hospital_id"]) in dept_ids:
+                d_copy = dict(d)
+                d_dept = next((dept for dept in MOCK_DATA["departments"] if str(dept["id"]) == str(d.get("department_id"))), None)
+                d_copy["department_name"] = d_dept["name"] if d_dept else "General"
+                d_copy["hospital_name"] = res["name"]
+                doctors_list.append(d_copy)
+        res["doctors"] = doctors_list
         return res
 
     def search_hospitals(

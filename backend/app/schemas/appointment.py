@@ -11,6 +11,8 @@ class AppointmentCreate(BaseModel):
     appointment_time: time
     reason: Optional[str] = Field(None, max_length=500)
     notes: Optional[str] = None
+    patient_phone: Optional[str] = Field(None, max_length=50, description="Patient mobile phone number")
+    blood_group: Optional[str] = Field(None, max_length=10, description="Patient blood group (e.g. A+, B+, O+, AB+)")
 
 
 class AppointmentCancel(BaseModel):
@@ -20,6 +22,9 @@ class AppointmentCancel(BaseModel):
 class AppointmentResponse(BaseModel):
     id: str
     patient_id: str
+    patient_name: Optional[str] = None
+    patient_phone: Optional[str] = None
+    blood_group: Optional[str] = None
     doctor_id: str
     hospital_id: str
     department_id: Optional[str] = None

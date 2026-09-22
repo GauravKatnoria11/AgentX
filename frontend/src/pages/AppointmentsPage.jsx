@@ -13,7 +13,9 @@ import {
   Check,
   Award,
   Sparkles,
-  Info
+  Info,
+  Phone,
+  Droplet
 } from 'lucide-react';
 import {
   fetchMyAppointments,
@@ -266,6 +268,21 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                     <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>
                       {a.department_name} • <strong>{a.hospital_name}</strong>
                     </div>
+
+                    {(a.patient_phone || a.blood_group) && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px', fontSize: '12px', flexWrap: 'wrap' }}>
+                        {a.patient_phone && (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#f1f5f9', color: '#334155', padding: '2px 8px', borderRadius: '6px', fontWeight: 600 }}>
+                            <Phone size={12} color="var(--primary-blue)" /> {a.patient_phone}
+                          </span>
+                        )}
+                        {a.blood_group && (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#fef2f2', color: '#b91c1c', padding: '2px 8px', borderRadius: '6px', fontWeight: 700, border: '1px solid #fee2e2' }}>
+                            <Droplet size={12} color="#ef4444" /> Blood: {a.blood_group}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div style={{ textAlign: 'right' }}>

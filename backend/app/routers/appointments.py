@@ -29,7 +29,9 @@ async def create_appointment(
         appointment_date=req.appointment_date,
         appointment_time=req.appointment_time,
         reason=req.reason,
-        notes=req.notes
+        notes=req.notes,
+        patient_phone=req.patient_phone,
+        blood_group=req.blood_group
     )
     return ApiResponse(
         success=True,

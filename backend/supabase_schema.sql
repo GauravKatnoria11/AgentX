@@ -102,6 +102,8 @@ CREATE TABLE IF NOT EXISTS public.appointments (
     reason TEXT,
     queue_number INT,
     notes TEXT,
+    patient_phone VARCHAR(50),
+    blood_group VARCHAR(10),
     cancellation_reason TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),

@@ -932,7 +932,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                               {app.patient_name || 'Patient'}
                             </div>
                             <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
-                              ☎ {app.patient_phone} • Blood: <span style={{ color: '#f87171' }}>{app.patient_blood_group}</span>
+                              ☎ {app.patient_phone || '+91-98765-XXXXX'} • Blood: <span style={{ color: '#f87171', fontWeight: 700 }}>{app.blood_group || app.patient_blood_group || 'O+'}</span>
                             </div>
                           </td>
 

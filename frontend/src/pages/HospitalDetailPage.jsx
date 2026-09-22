@@ -335,7 +335,7 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
                         {doc.name}
                       </h4>
                       <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                        {doc.qualification} • {doc.experience_years} yrs exp.
+                        Dept: <strong>{doc.department_name}</strong> • {doc.qualification} • {doc.experience_years} yrs exp.
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: 700, color: '#eab308' }}>

@@ -430,6 +430,33 @@ MOCK_DATA = {
             "head_doctor_name": "Dr. Aman Sharma",
             "floor_location": "Ground Floor",
             "contact_extension": "205"
+        },
+        {
+            "id": "dept-7",
+            "hospital_id": "hosp-hoshiarpur-5",
+            "name": "Neurotrauma & Critical Care",
+            "description": "Accident trauma, brain concussion resuscitations, and neuro-intensive monitoring.",
+            "head_doctor_name": "Dr. Ajay Chopra",
+            "floor_location": "2nd Floor, Trauma Wing",
+            "contact_extension": "501"
+        },
+        {
+            "id": "dept-8",
+            "hospital_id": "hosp-1",
+            "name": "General & Laparoscopic Surgery",
+            "description": "Subsidized emergency appendectomy, hernia repair, and wound debridement.",
+            "head_doctor_name": "Dr. Sukhwinder Singh",
+            "floor_location": "1st Floor, OT Complex",
+            "contact_extension": "104"
+        },
+        {
+            "id": "dept-9",
+            "hospital_id": "hosp-hoshiarpur-7",
+            "name": "Cataract & Refractive Eye Care",
+            "description": "Micro-incision phacoemulsification, intraocular lens implants, and corneal screening.",
+            "head_doctor_name": "Dr. Rajesh Grover",
+            "floor_location": "Ground Floor, Eye OPD",
+            "contact_extension": "701"
         }
     ],
     "doctors": [
@@ -521,7 +548,7 @@ MOCK_DATA = {
             "id": "doc-hsp-7",
             "user_id": None,
             "hospital_id": "hosp-hoshiarpur-7",
-            "department_id": "dept-1",
+            "department_id": "dept-9",
             "name": "Dr. Rajesh Grover",
             "specialization": "Ophthalmology",
             "qualification": "MS (Ophthalmology), Fellow Retina",
@@ -529,6 +556,34 @@ MOCK_DATA = {
             "consultation_fee": 350.00,
             "bio": "Premier ophthalmologist in Hoshiarpur with extensive experience in cataract phacoemulsification and diabetic eye care.",
             "rating": 4.9,
+            "is_available": True
+        },
+        {
+            "id": "doc-hsp-8",
+            "user_id": None,
+            "hospital_id": "hosp-hoshiarpur-5",
+            "department_id": "dept-7",
+            "name": "Dr. Ajay Chopra",
+            "specialization": "Neurology & Neurotrauma",
+            "qualification": "MD (Medicine), DM (Neurology), FINR",
+            "experience_years": 17,
+            "consultation_fee": 350.00,
+            "bio": "Apex Hospital lead consultant for neuro-emergencies, traumatic head injuries, and seizure disorders.",
+            "rating": 4.8,
+            "is_available": True
+        },
+        {
+            "id": "doc-hsp-9",
+            "user_id": None,
+            "hospital_id": "hosp-1",
+            "department_id": "dept-8",
+            "name": "Dr. Sukhwinder Singh",
+            "specialization": "General Surgery",
+            "qualification": "MS (General Surgery), FIAGES",
+            "experience_years": 19,
+            "consultation_fee": 50.00,
+            "bio": "Civil Hospital senior surgical specialist providing subsidized trauma surgeries, emergency laparotomies, and abdominal care.",
+            "rating": 4.7,
             "is_available": True
         }
     ],
@@ -559,6 +614,7 @@ MOCK_DATA = {
             "patient_id": "11111111-1111-1111-1111-111111111111",
             "patient_name": "John Doe",
             "patient_phone": "+91-98765-43210",
+            "blood_group": "O+",
             "doctor_id": "doc-hsp-1",
             "hospital_id": "hosp-hoshiarpur-2",
             "department_id": "dept-1",
@@ -576,6 +632,7 @@ MOCK_DATA = {
             "patient_id": "11111111-1111-1111-1111-111111111111",
             "patient_name": "John Doe",
             "patient_phone": "+91-98765-43210",
+            "blood_group": "O+",
             "doctor_id": "doc-hsp-1",
             "hospital_id": "hosp-hoshiarpur-2",
             "department_id": "dept-1",
@@ -593,6 +650,7 @@ MOCK_DATA = {
             "patient_id": "11111111-1111-1111-1111-111111111111",
             "patient_name": "John Doe",
             "patient_phone": "+91-98765-43210",
+            "blood_group": "O+",
             "doctor_id": "doc-hsp-1",
             "hospital_id": "hosp-hoshiarpur-2",
             "department_id": "dept-1",
@@ -610,6 +668,7 @@ MOCK_DATA = {
             "patient_id": "11111111-1111-1111-1111-111111111111",
             "patient_name": "Ramesh Kumar",
             "patient_phone": "+91-98150-54321",
+            "blood_group": "B+",
             "doctor_id": "doc-hsp-2",
             "hospital_id": "hosp-hoshiarpur-4",
             "department_id": "dept-4",
