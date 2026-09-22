@@ -8,8 +8,6 @@ import {
   Navigation,
   AlertTriangle,
   Star,
-  Mail,
-  Send,
   Check,
   Award,
   Sparkles,
@@ -20,7 +18,6 @@ import {
 import {
   fetchMyAppointments,
   cancelAppointment,
-  sendAppointmentReminder,
   submitDoctorRating
 } from '../api';
 
@@ -39,10 +36,6 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
   const [isSubmittingRating, setIsSubmittingRating] = useState(false);
   const [ratingError, setRatingError] = useState('');
   const [ratingSuccess, setRatingSuccess] = useState('');
-
-  // Resend Reminder State
-  const [reminderSendingId, setReminderSendingId] = useState(null);
-  const [reminderToast, setReminderToast] = useState('');
 
   const AVAILABLE_TAGS = [
     'Accurate Diagnosis',
@@ -82,23 +75,6 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
       }
     } catch (e) {
       console.error(e);
-    }
-  };
-
-
-  const handleSendReminder = async (appt) => {
-    setReminderSendingId(appt.id);
-    try {
-      const res = await sendAppointmentReminder(appt.id);
-      if (res.success) {
-        setReminderToast(`🔔 Resend reminder email sent for consultation with ${appt.doctor_name || 'your doctor'}!`);
-        setTimeout(() => setReminderToast(''), 4500);
-        loadAppointments();
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setReminderSendingId(null);
     }
   };
 
@@ -149,29 +125,11 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Toast alert for Resend */}
-      {reminderToast && (
-        <div style={{
-          background: 'linear-gradient(135deg, #1e3a8a, #2563eb)',
-          color: '#ffffff',
-          padding: '12px 20px',
-          borderRadius: '12px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          boxShadow: '0 8px 16px rgba(37,99,235,0.2)',
-          fontWeight: 600,
-          fontSize: '13px'
-        }}>
-          <Mail size={18} color="#93c5fd" />
-          <span>{reminderToast}</span>
-        </div>
-      )}
-
       <div className="section-header">
         <div>
           <h2 className="section-title">My Appointments & Verified Reviews</h2>
           <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-            Track consultation schedules, receive automatic Resend date reminders, and rate completed doctor visits
+            Track your consultation schedules, navigate to medical facilities, and rate completed doctor visits
           </div>
         </div>
         <button className="btn-secondary" onClick={loadAppointments}>
@@ -227,24 +185,6 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                       {a.queue_number && (
                         <span className="pill-badge amber">Queue Token: #{a.queue_number}</span>
                       )}
-
-                      {a.reminder_sent && (
-                        <span style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '5px',
-                          background: '#ecfdf5',
-                          color: '#065f46',
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          padding: '3px 10px',
-                          borderRadius: '9999px',
-                          border: '1px solid #a7f3d0'
-                        }}>
-                          <Mail size={12} /> Resend Reminder Sent
-                        </span>
-                      )}
-
                       {a.patient_rating && (
                         <span style={{
                           display: 'inline-flex',
@@ -363,31 +303,6 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                       <Info size={13} /> Rating unlocks after consultation is completed
                     </div>
                   )}
-
-                  {/* Resend Reminder Email trigger */}
-                  {!isCancelled && (
-                    <button
-                      onClick={() => handleSendReminder(a)}
-                      disabled={reminderSendingId === a.id}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        fontSize: '12px',
-                        padding: '8px 14px',
-                        borderRadius: '10px',
-                        border: '1px solid #bfdbfe',
-                        background: '#eff6ff',
-                        color: '#1d4ed8',
-                        fontWeight: 700,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      <Send size={13} />
-                      {reminderSendingId === a.id ? 'Sending Resend...' : 'Email Reminder (Resend)'}
-                    </button>
-                  )}
-
 
                   {/* Cancel Slot */}
                   {!isCancelled && !isCompleted && (

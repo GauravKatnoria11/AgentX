@@ -53,7 +53,7 @@ class EmailReminderService:
         <body>
           <div class="email-container">
             <div class="email-header">
-              <h1 class="brand">🏥 HealthNexus Punjab</h1>
+              <h1 class="brand">🏥 Carelink Punjab</h1>
               <div class="tagline">Official Healthcare Dispatch & Hospital Consultation Network</div>
               <div class="badge-alert">🔔 SAME-DAY APPOINTMENT REMINDER</div>
             </div>
@@ -106,7 +106,7 @@ class EmailReminderService:
             </div>
 
             <div class="email-footer">
-              HealthNexus Health Informatics • Civil Lines & Model Town Medical District, Hoshiarpur, Punjab 146001<br/>
+              Carelink Health Informatics • Civil Lines & Model Town Medical District, Hoshiarpur, Punjab 146001<br/>
               Automated Resend Notification Gateway • Emergency Helpline: 108
             </div>
           </div>
@@ -124,6 +124,11 @@ class EmailReminderService:
         """
         resend.api_key = self.api_key
 
+        # Handle case where appointment or appointment_id is passed
+        if isinstance(appointment, str):
+            found_app = next((a for a in MOCK_DATA["appointments"] if str(a["id"]) == str(appointment)), None)
+            appointment = found_app or {"id": appointment}
+
         doc = next((d for d in MOCK_DATA["doctors"] if str(d["id"]) == str(appointment.get("doctor_id"))), None)
         hosp = next((h for h in MOCK_DATA["hospitals"] if str(h["id"]) == str(appointment.get("hospital_id"))), None)
         patient_user = next((u for u in MOCK_DATA.get("profiles", []) if str(u["id"]) == str(appointment.get("patient_id"))), None)
@@ -140,15 +145,15 @@ class EmailReminderService:
             "reason": appointment.get("reason", "Scheduled Medical Consultation")
         }
 
-        # Determine recipient email
+        # Determine recipient email: logged in user email, appointment patient_email, or override
         to_email = override_recipient or appointment.get("patient_email")
         if not to_email and patient_user:
             to_email = patient_user.get("email")
-        if not to_email:
-            to_email = "patient@healthnexus.internal"
 
-        # If using Resend sandbox (onboarding@resend.dev), Resend only allows sending to the registered account email
-        # or delivered. For testing, we deliver to to_email or fallback
+        # If email is a dummy mock or empty, deliver to the email from which user logged in
+        if not to_email or to_email in ("patient@example.com", "patient@carelink.internal") or to_email.endswith(".internal"):
+            to_email = MOCK_DATA.get("last_active_user_email") or "g200004k@gmail.com"
+
         subject = f"🔔 Appointment Reminder: Consultation with {appt_info['doctor_name']} at {appt_info['hospital_name']}"
         html_content = self.build_appointment_reminder_html(appt_info)
 
@@ -162,7 +167,7 @@ class EmailReminderService:
                 "html": html_content
             })
             email_id = r.get("id") if isinstance(r, dict) else getattr(r, "id", "sent_resend")
-            logger.info(f"Resend email dispatched successfully! ID: {email_id}")
+            logger.info(f"Resend email dispatched successfully! ID: {email_id} to {to_email}")
             return {
                 "success": True,
                 "provider": "resend",
@@ -174,8 +179,32 @@ class EmailReminderService:
         except Exception as exc:
             err_msg = str(exc)
             logger.warning(f"Resend API call notice: {err_msg}")
-            # If in sandbox mode where recipient domain isn't verified or offline,
-            # we gracefully capture the status and return structured diagnostic info
+            # If in sandbox mode where recipient domain isn't verified, Resend permits sending to registered developer email:
+            import re
+            m = re.search(r"\(([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)\)", err_msg)
+            if m:
+                allowed_email = m.group(1)
+                try:
+                    logger.info(f"Resend sandbox fallback: dispatching to registered account email {allowed_email}")
+                    r = resend.Emails.send({
+                        "from": self.from_email,
+                        "to": allowed_email,
+                        "subject": f"🔔 [Patient: {appt_info['patient_name']}] {subject}",
+                        "html": html_content
+                    })
+                    email_id = r.get("id") if isinstance(r, dict) else getattr(r, "id", "sent_resend")
+                    return {
+                        "success": True,
+                        "provider": "resend",
+                        "email_id": email_id,
+                        "recipient": allowed_email,
+                        "intended_recipient": to_email,
+                        "subject": subject,
+                        "sent_at": datetime.now(timezone.utc).isoformat()
+                    }
+                except Exception as inner_e:
+                    err_msg = str(inner_e)
+
             return {
                 "success": False,
                 "provider": "resend",

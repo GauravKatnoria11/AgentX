@@ -141,7 +141,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
           }
         }
 
-        setSuccess('Account created successfully! Welcome to HealthNexus.');
+        setSuccess('Account created successfully! Welcome to Carelink.');
         setTimeout(() => {
           onAuthSuccess(registeredUser);
           onClose();
@@ -224,7 +224,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
               </span>
             </div>
             <h2 style={{ fontSize: '20px', fontWeight: 800, margin: '8px 0 2px', color: '#ffffff' }}>
-              {mode === 'login' ? 'Welcome to HealthNexus' : 'Create Patient Account'}
+              {mode === 'login' ? 'Welcome to Carelink' : 'Create Patient Account'}
             </h2>
             <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0 }}>
               {mode === 'login'

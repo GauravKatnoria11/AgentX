@@ -282,14 +282,28 @@ export default function HospitalSecurePortal({ onExitPortal }) {
   const handleSendReminder = async (app) => {
     setSendingReminderId(app.id);
     try {
-      const res = await sendHospitalAppointmentReminder(app.id, hospitalToken);
+      // Find patient's logged in / registered email
+      let targetEmail = app.patient_email;
+      if (!targetEmail) {
+        try {
+          const stored = JSON.parse(localStorage.getItem('hospital_current_user') || '{}');
+          if (stored.email) targetEmail = stored.email;
+        } catch (err) {}
+      }
+      const res = await sendHospitalAppointmentReminder(app.id, hospitalToken, targetEmail);
       if (res.success) {
-        setActionNotice(`Resend reminder email dispatched to ${app.patient_name || 'Patient'}!`);
+        const dest = res.data?.resend_result?.recipient || targetEmail || 'patient email';
+        setActionNotice(`🔔 Resend reminder email successfully dispatched to ${dest}!`);
         loadDashboard(hospitalToken);
-        setTimeout(() => setActionNotice(''), 3000);
+        setTimeout(() => setActionNotice(''), 4500);
+      } else {
+        setActionNotice(res.message || 'Notice: Email reminder queued.');
+        setTimeout(() => setActionNotice(''), 4000);
       }
     } catch (e) {
       console.error(e);
+      setActionNotice('Error sending reminder email.');
+      setTimeout(() => setActionNotice(''), 4000);
     } finally {
       setSendingReminderId(null);
     }
@@ -934,6 +948,11 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                             <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
                               ☎ {app.patient_phone || '+91-98765-XXXXX'} • Blood: <span style={{ color: '#f87171', fontWeight: 700 }}>{app.blood_group || app.patient_blood_group || 'O+'}</span>
                             </div>
+                            {app.patient_email && (
+                              <div style={{ fontSize: '11px', color: '#38bdf8', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                ✉ {app.patient_email}
+                              </div>
+                            )}
                           </td>
 
                           <td style={{ padding: '14px 20px', maxWidth: '240px' }}>

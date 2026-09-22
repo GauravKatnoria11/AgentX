@@ -106,7 +106,7 @@ class MapService:
             async with httpx.AsyncClient(timeout=3.0) as client:
                 geocode_q = f"{query}, Hoshiarpur, Punjab, India"
                 url = f"https://nominatim.openstreetmap.org/search?q={httpx.URL(geocode_q)}&format=json&limit=5"
-                resp = await client.get(url, headers={"User-Agent": "HealthNexus/2.0"})
+                resp = await client.get(url, headers={"User-Agent": "Carelink/2.0"})
                 if resp.status_code == 200:
                     data = resp.json()
                     for item in data:

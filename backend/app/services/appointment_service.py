@@ -85,6 +85,7 @@ class AppointmentService:
         effective_phone = patient_phone or (patient_profile.get("phone") if patient_profile else None)
         effective_blood = blood_group or (patient_profile.get("blood_group") if patient_profile else None)
         patient_name = patient_profile.get("full_name") if patient_profile else "Patient"
+        patient_email = (patient_profile.get("email") if patient_profile else None) or MOCK_DATA.get("last_active_user_email")
 
         # 6. Save appointment
         appointment_id = str(uuid.uuid4())
@@ -92,6 +93,7 @@ class AppointmentService:
             "id": appointment_id,
             "patient_id": str(patient_id),
             "patient_name": patient_name,
+            "patient_email": patient_email,
             "patient_phone": effective_phone,
             "blood_group": effective_blood,
             "doctor_id": str(doctor_id),
@@ -209,6 +211,7 @@ class AppointmentService:
         res["hospital_name"] = hosp["name"] if hosp else "Hospital"
         res["department_name"] = dept["name"] if dept else "General"
         res["patient_name"] = res.get("patient_name") or (patient["full_name"] if patient else "Patient")
+        res["patient_email"] = res.get("patient_email") or (patient.get("email") if patient else None) or MOCK_DATA.get("last_active_user_email")
         res["patient_phone"] = res.get("patient_phone") or (patient.get("phone") if patient else None)
         res["blood_group"] = res.get("blood_group") or (patient.get("blood_group") if patient else None)
 

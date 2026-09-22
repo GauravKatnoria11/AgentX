@@ -214,6 +214,8 @@ async def get_hospital_dashboard(
         a["doctor_name"] = doc["name"] if doc else "Hospital Specialist"
         a["doctor_specialization"] = doc.get("specialization", "General Medicine") if doc else ""
         a["patient_name"] = a.get("patient_name") or (patient["full_name"] if patient else "Patient")
+        a["patient_phone"] = a.get("patient_phone") or (patient.get("phone") if patient else "+91-98765-XXXXX")
+        a["patient_email"] = a.get("patient_email") or (patient.get("email") if patient else None) or MOCK_DATA.get("last_active_user_email") or "g200004k@gmail.com"
         a["patient_blood_group"] = a.get("blood_group") or (patient.get("blood_group", "Unknown") if patient else "Unknown")
         a["blood_group"] = a["patient_blood_group"]
 
@@ -544,9 +546,14 @@ async def hospital_complete_appointment(
     )
 
 
+class HospitalSendReminderRequest(BaseModel):
+    recipient_email: Optional[str] = None
+
+
 @router.post("/appointments/{appointment_id}/send-reminder", response_model=ApiResponse[Dict[str, Any]])
 async def hospital_send_appointment_reminder(
     appointment_id: str,
+    req: Optional[HospitalSendReminderRequest] = None,
     current_hospital: Dict[str, Any] = Depends(get_current_hospital)
 ):
     """
@@ -562,13 +569,15 @@ async def hospital_send_appointment_reminder(
             detail="Access denied: You can only send reminders for appointments at your hospital."
         )
 
-    res = email_reminder_service.send_appointment_reminder(appointment_id)
+    override_email = req.recipient_email if req and req.recipient_email else None
+    res = email_reminder_service.send_appointment_reminder(appointment, override_recipient=override_email)
     appointment["reminder_sent"] = True
     appointment["reminder_sent_at"] = datetime.now(timezone.utc).isoformat()
+    appointment["reminder_delivery"] = res
 
     return ApiResponse(
         success=True,
-        message=f"Appointment reminder dispatched to patient via Resend ({res.get('recipient', 'patient')})",
+        message=f"Appointment reminder dispatched via Resend to {res.get('recipient', 'patient')}",
         data={"resend_result": res, "appointment": appointment}
     )
 

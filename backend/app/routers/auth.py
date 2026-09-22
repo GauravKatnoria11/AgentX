@@ -43,6 +43,7 @@ async def signup(req: SignUpRequest):
         "updated_at": datetime.now(timezone.utc).isoformat()
     }
     MOCK_DATA["profiles"].append(profile)
+    MOCK_DATA["last_active_user_email"] = profile["email"]
 
     # 5. Issue JWT
     token = create_access_token({"sub": user_id, "role": req.role, "email": clean_email, "full_name": req.full_name})
@@ -93,6 +94,8 @@ async def login(req: LoginRequest):
                 detail="Invalid email or password."
             )
 
+    MOCK_DATA["last_active_user_email"] = user["email"]
+
     token = create_access_token({
         "sub": str(user["id"]),
         "role": user.get("role", "patient"),
@@ -142,6 +145,8 @@ async def oauth_callback(req: OAuthCallbackRequest):
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         MOCK_DATA["profiles"].append(user)
+
+    MOCK_DATA["last_active_user_email"] = user["email"]
 
     token = create_access_token({
         "sub": str(user["id"]),

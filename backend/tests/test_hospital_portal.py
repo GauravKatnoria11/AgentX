@@ -117,3 +117,26 @@ def test_hospital_portal_invalid_credentials():
         "password": "wrong_password"
     })
     assert resp.status_code == 401
+
+
+def test_hospital_portal_send_reminder():
+    ivy_resp = client.post("/api/v1/hospital-portal/auth/login", json={
+        "identifier": "ivy_hsp",
+        "password": "ivy@hsp2026"
+    })
+    assert ivy_resp.status_code == 200
+    token = ivy_resp.json()["data"]["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Dispatch reminder for app-hsp-1
+    remind_resp = client.post(
+        "/api/v1/hospital-portal/appointments/app-hsp-1/send-reminder",
+        json={"recipient_email": "g200004k@gmail.com"},
+        headers=headers
+    )
+    assert remind_resp.status_code == 200
+    data = remind_resp.json()
+    assert data["success"] is True
+    assert "resend_result" in data["data"]
+    assert data["data"]["appointment"]["reminder_sent"] is True
+

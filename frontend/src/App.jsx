@@ -178,7 +178,7 @@ function App() {
       case 'maps':
         return { title: 'Hospital Navigation & ETA', subtitle: 'Google Maps turn-by-turn routing and departure calculator' };
       default:
-        return { title: 'HealthNexus', subtitle: 'Healthcare Discovery & Management Platform' };
+        return { title: 'Carelink', subtitle: 'Healthcare Discovery & Management Platform' };
     }
   };
 
@@ -198,12 +198,12 @@ function App() {
           className="brand-header"
           style={{ cursor: 'pointer' }}
           onClick={() => handleNavigate('hospitals')}
-          title="HealthNexus Patient Portal"
+          title="Carelink Patient Portal"
         >
           <div className="brand-icon">
             <Building2 size={20} />
           </div>
-          <span className="brand-title">HealthNexus</span>
+          <span className="brand-title">Carelink</span>
         </div>
 
         {/* Navigation Items */}

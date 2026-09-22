@@ -46,6 +46,9 @@ async def get_current_user(credentials: Optional[HTTPAuthorizationCredentials] =
         }
         MOCK_DATA["profiles"].append(user)
 
+    if user and user.get("email"):
+        MOCK_DATA["last_active_user_email"] = user["email"]
+
     return user
 
 

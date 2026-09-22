@@ -100,7 +100,7 @@ def test_appointment_resend_reminder_email(patient_token):
     headers = {"Authorization": f"Bearer {patient_token}"}
     resp = client.post(
         "/api/v1/appointments/app-today-remind/send-reminder",
-        json={"recipient_email": "patient.test@healthnexus.internal"},
+        json={"recipient_email": "patient.test@carelink.internal"},
         headers=headers
     )
     assert resp.status_code == 200

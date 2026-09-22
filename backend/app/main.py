@@ -37,7 +37,7 @@ import asyncio
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("Initializing HealthNexus monorepo backend...")
+    logger.info("Initializing Carelink monorepo backend...")
     try:
         from app.services.email_service import email_reminder_service
         res = email_reminder_service.trigger_auto_reminders_for_today()
@@ -45,7 +45,7 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"Initial appointment reminder trigger check: {e}")
     yield
-    logger.info("Shutting down HealthNexus monorepo backend...")
+    logger.info("Shutting down Carelink monorepo backend...")
 
 
 app = FastAPI(

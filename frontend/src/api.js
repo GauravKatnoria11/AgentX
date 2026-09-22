@@ -536,13 +536,14 @@ export const completeHospitalAppointment = async (appointmentId, hospitalToken) 
   return res.json();
 };
 
-export const sendHospitalAppointmentReminder = async (appointmentId, hospitalToken) => {
+export const sendHospitalAppointmentReminder = async (appointmentId, hospitalToken, recipientEmail = null) => {
   const res = await fetch(`${API_BASE}/hospital-portal/appointments/${appointmentId}/send-reminder`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${hospitalToken}`
-    }
+    },
+    body: JSON.stringify({ recipient_email: recipientEmail })
   });
   return res.json();
 };

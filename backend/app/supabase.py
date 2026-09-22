@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 # Real-world Hoshiarpur healthcare mock data store
 MOCK_DATA = {
+    "last_active_user_email": "g200004k@gmail.com",
     "profiles": [
         {
             "id": "11111111-1111-1111-1111-111111111111",
@@ -613,6 +614,7 @@ MOCK_DATA = {
             "id": "app-completed-1",
             "patient_id": "11111111-1111-1111-1111-111111111111",
             "patient_name": "John Doe",
+            "patient_email": "g200004k@gmail.com",
             "patient_phone": "+91-98765-43210",
             "blood_group": "O+",
             "doctor_id": "doc-hsp-1",
@@ -631,6 +633,7 @@ MOCK_DATA = {
             "id": "app-hsp-1",
             "patient_id": "11111111-1111-1111-1111-111111111111",
             "patient_name": "John Doe",
+            "patient_email": "g200004k@gmail.com",
             "patient_phone": "+91-98765-43210",
             "blood_group": "O+",
             "doctor_id": "doc-hsp-1",
@@ -649,6 +652,7 @@ MOCK_DATA = {
             "id": "app-today-remind",
             "patient_id": "11111111-1111-1111-1111-111111111111",
             "patient_name": "John Doe",
+            "patient_email": "g200004k@gmail.com",
             "patient_phone": "+91-98765-43210",
             "blood_group": "O+",
             "doctor_id": "doc-hsp-1",
@@ -667,6 +671,7 @@ MOCK_DATA = {
             "id": "app-hsp-req-1",
             "patient_id": "11111111-1111-1111-1111-111111111111",
             "patient_name": "Ramesh Kumar",
+            "patient_email": "g200004k@gmail.com",
             "patient_phone": "+91-98150-54321",
             "blood_group": "B+",
             "doctor_id": "doc-hsp-2",
