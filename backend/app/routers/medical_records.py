@@ -42,11 +42,15 @@ async def upload_medical_record(
         patient_id=patient_id,
         title=req.title,
         record_type=req.record_type,
+        disease_category=req.disease_category,
+        appointment_id=req.appointment_id,
         doctor_id=req.doctor_id,
         hospital_id=req.hospital_id,
         file_url=req.file_url,
         file_name=req.file_name,
         file_size_bytes=req.file_size_bytes,
+        medicines=req.medicines,
+        diet_plan=req.diet_plan,
         notes=req.notes,
         metadata=req.metadata
     )

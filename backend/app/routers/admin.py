@@ -6,6 +6,7 @@ from app.schemas.hospital import HospitalCreate, HospitalResponse
 from app.schemas.common import ApiResponse
 from app.dependencies import require_role
 from app.services.admin_service import admin_service
+from app.services.medical_record_service import medical_record_service
 from app.supabase import MOCK_DATA
 from app.utils.permissions import log_audit_event
 import uuid
@@ -228,4 +229,108 @@ async def update_emergency_alert_status(
         message=f"Emergency status updated to {req.status}",
         data=alert
     )
+
+
+class SettlePrescriptionRequest(BaseModel):
+    appointment_id: str
+    patient_id: Optional[str] = None
+    doctor_id: Optional[str] = None
+    hospital_id: Optional[str] = None
+    disease_category: str = Field("General Health", description="Disease or Specialty Category")
+    title: str = Field(..., description="Record Title e.g. Cardiology Regimen & Diet Plan")
+    diagnosis: str = Field(..., description="Doctor's clinical diagnosis")
+    medicines: List[Dict[str, Any]] = Field(default_factory=list, description="List of medicines with morning/evening schedule")
+    diet_plan: Optional[Dict[str, Any]] = Field(None, description="Doctor prescribed diet plan")
+    notes: Optional[str] = None
+
+
+@router.post("/prescribe", response_model=ApiResponse[Dict[str, Any]])
+async def settle_patient_prescription(
+    req: SettlePrescriptionRequest,
+    current_user: dict = Depends(require_role(["admin", "staff", "doctor"]))
+):
+    """
+    Enables Doctor/Admin to prescribe and settle medicine regimen (morning, evening, etc.)
+    and personalized diet plan categorized by appointment and disease.
+    """
+    appointment = next((a for a in MOCK_DATA["appointments"] if str(a["id"]) == str(req.appointment_id)), None)
+    
+    patient_id = req.patient_id or (appointment["patient_id"] if appointment else "11111111-1111-1111-1111-111111111111")
+    doctor_id = req.doctor_id or (appointment.get("doctor_id") if appointment else "doc-hsp-1")
+    hospital_id = req.hospital_id or (appointment.get("hospital_id") if appointment else "hosp-hoshiarpur-2")
+
+    # 1. Create or enrich medical record
+    record = medical_record_service.create_record(
+        patient_id=patient_id,
+        title=req.title,
+        record_type="Prescription & Diet Plan",
+        disease_category=req.disease_category,
+        appointment_id=req.appointment_id,
+        doctor_id=doctor_id,
+        hospital_id=hospital_id,
+        medicines=req.medicines,
+        diet_plan=req.diet_plan,
+        notes=f"Clinical Diagnosis: {req.diagnosis}. " + (req.notes or "")
+    )
+
+    # 2. Add to prescriptions table
+    presc_id = f"presc-{uuid.uuid4().hex[:8]}"
+    medication_items = []
+    for m in req.medicines:
+        medication_items.append({
+            "medicine_name": m.get("name") or m.get("medicine_name") or "Medicine",
+            "dosage": m.get("dosage", "1 tablet"),
+            "frequency": m.get("timing_label") or "Morning & Evening",
+            "duration": m.get("duration", "30 days"),
+            "instructions": m.get("instructions", "Take after food")
+        })
+
+    presc_entry = {
+        "id": presc_id,
+        "patient_id": patient_id,
+        "doctor_id": doctor_id,
+        "appointment_id": req.appointment_id,
+        "diagnosis": req.diagnosis,
+        "disease_category": req.disease_category,
+        "medications": medication_items,
+        "diet_plan": req.diet_plan,
+        "instructions": (req.diet_plan.get("doctor_notes") if req.diet_plan else "") or req.notes or "Follow medicine schedule and dietary protocol.",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    MOCK_DATA["prescriptions"].append(presc_entry)
+
+    # 3. Update appointment if linked
+    if appointment:
+        appointment["prescription_id"] = presc_id
+        appointment["status"] = "confirmed"
+        if not appointment.get("notes") or "Prescription" not in appointment.get("notes", ""):
+            appointment["notes"] = (appointment.get("notes", "") + f" [Prescription & Diet Settled for {req.disease_category}]").strip()
+
+    # 4. Notify patient
+    doc = next((d for d in MOCK_DATA["doctors"] if str(d["id"]) == str(doctor_id)), None)
+    doc_name = doc["name"] if doc else "Attending Specialist"
+    MOCK_DATA["notifications"].append({
+        "id": str(uuid.uuid4()),
+        "user_id": str(patient_id),
+        "title": f"Prescription & Diet Plan Settled ({req.disease_category})",
+        "message": f"{doc_name} has prescribed your medicine regimen (morning/evening) and diet plan for appointment #{req.appointment_id}.",
+        "type": "prescription_settled",
+        "is_read": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+
+    log_audit_event(
+        action="admin_settle_prescription_and_diet",
+        resource_type="medical_record",
+        resource_id=record["id"],
+        user_id=str(current_user.get("id")),
+        details={"appointment_id": req.appointment_id, "disease": req.disease_category, "medicines_count": len(req.medicines)}
+    )
+
+    return ApiResponse(
+        success=True,
+        message=f"Medicine regimen and diet plan settled successfully for {req.disease_category}",
+        data={"record": record, "prescription": presc_entry}
+    )
+
 

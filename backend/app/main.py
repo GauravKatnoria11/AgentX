@@ -21,7 +21,8 @@ from app.routers import (
     maps,
     ai,
     admin,
-    emergency
+    emergency,
+    hospital_portal
 )
 
 # Configure logging
@@ -138,6 +139,7 @@ app.include_router(maps.router)
 app.include_router(ai.router)
 app.include_router(admin.router)
 app.include_router(emergency.router)
+app.include_router(hospital_portal.router)
 
 if __name__ == "__main__":
     import uvicorn

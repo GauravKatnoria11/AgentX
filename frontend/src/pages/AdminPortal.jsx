@@ -19,7 +19,13 @@ import {
   X,
   Plus,
   Minus,
-  RefreshCw
+  RefreshCw,
+  Pill,
+  Utensils,
+  Sun,
+  Moon,
+  Sunset,
+  Coffee
 } from 'lucide-react';
 import {
   fetchAdminAnalytics,
@@ -31,7 +37,8 @@ import {
   fetchEmergencyAlerts,
   fetchAdminAuditLogs,
   fetchHospitals,
-  fetchDoctors
+  fetchDoctors,
+  settlePrescription
 } from '../api';
 
 export default function AdminPortal({ onExitAdmin }) {
@@ -66,6 +73,45 @@ export default function AdminPortal({ onExitAdmin }) {
 
   // Status Filter for Appointments
   const [appointmentFilter, setAppointmentFilter] = useState('all'); // 'all' | 'pending' | 'confirmed'
+
+  // Doctor Prescription & Diet Plan State
+  const [selectedPrescribeApp, setSelectedPrescribeApp] = useState(null);
+  const [prescDiseaseCategory, setPrescDiseaseCategory] = useState('Cardiovascular & Hypertension');
+  const [prescTitle, setPrescTitle] = useState('Cardiology Regimen & Pharmacotherapy');
+  const [prescDiagnosis, setPrescDiagnosis] = useState('Mild Hypertension with Dyslipidemia');
+  const [prescMedicines, setPrescMedicines] = useState([
+    {
+      name: 'Telmisartan 40mg',
+      dosage: '1 Tablet',
+      timing: { morning: true, afternoon: false, evening: false, night: false },
+      timing_label: 'Morning (🌅)',
+      meal_relation: 'After Breakfast',
+      duration: '30 Days',
+      instructions: 'Take with warm water at fixed morning time'
+    },
+    {
+      name: 'Atorvastatin 20mg',
+      dosage: '1 Tablet',
+      timing: { morning: false, afternoon: false, evening: false, night: true },
+      timing_label: 'Night (🌙)',
+      meal_relation: 'After Dinner',
+      duration: '30 Days',
+      instructions: 'Take right before bedtime'
+    }
+  ]);
+  const [prescDietPlan, setPrescDietPlan] = useState({
+    title: 'Heart-Healthy Low Sodium Diet Plan',
+    breakfast: '1 bowl steel-cut oats with almonds + 1 boiled apple',
+    lunch: '2 whole-wheat rotis, spinach dal, steamed lauki, cucumber salad',
+    evening_snack: 'Roasted makhana + green tea',
+    dinner: 'Moong dal khichdi / soup (have before 8:00 PM)',
+    foods_to_avoid: 'Pickles, Papad, Fried Pakoras, High Sodium Namkeen',
+    hydration_advice: '2.5 to 3 Liters water daily',
+    doctor_notes: '30 mins morning walk, monitor BP every Monday'
+  });
+  const [prescNotes, setPrescNotes] = useState('');
+  const [isSubmittingPrescription, setIsSubmittingPrescription] = useState(false);
+  const [prescribeSuccessMessage, setPrescribeSuccessMessage] = useState('');
 
   useEffect(() => {
     // If we have an admin token, attempt to verify
@@ -190,6 +236,202 @@ export default function AdminPortal({ onExitAdmin }) {
       console.error('Failed to allot appointment timing:', e);
     } finally {
       setIsSubmittingAllotment(false);
+    }
+  };
+
+  // Open Prescribe Modal for a specific appointment
+  const handleOpenPrescribeModal = (app) => {
+    setSelectedPrescribeApp(app);
+    const reasonLower = (app?.reason || '').toLowerCase();
+    const isOrtho = reasonLower.includes('knee') || reasonLower.includes('joint') || reasonLower.includes('arthritis') || reasonLower.includes('bone');
+    const isDiabetes = reasonLower.includes('sugar') || reasonLower.includes('diabetes') || reasonLower.includes('glucose');
+
+    let disease = 'Cardiovascular & Hypertension';
+    let title = 'Cardiology Consultation & Pharmacotherapy';
+    let diagnosis = 'Mild Hypertension with Dyslipidemia';
+    let meds = [
+      {
+        name: 'Telmisartan 40mg',
+        dosage: '1 Tablet',
+        timing: { morning: true, afternoon: false, evening: false, night: false },
+        timing_label: 'Morning (🌅)',
+        meal_relation: 'After Breakfast',
+        duration: '30 Days',
+        instructions: 'Take with warm water at fixed morning time'
+      },
+      {
+        name: 'Atorvastatin 20mg',
+        dosage: '1 Tablet',
+        timing: { morning: false, afternoon: false, evening: false, night: true },
+        timing_label: 'Night (🌙)',
+        meal_relation: 'After Dinner',
+        duration: '30 Days',
+        instructions: 'Take right before bedtime'
+      }
+    ];
+    let diet = {
+      title: 'Heart-Healthy Low Sodium Diet Plan',
+      breakfast: '1 bowl steel-cut oats with almonds + 1 boiled apple',
+      lunch: '2 whole-wheat rotis, spinach dal, steamed lauki, cucumber salad',
+      evening_snack: 'Roasted makhana + green tea',
+      dinner: 'Moong dal khichdi / soup (have before 8:00 PM)',
+      foods_to_avoid: 'Pickles, Papad, Fried Pakoras, High Sodium Namkeen',
+      hydration_advice: '2.5 to 3 Liters water daily',
+      doctor_notes: '30 mins morning walk, monitor BP every Monday'
+    };
+
+    if (isOrtho) {
+      disease = 'Orthopedics & Joint Trauma';
+      title = 'Knee Osteoarthritis & Joint Care Regimen';
+      diagnosis = 'Grade-2 Bilateral Knee Osteoarthritis';
+      meds = [
+        {
+          name: 'Glucosamine Sulfate 500mg',
+          dosage: '1 Capsule',
+          timing: { morning: true, afternoon: false, evening: true, night: false },
+          timing_label: 'Morning & Evening (🌅 🌆)',
+          meal_relation: 'After Food',
+          duration: '60 Days',
+          instructions: 'Joint cartilage protection'
+        },
+        {
+          name: 'Calcium Citrate + Vitamin D3',
+          dosage: '1 Tablet',
+          timing: { morning: true, afternoon: false, evening: false, night: false },
+          timing_label: 'Morning (🌅)',
+          meal_relation: 'After Breakfast',
+          duration: '30 Days',
+          instructions: 'Take with warm milk'
+        }
+      ];
+      diet = {
+        title: 'Anti-inflammatory & Bone Density Protocol',
+        breakfast: 'Sprouted moong & chana bowl + warm fortified milk',
+        lunch: 'Bajra / Jowar roti, low-fat palak paneer, curd with flaxseed',
+        evening_snack: 'Soaked almonds, walnuts, warm turmeric milk',
+        dinner: 'Vegetable stew with paneer/tofu and pumpkin soup',
+        foods_to_avoid: 'Refined sugar, bakery maida biscuits, inflammatory trans-fats',
+        hydration_advice: '3 Liters water daily',
+        doctor_notes: 'Static isometric knee exercises 15 mins morning and evening'
+      };
+    } else if (isDiabetes) {
+      disease = 'Type-2 Diabetes & Endocrine';
+      title = 'Glycemic Stabilization & Endocrine Regimen';
+      diagnosis = 'Type-2 Diabetes Mellitus with elevated HbA1c';
+      meds = [
+        {
+          name: 'Metformin 500mg SR',
+          dosage: '1 Tablet',
+          timing: { morning: true, afternoon: false, evening: true, night: false },
+          timing_label: 'Morning & Evening (🌅 🌆)',
+          meal_relation: 'With Meals',
+          duration: '90 Days',
+          instructions: 'Take halfway through meals'
+        }
+      ];
+      diet = {
+        title: 'Low Glycemic Index (GI) Diabetic Protocol',
+        breakfast: 'Besan chilla or methi paratha without oil + green chutney',
+        lunch: '1 small bowl brown rice, yellow moong dal, bitter gourd (karela)',
+        evening_snack: 'Roasted chana + chia seeds in water',
+        dinner: 'Clear vegetable soup + 1 multigrain chapati',
+        foods_to_avoid: 'Refined sweets (mithai), white bread, fruit juices with sugar',
+        hydration_advice: 'Methi dana lukewarm water first thing in the morning',
+        doctor_notes: 'Check fasting glucose weekly. 45 mins morning walk.'
+      };
+    }
+
+    setPrescDiseaseCategory(disease);
+    setPrescTitle(title);
+    setPrescDiagnosis(diagnosis);
+    setPrescMedicines(meds);
+    setPrescDietPlan(diet);
+    setPrescNotes(`Appointment #${app.id} clinical consultation.`);
+    setPrescribeSuccessMessage('');
+  };
+
+  const handleAddMedicine = () => {
+    setPrescMedicines(prev => [
+      ...prev,
+      {
+        name: '',
+        dosage: '1 Tablet',
+        timing: { morning: true, afternoon: false, evening: true, night: false },
+        timing_label: 'Morning & Evening (🌅 🌆)',
+        meal_relation: 'After Food',
+        duration: '30 Days',
+        instructions: ''
+      }
+    ]);
+  };
+
+  const handleRemoveMedicine = (idx) => {
+    setPrescMedicines(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleTimingToggle = (idx, timingKey) => {
+    setPrescMedicines(prev => prev.map((med, i) => {
+      if (i !== idx) return med;
+      const updatedTiming = { ...med.timing, [timingKey]: !med.timing[timingKey] };
+      const activeKeys = Object.keys(updatedTiming).filter(k => updatedTiming[k]);
+      let label = activeKeys.map(k => k.charAt(0).toUpperCase() + k.slice(1)).join(' & ');
+      if (activeKeys.length === 0) label = 'As Directed / SOS';
+      return {
+        ...med,
+        timing: updatedTiming,
+        timing_label: label
+      };
+    }));
+  };
+
+  const handleMedicineChange = (idx, field, value) => {
+    setPrescMedicines(prev => prev.map((med, i) => i === idx ? { ...med, [field]: value } : med));
+  };
+
+  const handleDietChange = (field, value) => {
+    setPrescDietPlan(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmitPrescription = async (e) => {
+    e.preventDefault();
+    if (!selectedPrescribeApp) return;
+    setIsSubmittingPrescription(true);
+    try {
+      const avoidList = (prescDietPlan.foods_to_avoid || '')
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      const payload = {
+        appointment_id: selectedPrescribeApp.id,
+        patient_id: selectedPrescribeApp.patient_id,
+        doctor_id: selectedPrescribeApp.doctor_id,
+        hospital_id: selectedPrescribeApp.hospital_id,
+        disease_category: prescDiseaseCategory,
+        title: prescTitle,
+        diagnosis: prescDiagnosis,
+        medicines: prescMedicines,
+        diet_plan: {
+          ...prescDietPlan,
+          foods_to_avoid: avoidList
+        },
+        notes: prescNotes
+      };
+
+      const res = await settlePrescription(payload, adminToken);
+      if (res.success) {
+        setPrescribeSuccessMessage(`Medical regimen and diet plan settled for ${selectedPrescribeApp.patient_name || 'Patient'} (${prescDiseaseCategory})!`);
+        const updated = await fetchAdminAppointments(null, adminToken);
+        if (updated?.success) setAppointments(updated.data || []);
+        setTimeout(() => {
+          setSelectedPrescribeApp(null);
+          setPrescribeSuccessMessage('');
+        }, 1800);
+      }
+    } catch (err) {
+      console.error('Failed to settle prescription:', err);
+    } finally {
+      setIsSubmittingPrescription(false);
     }
   };
 
@@ -328,6 +570,7 @@ export default function AdminPortal({ onExitAdmin }) {
         <nav style={{ padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
           {[
             { id: 'appointments', label: 'Appointment Requests & Allotment', icon: Calendar, badge: appointments.filter(a => a.status === 'pending').length },
+            { id: 'prescriptions', label: 'Prescribe Medicines & Diet Plan', icon: Pill },
             { id: 'emergency', label: 'Emergency SOS Console', icon: Flame, badge: emergencyAlerts.length, badgeColor: '#dc2626' },
             { id: 'beds', label: 'Hospitals & ICU Beds', icon: Bed },
             { id: 'queue', label: 'Live Clinic Queue', icon: Clock },
@@ -414,6 +657,7 @@ export default function AdminPortal({ onExitAdmin }) {
           <div>
             <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: '#ffffff' }}>
               {activeTab === 'appointments' && 'Incoming Patient Appointment Requests'}
+              {activeTab === 'prescriptions' && 'Doctor Prescribe Medicine Regimen & Diet Plan Studio'}
               {activeTab === 'emergency' && 'Live District Emergency SOS Monitor'}
               {activeTab === 'beds' && 'Hoshiarpur Hospital & ICU Bed Allocation'}
               {activeTab === 'queue' && 'Daily Outpatient Queue Manager'}
@@ -559,22 +803,42 @@ export default function AdminPortal({ onExitAdmin }) {
                               </div>
                             </td>
                             <td style={{ padding: '14px 20px', textAlign: 'right' }}>
-                              <button
-                                onClick={() => handleOpenAllotModal(app)}
-                                style={{
-                                  padding: '8px 16px',
-                                  borderRadius: '8px',
-                                  border: 'none',
-                                  background: isPending ? '#2563eb' : '#1e293b',
-                                  color: '#ffffff',
-                                  fontSize: '12px',
-                                  fontWeight: 700,
-                                  cursor: 'pointer',
-                                  transition: 'background 0.15s ease'
-                                }}
-                              >
-                                {isPending ? 'Allot Timing & Confirm' : 'Reschedule / Edit'}
-                              </button>
+                              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', alignItems: 'center' }}>
+                                <button
+                                  onClick={() => handleOpenAllotModal(app)}
+                                  style={{
+                                    padding: '8px 14px',
+                                    borderRadius: '8px',
+                                    border: 'none',
+                                    background: isPending ? '#2563eb' : '#1e293b',
+                                    color: '#ffffff',
+                                    fontSize: '12px',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    transition: 'background 0.15s ease'
+                                  }}
+                                >
+                                  {isPending ? 'Allot Timing' : 'Reschedule'}
+                                </button>
+                                <button
+                                  onClick={() => handleOpenPrescribeModal(app)}
+                                  style={{
+                                    padding: '8px 14px',
+                                    borderRadius: '8px',
+                                    border: '1px solid #10b981',
+                                    background: 'rgba(16, 185, 129, 0.15)',
+                                    color: '#34d399',
+                                    fontSize: '12px',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '5px'
+                                  }}
+                                >
+                                  <Pill size={13} /> Prescribe Regimen
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         );
@@ -582,6 +846,96 @@ export default function AdminPortal({ onExitAdmin }) {
                     )}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+
+          {/* TAB: PRESCRIPTIONS & DIET PLAN STUDIO */}
+          {activeTab === 'prescriptions' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {/* Introduction Banner */}
+              <div style={{ background: '#064e3b', border: '1px solid #059669', borderRadius: '14px', padding: '20px', color: '#ffffff', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div style={{ background: '#10b981', padding: '10px', borderRadius: '10px', color: '#ffffff' }}>
+                    <Pill size={24} />
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: '17px', fontWeight: 800, margin: 0 }}>Doctor Pharmacotherapy & Clinical Diet Studio</h3>
+                    <div style={{ fontSize: '12px', color: '#a7f3d0', marginTop: '2px' }}>
+                      Settle pill schedules (morning, evening, night) and customized diet plans categorized by appointment and disease.
+                    </div>
+                  </div>
+                </div>
+                <div style={{ fontSize: '12px', background: 'rgba(0,0,0,0.3)', padding: '6px 14px', borderRadius: '20px', fontWeight: 700 }}>
+                  🩺 Ready to Prescribe
+                </div>
+              </div>
+
+              {/* Patient Appointment Selection Cards */}
+              <div>
+                <h4 style={{ fontSize: '15px', fontWeight: 700, color: '#f8fafc', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Calendar size={16} color="#60a5fa" /> Select Patient Appointment to Prescribe:
+                </h4>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+                  {appointments.map((app) => (
+                    <div
+                      key={app.id}
+                      style={{
+                        background: '#111c38',
+                        border: '1px solid #1e293b',
+                        borderRadius: '12px',
+                        padding: '18px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        gap: '14px'
+                      }}
+                    >
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <span style={{ fontSize: '11px', background: '#1e293b', color: '#93c5fd', padding: '3px 8px', borderRadius: '6px', fontWeight: 700 }}>
+                            Appointment #{app.id}
+                          </span>
+                          <span style={{ fontSize: '11px', color: app.prescription_id ? '#34d399' : '#f59e0b', fontWeight: 700 }}>
+                            {app.prescription_id ? '✓ Prescribed' : '● Needs Prescription'}
+                          </span>
+                        </div>
+
+                        <h4 style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff', marginTop: '8px' }}>
+                          {app.patient_name || 'Patient'}
+                        </h4>
+                        <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
+                          ☎ {app.patient_phone || '+91-98765-XXXXX'} • {app.hospital_name}
+                        </div>
+
+                        <div style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '8px', background: '#0b1329', padding: '8px 10px', borderRadius: '8px' }}>
+                          <strong>Reason / Condition:</strong> {app.reason || 'General Followup'}
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => handleOpenPrescribeModal(app)}
+                        style={{
+                          width: '100%',
+                          padding: '10px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          background: '#10b981',
+                          color: '#ffffff',
+                          fontWeight: 700,
+                          fontSize: '13px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <Pill size={15} /> Open Medicine & Diet Studio
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -1016,6 +1370,431 @@ export default function AdminPortal({ onExitAdmin }) {
           </div>
         </div>
       )}
+
+      {/* MODAL 2: DOCTOR PRESCRIBE MEDICINES & DIET PLAN */}
+      {selectedPrescribeApp && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }}>
+          <div style={{ background: '#111c38', border: '1px solid #1e293b', borderRadius: '16px', padding: '28px', width: '100%', maxWidth: '780px', color: '#ffffff', maxHeight: '92vh', overflowY: 'auto' }}>
+            {/* Modal Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px', borderBottom: '1px solid #1e293b', paddingBottom: '16px' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ background: '#10b981', padding: '6px', borderRadius: '8px' }}>
+                    <Pill size={18} color="#ffffff" />
+                  </div>
+                  <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: '#ffffff' }}>
+                    Doctor Clinical Prescription & Diet Protocol Studio
+                  </h3>
+                </div>
+                <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+                  Patient: <strong style={{ color: '#38bdf8' }}>{selectedPrescribeApp.patient_name || 'Patient'}</strong> • Appointment #{selectedPrescribeApp.id} • {selectedPrescribeApp.hospital_name}
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedPrescribeApp(null)}
+                style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '4px' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {prescribeSuccessMessage ? (
+              <div style={{ padding: '30px 20px', textAlign: 'center', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid #10b981', borderRadius: '12px' }}>
+                <CheckCircle2 size={44} color="#10b981" style={{ margin: '0 auto 12px' }} />
+                <h4 style={{ fontSize: '18px', fontWeight: 800, color: '#10b981' }}>Prescription & Diet Plan Settled!</h4>
+                <p style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '6px' }}>
+                  {prescribeSuccessMessage}
+                </p>
+                <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+                  Patient notification dispatched and medical record timeline updated.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmitPrescription} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {/* 1. Disease Classification & Diagnosis */}
+                <div style={{ background: '#0b1329', padding: '16px', borderRadius: '12px', border: '1px solid #1e293b', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    1. Disease Specialty & Clinical Diagnosis
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+                    <div>
+                      <label style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', display: 'block', marginBottom: '4px' }}>
+                        DISEASE / CLINICAL CATEGORY
+                      </label>
+                      <select
+                        value={prescDiseaseCategory}
+                        onChange={(e) => setPrescDiseaseCategory(e.target.value)}
+                        style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #334155', background: '#111c38', color: '#ffffff', fontSize: '13px' }}
+                      >
+                        <option value="Cardiovascular & Hypertension">Cardiovascular & Hypertension</option>
+                        <option value="Orthopedics & Joint Trauma">Orthopedics & Joint Trauma</option>
+                        <option value="Type-2 Diabetes & Endocrine">Type-2 Diabetes & Endocrine</option>
+                        <option value="Pulmonology & Respiratory Care">Pulmonology & Respiratory Care</option>
+                        <option value="Gastroenterology & Digestive Health">Gastroenterology & Digestive Health</option>
+                        <option value="Neurology & Stroke Care">Neurology & Stroke Care</option>
+                        <option value="General Health & Infection Control">General Health & Infection Control</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', display: 'block', marginBottom: '4px' }}>
+                        CONSULTATION / RECORD TITLE
+                      </label>
+                      <input
+                        type="text"
+                        value={prescTitle}
+                        onChange={(e) => setPrescTitle(e.target.value)}
+                        required
+                        style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #334155', background: '#111c38', color: '#ffffff', fontSize: '13px' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', display: 'block', marginBottom: '4px' }}>
+                      CLINICAL DIAGNOSIS & REASON FOR REGIMEN
+                    </label>
+                    <input
+                      type="text"
+                      value={prescDiagnosis}
+                      onChange={(e) => setPrescDiagnosis(e.target.value)}
+                      required
+                      placeholder="e.g. Mild Hypertension with Elevated LDL Cholesterol..."
+                      style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #334155', background: '#111c38', color: '#ffffff', fontSize: '13px' }}
+                    />
+                  </div>
+                </div>
+
+                {/* 2. Medicine Regimen (Morning, Afternoon, Evening, Night) */}
+                <div style={{ background: '#0b1329', padding: '16px', borderRadius: '12px', border: '1px solid #1e293b', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 800, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Pill size={15} /> 2. Medicine Schedule & Pill Timing (Morning/Evening)
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleAddMedicine}
+                      style={{
+                        padding: '5px 12px',
+                        borderRadius: '6px',
+                        background: '#1e293b',
+                        border: '1px solid #3b82f6',
+                        color: '#60a5fa',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      <Plus size={13} /> Add Medicine
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {prescMedicines.map((med, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          background: '#111c38',
+                          border: '1px solid #1e293b',
+                          borderRadius: '10px',
+                          padding: '14px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '10px'
+                        }}
+                      >
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                          <input
+                            type="text"
+                            placeholder="Medicine Name (e.g. Telmisartan 40mg)"
+                            value={med.name}
+                            onChange={(e) => handleMedicineChange(idx, 'name', e.target.value)}
+                            required
+                            style={{ flex: 2, padding: '8px 10px', borderRadius: '6px', border: '1px solid #334155', background: '#0b1329', color: '#ffffff', fontSize: '13px' }}
+                          />
+                          <input
+                            type="text"
+                            placeholder="Dosage (e.g. 1 Tab)"
+                            value={med.dosage}
+                            onChange={(e) => handleMedicineChange(idx, 'dosage', e.target.value)}
+                            style={{ width: '110px', padding: '8px 10px', borderRadius: '6px', border: '1px solid #334155', background: '#0b1329', color: '#ffffff', fontSize: '13px' }}
+                          />
+                          <select
+                            value={med.meal_relation}
+                            onChange={(e) => handleMedicineChange(idx, 'meal_relation', e.target.value)}
+                            style={{ width: '130px', padding: '8px 10px', borderRadius: '6px', border: '1px solid #334155', background: '#0b1329', color: '#ffffff', fontSize: '12px' }}
+                          >
+                            <option value="After Food">After Food</option>
+                            <option value="Before Food">Before Food</option>
+                            <option value="With Meals">With Meals</option>
+                            <option value="Empty Stomach">Empty Stomach</option>
+                          </select>
+                          <input
+                            type="text"
+                            placeholder="Duration (30 Days)"
+                            value={med.duration}
+                            onChange={(e) => handleMedicineChange(idx, 'duration', e.target.value)}
+                            style={{ width: '100px', padding: '8px 10px', borderRadius: '6px', border: '1px solid #334155', background: '#0b1329', color: '#ffffff', fontSize: '12px' }}
+                          />
+                          {prescMedicines.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveMedicine(idx)}
+                              style={{ background: '#7f1d1d', border: 'none', color: '#fca5a5', padding: '6px 8px', borderRadius: '6px', cursor: 'pointer' }}
+                            >
+                              <X size={14} />
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Interactive Pill Timings: Morning, Afternoon, Evening, Night */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                          <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>
+                            Select Intake Times:
+                          </div>
+
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            {/* Morning Toggle */}
+                            <button
+                              type="button"
+                              onClick={() => handleTimingToggle(idx, 'morning')}
+                              style={{
+                                padding: '5px 10px',
+                                borderRadius: '6px',
+                                border: med.timing?.morning ? '1px solid #f59e0b' : '1px solid #334155',
+                                background: med.timing?.morning ? '#78350f' : '#1e293b',
+                                color: med.timing?.morning ? '#fde68a' : '#94a3b8',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              <Sun size={12} /> Morning
+                            </button>
+
+                            {/* Afternoon Toggle */}
+                            <button
+                              type="button"
+                              onClick={() => handleTimingToggle(idx, 'afternoon')}
+                              style={{
+                                padding: '5px 10px',
+                                borderRadius: '6px',
+                                border: med.timing?.afternoon ? '1px solid #ea580c' : '1px solid #334155',
+                                background: med.timing?.afternoon ? '#7c2d12' : '#1e293b',
+                                color: med.timing?.afternoon ? '#fed7aa' : '#94a3b8',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              <Coffee size={12} /> Afternoon
+                            </button>
+
+                            {/* Evening Toggle */}
+                            <button
+                              type="button"
+                              onClick={() => handleTimingToggle(idx, 'evening')}
+                              style={{
+                                padding: '5px 10px',
+                                borderRadius: '6px',
+                                border: med.timing?.evening ? '1px solid #8b5cf6' : '1px solid #334155',
+                                background: med.timing?.evening ? '#4c1d95' : '#1e293b',
+                                color: med.timing?.evening ? '#ddd6fe' : '#94a3b8',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              <Sunset size={12} /> Evening
+                            </button>
+
+                            {/* Night Toggle */}
+                            <button
+                              type="button"
+                              onClick={() => handleTimingToggle(idx, 'night')}
+                              style={{
+                                padding: '5px 10px',
+                                borderRadius: '6px',
+                                border: med.timing?.night ? '1px solid #3b82f6' : '1px solid #334155',
+                                background: med.timing?.night ? '#1e3a8a' : '#1e293b',
+                                color: med.timing?.night ? '#bfdbfe' : '#94a3b8',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              <Moon size={12} /> Night
+                            </button>
+                          </div>
+                        </div>
+
+                        <input
+                          type="text"
+                          placeholder="Specific physician instructions (e.g. Take with warm water before sleep)..."
+                          value={med.instructions}
+                          onChange={(e) => handleMedicineChange(idx, 'instructions', e.target.value)}
+                          style={{ width: '100%', padding: '6px 10px', borderRadius: '6px', border: '1px solid #334155', background: '#0b1329', color: '#cbd5e1', fontSize: '11px' }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 3. Doctor Prescribed Diet Plan */}
+                <div style={{ background: '#0b1329', padding: '16px', borderRadius: '12px', border: '1px solid #1e293b', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Utensils size={15} /> 3. Doctor's Prescribed Diet Plan (Nutritional Protocol)
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', display: 'block', marginBottom: '4px' }}>
+                      DIET PLAN TITLE
+                    </label>
+                    <input
+                      type="text"
+                      value={prescDietPlan.title}
+                      onChange={(e) => handleDietChange('title', e.target.value)}
+                      placeholder="e.g. Heart-Healthy Low Sodium Diet Plan"
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #334155', background: '#111c38', color: '#ffffff', fontSize: '12px' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px' }}>
+                    <div>
+                      <label style={{ fontSize: '11px', fontWeight: 700, color: '#f59e0b', display: 'block', marginBottom: '3px' }}>
+                        🥣 BREAKFAST PLAN
+                      </label>
+                      <input
+                        type="text"
+                        value={prescDietPlan.breakfast}
+                        onChange={(e) => handleDietChange('breakfast', e.target.value)}
+                        placeholder="Oats with almonds, boiled apple..."
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #334155', background: '#111c38', color: '#ffffff', fontSize: '12px' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '11px', fontWeight: 700, color: '#10b981', display: 'block', marginBottom: '3px' }}>
+                        🥗 LUNCH PLAN
+                      </label>
+                      <input
+                        type="text"
+                        value={prescDietPlan.lunch}
+                        onChange={(e) => handleDietChange('lunch', e.target.value)}
+                        placeholder="2 whole-wheat rotis, dal, cucumber salad..."
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #334155', background: '#111c38', color: '#ffffff', fontSize: '12px' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '11px', fontWeight: 700, color: '#d97706', display: 'block', marginBottom: '3px' }}>
+                        🍵 EVENING SNACK
+                      </label>
+                      <input
+                        type="text"
+                        value={prescDietPlan.evening_snack}
+                        onChange={(e) => handleDietChange('evening_snack', e.target.value)}
+                        placeholder="Roasted makhana, green tea..."
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #334155', background: '#111c38', color: '#ffffff', fontSize: '12px' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '11px', fontWeight: 700, color: '#818cf8', display: 'block', marginBottom: '3px' }}>
+                        🍲 DINNER PLAN
+                      </label>
+                      <input
+                        type="text"
+                        value={prescDietPlan.dinner}
+                        onChange={(e) => handleDietChange('dinner', e.target.value)}
+                        placeholder="Moong dal khichdi / clear soup (before 8 PM)..."
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #334155', background: '#111c38', color: '#ffffff', fontSize: '12px' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '11px', fontWeight: 700, color: '#f87171', display: 'block', marginBottom: '3px' }}>
+                      🚫 FOODS TO STRICTLY AVOID (Comma-separated)
+                    </label>
+                    <input
+                      type="text"
+                      value={prescDietPlan.foods_to_avoid}
+                      onChange={(e) => handleDietChange('foods_to_avoid', e.target.value)}
+                      placeholder="Pickles, Papad, Fried Pakoras, High Sodium Namkeen, White Sugar"
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #334155', background: '#111c38', color: '#ffffff', fontSize: '12px' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    <div>
+                      <label style={{ fontSize: '11px', fontWeight: 700, color: '#38bdf8', display: 'block', marginBottom: '3px' }}>
+                        💧 HYDRATION ADVICE
+                      </label>
+                      <input
+                        type="text"
+                        value={prescDietPlan.hydration_advice}
+                        onChange={(e) => handleDietChange('hydration_advice', e.target.value)}
+                        placeholder="2.5 to 3 Liters water daily"
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #334155', background: '#111c38', color: '#ffffff', fontSize: '12px' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '11px', fontWeight: 700, color: '#34d399', display: 'block', marginBottom: '3px' }}>
+                        📋 DOCTOR'S LIFESTYLE GUIDANCE
+                      </label>
+                      <input
+                        type="text"
+                        value={prescDietPlan.doctor_notes}
+                        onChange={(e) => handleDietChange('doctor_notes', e.target.value)}
+                        placeholder="30 mins brisk morning walk, monitor BP weekly..."
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #334155', background: '#111c38', color: '#ffffff', fontSize: '12px' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Submit & Cancel Buttons */}
+                <div style={{ display: 'flex', gap: '12px', marginTop: '6px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPrescribeApp(null)}
+                    style={{ flex: 1, padding: '12px', borderRadius: '8px', background: '#1e293b', border: 'none', color: '#ffffff', fontWeight: 700, cursor: 'pointer' }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingPrescription}
+                    style={{ flex: 2, padding: '12px', borderRadius: '8px', background: '#10b981', border: 'none', color: '#ffffff', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                  >
+                    <Save size={16} />
+                    {isSubmittingPrescription ? 'Settling Prescription...' : 'Settle & Issue Prescription Regimen'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+

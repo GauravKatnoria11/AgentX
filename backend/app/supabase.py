@@ -801,16 +801,173 @@ MOCK_DATA = {
         {
             "id": "rec-1",
             "patient_id": "11111111-1111-1111-1111-111111111111",
+            "appointment_id": "app-hsp-1",
+            "disease_category": "Cardiovascular & Hypertension",
             "doctor_id": "doc-hsp-1",
             "hospital_id": "hosp-hoshiarpur-2",
-            "title": "Coronary Calcium & Lipid Panel Report",
-            "record_type": "Lab Report",
+            "title": "Cardiology Consultation & Post-Angio Recovery Regimen",
+            "record_type": "Prescription & Clinical Regimen",
             "file_url": "https://storage.example.com/records/rec-hsp-1.pdf",
             "file_name": "cardiac_profile_hoshiarpur.pdf",
             "file_size_bytes": 412000,
-            "notes": "Cholesterol 210 mg/dL. ECG demonstrates normal sinus rhythm with adequate ventricular function.",
-            "metadata": {"cholesterol": "210 mg/dL", "facility": "Ivy Hospital Hoshiarpur"},
-            "created_at": "2026-09-20T14:30:00Z"
+            "notes": "ECG demonstrated normal sinus rhythm. Blood pressure controlled at 134/86 mmHg. Advised strictly to follow cardiac low-sodium nutrition protocol.",
+            "medicines": [
+                {
+                    "name": "Telmisartan 40mg + Hydrochlorothiazide 12.5mg",
+                    "dosage": "1 Tablet",
+                    "timing": {"morning": True, "afternoon": False, "evening": False, "night": False},
+                    "timing_label": "Morning (🌅)",
+                    "meal_relation": "After Breakfast",
+                    "duration": "30 Days",
+                    "instructions": "Take at fixed 8:30 AM slot with water. Avoid skipping doses."
+                },
+                {
+                    "name": "Atorvastatin Calcium 20mg",
+                    "dosage": "1 Tablet",
+                    "timing": {"morning": False, "afternoon": False, "evening": False, "night": True},
+                    "timing_label": "Night (🌙)",
+                    "meal_relation": "After Dinner",
+                    "duration": "30 Days",
+                    "instructions": "Cholesterol synthesis regulator. Take right before sleep."
+                },
+                {
+                    "name": "Aspirin 75mg Dispersible",
+                    "dosage": "1 Tablet",
+                    "timing": {"morning": True, "afternoon": False, "evening": True, "night": False},
+                    "timing_label": "Morning & Evening (🌅 🌆)",
+                    "meal_relation": "After Food",
+                    "duration": "30 Days",
+                    "instructions": "Antiplatelet support. Never consume on empty stomach."
+                }
+            ],
+            "diet_plan": {
+                "title": "Heart-Healthy Low Sodium Diet Plan (Cardiology Dept)",
+                "breakfast": "1 bowl steel-cut oats with crushed almonds + skimmed milk + 1 boiled apple.",
+                "lunch": "2 whole-wheat rotis (multigrain), boiled dal with light cumin seasoning, steamed bottle gourd (lauki), raw cucumber salad without added salt.",
+                "evening_snack": "Unsalted roasted makhana (foxnuts) + green tea or warm lemon cinnamon water.",
+                "dinner": "Light yellow moong dal khichdi or vegetable clear soup with sautéed broccoli and tofu (finish dinner before 8:00 PM).",
+                "foods_to_avoid": [
+                    "Pickles (Achaar) & Papad",
+                    "Deep-Fried Samosas & Pakoras",
+                    "Processed Canned Soups",
+                    "Red Meat & Excess Butter/Ghee",
+                    "High-Sodium Namkeen"
+                ],
+                "hydration_advice": "Drink 2.5 to 3 Liters of filtered water throughout the day. Avoid heavy fluid intake after 9:00 PM.",
+                "doctor_notes": "Maintain 30 minutes of moderate morning walking. Avoid lifting weights exceeding 10kg. Monitor BP every Monday."
+            },
+            "metadata": {"cholesterol": "210 mg/dL", "facility": "Ivy Hospital Hoshiarpur", "bp": "134/86 mmHg"},
+            "created_at": "2026-09-21T11:00:00Z"
+        },
+        {
+            "id": "rec-2",
+            "patient_id": "11111111-1111-1111-1111-111111111111",
+            "appointment_id": "app-hsp-req-1",
+            "disease_category": "Orthopedics & Joint Trauma",
+            "doctor_id": "doc-hsp-2",
+            "hospital_id": "hosp-hoshiarpur-4",
+            "title": "Bilateral Knee Osteoarthritis & Cartilage Support",
+            "record_type": "Prescription & Rehabilitation",
+            "file_url": "https://storage.example.com/records/rec-hsp-2.pdf",
+            "file_name": "orthopedic_xray_hoshiarpur.pdf",
+            "file_size_bytes": 528000,
+            "notes": "Bilateral knee joint space reduction Grade-2. Joint crepitus present. Advised anti-inflammatory regimen and joint mobility physio.",
+            "medicines": [
+                {
+                    "name": "Glucosamine Sulfate & Chondroitin 500mg",
+                    "dosage": "1 Capsule",
+                    "timing": {"morning": True, "afternoon": False, "evening": True, "night": False},
+                    "timing_label": "Morning & Evening (🌅 🌆)",
+                    "meal_relation": "After Food",
+                    "duration": "60 Days",
+                    "instructions": "Joint cartilage repair & synovial fluid support."
+                },
+                {
+                    "name": "Calcium Citrate Malate + Vitamin D3 60K",
+                    "dosage": "1 Tablet",
+                    "timing": {"morning": True, "afternoon": False, "evening": False, "night": False},
+                    "timing_label": "Morning (🌅)",
+                    "meal_relation": "After Breakfast",
+                    "duration": "30 Days",
+                    "instructions": "Consume with warm cow milk for maximum calcium bioavailability."
+                },
+                {
+                    "name": "Aceclofenac 100mg + Paracetamol 325mg (SOS)",
+                    "dosage": "1 Tablet",
+                    "timing": {"morning": False, "afternoon": False, "evening": False, "night": False},
+                    "timing_label": "As Needed (SOS for severe pain)",
+                    "meal_relation": "Strictly After Meals",
+                    "duration": "7 Days SOS",
+                    "instructions": "Take only if joint swelling or acute pain flares up. Maximum 2 per day."
+                }
+            ],
+            "diet_plan": {
+                "title": "Anti-inflammatory & Bone Density Protocol",
+                "breakfast": "Sprouted moong & boiled black chana salad with lemon juice + 1 glass fortified milk.",
+                "lunch": "Bajra/Jowar roti with palak paneer (low-fat) or curd with roasted flaxseed powder.",
+                "evening_snack": "Handful of walnuts, soaked almonds, and warm turmeric golden milk.",
+                "dinner": "Mixed vegetable stew with steamed tofu / paneer, bowl of warm pumpkin soup.",
+                "foods_to_avoid": [
+                    "Refined White Sugar & Soda Drinks",
+                    "Excessive Maida (Bakery Biscuits)",
+                    "Inflammatory Hydrogenated Trans-Fats"
+                ],
+                "hydration_advice": "3 Liters daily to keep cartilage tissues properly hydrated.",
+                "doctor_notes": "Perform quadriceps static isometric knee contraction exercises 15 mins morning and evening. Avoid sitting cross-legged on the floor."
+            },
+            "metadata": {"stage": "Grade-2 OA", "facility": "Fortis Escorts / Civil Hospital"},
+            "created_at": "2026-09-18T16:00:00Z"
+        },
+        {
+            "id": "rec-3",
+            "patient_id": "11111111-1111-1111-1111-111111111111",
+            "appointment_id": "app-hsp-1",
+            "disease_category": "Type-2 Diabetes & Endocrine",
+            "doctor_id": "doc-hsp-1",
+            "hospital_id": "hosp-1",
+            "title": "Glycemic Control & Endocrine Evaluation",
+            "record_type": "Prescription & Lab Followup",
+            "file_url": "https://storage.example.com/records/rec-hsp-3.pdf",
+            "file_name": "diabetes_hba1c_hoshiarpur.pdf",
+            "file_size_bytes": 315000,
+            "notes": "Fasting blood sugar 138 mg/dL, HbA1c 7.1%. Titrated biguanide dosage to optimize metabolic glucose handling.",
+            "medicines": [
+                {
+                    "name": "Metformin Hydrochloride 500mg SR",
+                    "dosage": "1 Tablet",
+                    "timing": {"morning": True, "afternoon": False, "evening": True, "night": False},
+                    "timing_label": "Morning & Evening (🌅 🌆)",
+                    "meal_relation": "With Meals",
+                    "duration": "90 Days",
+                    "instructions": "Take halfway through breakfast and dinner to avoid gastrointestinal discomfort."
+                },
+                {
+                    "name": "Teneligliptin 20mg",
+                    "dosage": "1 Tablet",
+                    "timing": {"morning": True, "afternoon": False, "evening": False, "night": False},
+                    "timing_label": "Morning (🌅)",
+                    "meal_relation": "Before Breakfast",
+                    "duration": "90 Days",
+                    "instructions": "DPP-4 inhibitor. Take 15 minutes before the morning meal."
+                }
+            ],
+            "diet_plan": {
+                "title": "Low Glycemic Index (GI) Diabetic Nutritional Plan",
+                "breakfast": "Methi (fenugreek) paratha cooked without oil or Besan chilla with mint coriander chutney.",
+                "lunch": "1 small bowl brown rice, thick yellow moong dal, stir-fried bitter gourd (karela) or ladyfinger, large cucumber & radish salad.",
+                "evening_snack": "Roasted chana with black pepper + chia seeds soaked in water.",
+                "dinner": "Clear vegetable soup followed by 1 multi-grain chapati and mushroom/soya curry (dinner before 8:00 PM).",
+                "foods_to_avoid": [
+                    "Refined Sugar, Jaggery & Indian Sweets (Mithai)",
+                    "White Bread, Naan & Potatoes",
+                    "Fruit Juices with Added Sugar",
+                    "Packaged Biscuits & Sweetened Yogurts"
+                ],
+                "hydration_advice": "Drink methi-dana (fenugreek) infused lukewarm water first thing in the morning on an empty stomach.",
+                "doctor_notes": "Log fasting blood glucose every Saturday morning. Aim for HbA1c < 6.7% in next quarter review."
+            },
+            "metadata": {"hba1c": "7.1%", "fasting_sugar": "138 mg/dL"},
+            "created_at": "2026-09-12T09:30:00Z"
         }
     ],
     "followups": [

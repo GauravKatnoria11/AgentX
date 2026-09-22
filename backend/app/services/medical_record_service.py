@@ -43,11 +43,15 @@ class MedicalRecordService:
         patient_id: str,
         title: str,
         record_type: str,
+        disease_category: Optional[str] = "General Medicine",
+        appointment_id: Optional[str] = None,
         doctor_id: Optional[str] = None,
         hospital_id: Optional[str] = None,
         file_url: Optional[str] = None,
         file_name: Optional[str] = None,
         file_size_bytes: Optional[int] = None,
+        medicines: Optional[List[Dict[str, Any]]] = None,
+        diet_plan: Optional[Dict[str, Any]] = None,
         notes: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
@@ -55,6 +59,8 @@ class MedicalRecordService:
         record = {
             "id": rec_id,
             "patient_id": str(patient_id),
+            "disease_category": disease_category or "General Medicine",
+            "appointment_id": appointment_id,
             "doctor_id": str(doctor_id) if doctor_id else None,
             "hospital_id": str(hospital_id) if hospital_id else None,
             "title": title,
@@ -62,6 +68,8 @@ class MedicalRecordService:
             "file_url": file_url,
             "file_name": file_name,
             "file_size_bytes": file_size_bytes,
+            "medicines": medicines or [],
+            "diet_plan": diet_plan or None,
             "notes": notes,
             "metadata": metadata or {},
             "created_at": datetime.now(timezone.utc).isoformat()

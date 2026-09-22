@@ -30,6 +30,7 @@ import AIGuidePage from './pages/AIGuidePage';
 import MapsPage from './pages/MapsPage';
 import EmergencyPage from './pages/EmergencyPage';
 import AdminPortal from './pages/AdminPortal';
+import HospitalSecurePortal from './pages/HospitalSecurePortal';
 import DoctorDrawer from './components/DoctorDrawer';
 
 function App() {
@@ -52,15 +53,33 @@ function App() {
   useEffect(() => {
     initGuestAuth();
 
-    // Check if URL has /admin or #admin
-    if (window.location.pathname.includes('/admin') || window.location.hash.includes('admin')) {
+    // Check secret query param, path, or hash for Hospital Authority Portal
+    const urlParams = new URLSearchParams(window.location.search);
+    const portalParam = urlParams.get('portal');
+    if (
+      portalParam === 'hospital' ||
+      portalParam === 'hospital-secure' ||
+      portalParam === 'facility' ||
+      window.location.pathname.includes('/hospital-portal') ||
+      window.location.pathname.includes('/facility-admin') ||
+      window.location.pathname.includes('/hosp-login') ||
+      window.location.hash.includes('hospital-portal') ||
+      window.location.hash.includes('hospital-secure')
+    ) {
+      setCurrentPage('hospital-portal');
+    } else if (window.location.pathname.includes('/admin') || window.location.hash.includes('admin')) {
       setCurrentPage('admin');
     }
 
-    // Secret keyboard shortcut Alt+A to open admin panel without exposing any admin button to regular patients
+    // Secret keyboard shortcuts:
+    // Alt+A: Central System Admin
+    // Alt+H: Isolated Hospital Authority Portal
     const handleKeyDown = (e) => {
       if (e.altKey && (e.key === 'a' || e.key === 'A')) {
         setCurrentPage((prev) => (prev === 'admin' ? 'hospitals' : 'admin'));
+      }
+      if (e.altKey && (e.key === 'h' || e.key === 'H')) {
+        setCurrentPage((prev) => (prev === 'hospital-portal' ? 'hospitals' : 'hospital-portal'));
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -142,7 +161,12 @@ function App() {
     }
   };
 
-  // If in Admin Mode, render the standalone Admin Portal layout completely
+  // If in Hospital Authority Portal Mode, render the isolated facility console completely
+  if (currentPage === 'hospital-portal' || currentPage === 'hospital-secure') {
+    return <HospitalSecurePortal onExitPortal={() => setCurrentPage('hospitals')} />;
+  }
+
+  // If in Central Admin Mode, render the standalone Admin Portal layout completely
   if (currentPage === 'admin') {
     return <AdminPortal onExitAdmin={() => setCurrentPage('hospitals')} />;
   }

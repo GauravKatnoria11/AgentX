@@ -321,3 +321,82 @@ export const fetchAdminAuditLogs = async (adminToken) => {
   return res.json();
 };
 
+export const settlePrescription = async (payload, adminToken) => {
+  const res = await fetch(`${API_BASE}/admin/prescribe`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${adminToken || authToken}`
+    },
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+};
+
+// Hospital Secure Dedicated Portal
+export const loginHospitalPortal = async (hospitalIdentifier, password) => {
+  const res = await fetch(`${API_BASE}/hospital-portal/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ hospital_identifier: hospitalIdentifier, password })
+  });
+  return res.json();
+};
+
+export const fetchHospitalDashboard = async (hospitalToken) => {
+  const res = await fetch(`${API_BASE}/hospital-portal/dashboard`, {
+    headers: { 'Authorization': `Bearer ${hospitalToken}` }
+  });
+  return res.json();
+};
+
+export const allotHospitalAppointment = async (appointmentId, payload, hospitalToken) => {
+  const res = await fetch(`${API_BASE}/hospital-portal/appointments/${appointmentId}/allot`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${hospitalToken}`
+    },
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+};
+
+export const prescribeHospitalPatient = async (appointmentId, payload, hospitalToken) => {
+  const res = await fetch(`${API_BASE}/hospital-portal/appointments/${appointmentId}/prescribe`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${hospitalToken}`
+    },
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+};
+
+export const updateHospitalPortalBeds = async (payload, hospitalToken) => {
+  const res = await fetch(`${API_BASE}/hospital-portal/beds`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${hospitalToken}`
+    },
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+};
+
+export const updateHospitalEmergencyCase = async (alertId, payload, hospitalToken) => {
+  const res = await fetch(`${API_BASE}/hospital-portal/emergency/${alertId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${hospitalToken}`
+    },
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+};
+
+
+
