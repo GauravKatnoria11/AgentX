@@ -1,10 +1,23 @@
-from typing import Optional
+from typing import Optional, List
 from fastapi import APIRouter, Query
-from app.schemas.map import RouteResponse, DistanceMatrixResponse, ETAResponse
+from app.schemas.map import RouteResponse, DistanceMatrixResponse, ETAResponse, LocationSearchResult
 from app.schemas.common import ApiResponse
 from app.services.map_service import map_service
 
 router = APIRouter(prefix="/api/v1/maps", tags=["Google Maps & Navigation"])
+
+
+@router.get("/search-location", response_model=ApiResponse[List[LocationSearchResult]])
+async def search_location(
+    query: str = Query("", description="Location, colony, or landmark search in Hoshiarpur")
+):
+    results = await map_service.search_locations(query=query)
+    return ApiResponse(
+        success=True,
+        message="Locations found",
+        data=[LocationSearchResult(**item) for item in results]
+    )
+
 
 
 @router.get("/route", response_model=ApiResponse[RouteResponse])

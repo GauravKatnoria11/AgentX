@@ -20,7 +20,8 @@ from app.routers import (
     followups,
     maps,
     ai,
-    admin
+    admin,
+    emergency
 )
 
 # Configure logging
@@ -136,6 +137,7 @@ app.include_router(followups.router)
 app.include_router(maps.router)
 app.include_router(ai.router)
 app.include_router(admin.router)
+app.include_router(emergency.router)
 
 if __name__ == "__main__":
     import uvicorn

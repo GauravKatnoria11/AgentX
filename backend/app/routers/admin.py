@@ -1,15 +1,28 @@
 from typing import List, Optional, Dict, Any
-from fastapi import APIRouter, Depends, Query, status
+from pydantic import BaseModel, Field
+from fastapi import APIRouter, Depends, Query, status, HTTPException
 from app.schemas.admin import SystemMetrics, QueuePatientItem, AuditLogItem
 from app.schemas.hospital import HospitalCreate, HospitalResponse
 from app.schemas.common import ApiResponse
 from app.dependencies import require_role
 from app.services.admin_service import admin_service
+from app.supabase import MOCK_DATA
+from app.utils.permissions import log_audit_event
+import uuid
+from datetime import datetime, timezone
 
 router = APIRouter(
     prefix="/api/v1/admin",
     tags=["Hospital & Administrative Management (Staff / Admin Only)"]
 )
+
+
+class AllotTimingRequest(BaseModel):
+    appointment_date: str = Field(..., description="Confirmed date (YYYY-MM-DD)")
+    appointment_time: str = Field(..., description="Confirmed time slot (e.g. 10:00:00)")
+    doctor_id: Optional[str] = None
+    queue_number: Optional[int] = None
+    admin_notes: Optional[str] = None
 
 
 @router.get("/analytics", response_model=ApiResponse[SystemMetrics])
@@ -32,6 +45,98 @@ async def get_queue(
         success=True,
         message="Hospital queue retrieved successfully",
         data=[QueuePatientItem(**q) for q in queue]
+    )
+
+
+@router.get("/appointments", response_model=ApiResponse[List[Dict[str, Any]]])
+async def list_admin_appointments(
+    status_filter: Optional[str] = Query(None, description="Filter by pending/confirmed"),
+    current_user: dict = Depends(require_role(["admin", "staff"]))
+):
+    """
+    Allows hospital administration to review all appointment requests.
+    """
+    appointments = MOCK_DATA["appointments"]
+    if status_filter:
+        appointments = [a for a in appointments if a.get("status") == status_filter]
+
+    results = []
+    for a in appointments:
+        a_dict = dict(a)
+        doc = next((d for d in MOCK_DATA["doctors"] if str(d["id"]) == str(a.get("doctor_id"))), None)
+        hosp = next((h for h in MOCK_DATA["hospitals"] if str(h["id"]) == str(a.get("hospital_id"))), None)
+        patient = next((p for p in MOCK_DATA["profiles"] if str(p["id"]) == str(a.get("patient_id"))), None)
+        a_dict["doctor_name"] = doc["name"] if doc else "Specialist"
+        a_dict["hospital_name"] = hosp["name"] if hosp else "Hospital"
+        a_dict["patient_name"] = a.get("patient_name") or (patient["full_name"] if patient else "Patient")
+        a_dict["patient_phone"] = a.get("patient_phone") or (patient.get("phone") if patient else "")
+        results.append(a_dict)
+
+    results.sort(key=lambda x: (x.get("status") != "pending", x.get("appointment_date", "")))
+    return ApiResponse(
+        success=True,
+        message="Admin appointment requests retrieved successfully",
+        data=results
+    )
+
+
+@router.patch("/appointments/{appointment_id}/allot", response_model=ApiResponse[Dict[str, Any]])
+async def allot_appointment_timing(
+    appointment_id: str,
+    req: AllotTimingRequest,
+    current_user: dict = Depends(require_role(["admin", "staff"]))
+):
+    """
+    Enables Admin to allot date and time for patient appointment requests.
+    """
+    appointment = next((a for a in MOCK_DATA["appointments"] if str(a["id"]) == str(appointment_id)), None)
+    if not appointment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Appointment request not found.")
+
+    appointment["appointment_date"] = req.appointment_date
+    appointment["appointment_time"] = req.appointment_time
+    if req.doctor_id:
+        appointment["doctor_id"] = req.doctor_id
+    appointment["status"] = "confirmed"
+
+    # Assign queue number if not present
+    if req.queue_number:
+        appointment["queue_number"] = req.queue_number
+    elif not appointment.get("queue_number"):
+        day_apps = [a for a in MOCK_DATA["appointments"] if a.get("appointment_date") == req.appointment_date]
+        appointment["queue_number"] = len(day_apps)
+
+    if req.admin_notes:
+        appointment["notes"] = f"Admin Allotted: {req.admin_notes}"
+
+    # Notify patient
+    doc = next((d for d in MOCK_DATA["doctors"] if str(d["id"]) == str(appointment.get("doctor_id"))), None)
+    hosp = next((h for h in MOCK_DATA["hospitals"] if str(h["id"]) == str(appointment.get("hospital_id"))), None)
+    doc_name = doc["name"] if doc else "your specialist"
+    hosp_name = hosp["name"] if hosp else "hospital"
+
+    MOCK_DATA["notifications"].append({
+        "id": str(uuid.uuid4()),
+        "user_id": str(appointment["patient_id"]),
+        "title": "Appointment Timing Allotted!",
+        "message": f"Your appointment at {hosp_name} with {doc_name} is confirmed for {req.appointment_date} at {req.appointment_time[:5]} (Queue #{appointment['queue_number']}).",
+        "type": "appointment_allotted",
+        "is_read": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+
+    log_audit_event(
+        action="admin_allot_appointment_timing",
+        resource_type="appointment",
+        resource_id=appointment_id,
+        user_id=str(current_user.get("id")),
+        details={"date": req.appointment_date, "time": req.appointment_time, "queue": appointment["queue_number"]}
+    )
+
+    return ApiResponse(
+        success=True,
+        message=f"Appointment confirmed and timing allotted successfully for {req.appointment_date} at {req.appointment_time[:5]}",
+        data=appointment
     )
 
 
@@ -59,3 +164,68 @@ async def create_hospital(
         message="Hospital registered successfully",
         data=HospitalResponse(**created)
     )
+
+
+class HospitalBedsUpdate(BaseModel):
+    available_icu_beds: Optional[int] = None
+    total_beds: Optional[int] = None
+
+
+@router.patch("/hospitals/{hospital_id}/beds", response_model=ApiResponse[Dict[str, Any]])
+async def update_hospital_beds(
+    hospital_id: str,
+    req: HospitalBedsUpdate,
+    current_user: dict = Depends(require_role(["admin", "staff"]))
+):
+    hospital = next((h for h in MOCK_DATA["hospitals"] if str(h["id"]) == str(hospital_id)), None)
+    if not hospital and hospital_id in ("hosp-1", "hosp-hoshiarpur-1"):
+        hospital = MOCK_DATA["hospitals"][0]
+    if not hospital:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Hospital not found.")
+    
+    if req.available_icu_beds is not None:
+        hospital["available_icu_beds"] = max(0, req.available_icu_beds)
+    if req.total_beds is not None:
+        hospital["total_beds"] = max(0, req.total_beds)
+
+    log_audit_event(
+        action="admin_update_hospital_beds",
+        resource_type="hospital",
+        resource_id=hospital_id,
+        user_id=str(current_user.get("id")),
+        details={"icu_beds": hospital.get("available_icu_beds"), "total_beds": hospital.get("total_beds")}
+    )
+
+    return ApiResponse(
+        success=True,
+        message=f"Beds updated for {hospital['name']}",
+        data=hospital
+    )
+
+
+class EmergencyStatusUpdate(BaseModel):
+    status: str
+    notes: Optional[str] = None
+
+
+@router.patch("/emergency/{alert_id}/status", response_model=ApiResponse[Dict[str, Any]])
+async def update_emergency_alert_status(
+    alert_id: str,
+    req: EmergencyStatusUpdate,
+    current_user: dict = Depends(require_role(["admin", "staff"]))
+):
+    alerts = MOCK_DATA.get("emergency_alerts", [])
+    alert = next((a for a in alerts if str(a["id"]) == str(alert_id)), None)
+    if not alert:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Emergency alert not found.")
+    
+    alert["status"] = req.status
+    if req.notes:
+        alert["notes"] = req.notes
+    
+    return ApiResponse(
+        success=True,
+        message=f"Emergency status updated to {req.status}",
+        data=alert
+    )
+

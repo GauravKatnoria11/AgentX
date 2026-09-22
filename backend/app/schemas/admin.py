@@ -18,7 +18,7 @@ class QueuePatientItem(BaseModel):
     doctor_name: str
     department_name: str
     appointment_time: str
-    queue_number: int
+    queue_number: Optional[int] = 1
     status: str
 
 

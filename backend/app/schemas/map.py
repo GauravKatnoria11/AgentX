@@ -38,3 +38,12 @@ class ETAResponse(BaseModel):
     eta_timestamp: str
     suggested_departure_time: str
     traffic_condition: str
+
+
+class LocationSearchResult(BaseModel):
+    name: str
+    formatted_address: str
+    latitude: float
+    longitude: float
+    locality: Optional[str] = None
+

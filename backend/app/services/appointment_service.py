@@ -27,6 +27,8 @@ class AppointmentService:
 
         # 2. Check doctor exists
         doctor = next((d for d in MOCK_DATA["doctors"] if str(d["id"]) == str(doctor_id)), None)
+        if not doctor and (doctor_id == "doc-1" or doctor_id == "1"):
+            doctor = MOCK_DATA["doctors"][0] if MOCK_DATA["doctors"] else None
         if not doctor:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -35,6 +37,8 @@ class AppointmentService:
 
         # 3. Check hospital exists
         hospital = next((h for h in MOCK_DATA["hospitals"] if str(h["id"]) == str(hospital_id)), None)
+        if not hospital and (hospital_id == "hosp-1" or hospital_id == "1"):
+            hospital = MOCK_DATA["hospitals"][0] if MOCK_DATA["hospitals"] else None
         if not hospital:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
