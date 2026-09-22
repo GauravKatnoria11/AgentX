@@ -24,6 +24,21 @@ MOCK_DATA = {
             "updated_at": "2026-01-01T00:00:00Z"
         },
         {
+            "id": "55555555-5555-5555-5555-555555555555",
+            "role": "patient",
+            "full_name": "Gaganjit Singh",
+            "email": "gaganjitsingh003@gmail.com",
+            "phone": "+91-98765-12345",
+            "date_of_birth": "1995-04-15",
+            "gender": "Male",
+            "blood_group": "B+",
+            "address": "Model Town, Hoshiarpur, Punjab",
+            "emergency_contact": "+91-98765-54321",
+            "metadata": {"provider": "google"},
+            "created_at": "2026-01-01T00:00:00Z",
+            "updated_at": "2026-01-01T00:00:00Z"
+        },
+        {
             "id": "22222222-2222-2222-2222-222222222222",
             "role": "doctor",
             "full_name": "Dr. Gurinder Singh",

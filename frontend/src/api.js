@@ -22,25 +22,86 @@ const headers = () => {
   return h;
 };
 
-// Initial auto-login for patient experience if no token
+// Get stored user or null
 export const initGuestAuth = async () => {
-  if (!authToken) {
-    try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'patient@example.com', password: 'password123' })
-      });
-      const json = await res.json();
-      if (json.success && json.data?.access_token) {
-        setAuthToken(json.data.access_token);
-        return json.data.user;
-      }
-    } catch (e) {
-      console.warn('Backend login fallback:', e);
+  return getStoredUser();
+};
+
+export const loginUser = async (email, password) => {
+  const res = await fetch(`${API_BASE}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+  const json = await res.json();
+  if (json.success && json.data?.access_token) {
+    setAuthToken(json.data.access_token);
+    if (json.data.user) {
+      localStorage.setItem('auth_user', JSON.stringify(json.data.user));
     }
   }
-  return null;
+  return json;
+};
+
+export const signupUser = async (payload) => {
+  const res = await fetch(`${API_BASE}/auth/signup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const json = await res.json();
+  if (json.success && json.data?.access_token) {
+    setAuthToken(json.data.access_token);
+    if (json.data.user) {
+      localStorage.setItem('auth_user', JSON.stringify(json.data.user));
+    }
+  }
+  return json;
+};
+
+export const oauthCallback = async (payload) => {
+  const res = await fetch(`${API_BASE}/auth/oauth-callback`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const json = await res.json();
+  if (json.success && json.data?.access_token) {
+    setAuthToken(json.data.access_token);
+    if (json.data.user) {
+      localStorage.setItem('auth_user', JSON.stringify(json.data.user));
+    }
+  }
+  return json;
+};
+
+export const fetchCurrentUser = async () => {
+  if (!authToken) return null;
+  try {
+    const res = await fetch(`${API_BASE}/auth/me`, { headers: headers() });
+    const json = await res.json();
+    if (json.success && json.data) {
+      localStorage.setItem('auth_user', JSON.stringify(json.data));
+      return json.data;
+    }
+  } catch (e) {
+    console.error('Failed to fetch current user:', e);
+  }
+  return getStoredUser();
+};
+
+export const logoutUser = () => {
+  setAuthToken('');
+  localStorage.removeItem('auth_user');
+};
+
+export const getStoredUser = () => {
+  try {
+    const raw = localStorage.getItem('auth_user');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
 };
 
 // Hospitals

@@ -241,7 +241,24 @@ CREATE TABLE IF NOT EXISTS public.audit_logs (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 16. Doctor Reviews & Ratings Table
+CREATE TABLE IF NOT EXISTS public.doctor_reviews (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    doctor_id UUID NOT NULL REFERENCES public.doctors(id) ON DELETE CASCADE,
+    doctor_name VARCHAR(255) NOT NULL,
+    patient_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    patient_name VARCHAR(255) NOT NULL,
+    appointment_id UUID REFERENCES public.appointments(id) ON DELETE SET NULL,
+    hospital_id UUID REFERENCES public.hospitals(id) ON DELETE SET NULL,
+    rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    comment TEXT,
+    tags TEXT[] DEFAULT '{}',
+    verified_consultation BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Indexes for high performance
+CREATE INDEX IF NOT EXISTS idx_doctor_reviews_doc ON public.doctor_reviews(doctor_id);
 CREATE INDEX IF NOT EXISTS idx_hospitals_city ON public.hospitals(city);
 CREATE INDEX IF NOT EXISTS idx_doctors_hospital ON public.doctors(hospital_id);
 CREATE INDEX IF NOT EXISTS idx_doctors_dept ON public.doctors(department_id);
