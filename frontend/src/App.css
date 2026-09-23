@@ -702,6 +702,12 @@ textarea:focus {
   border-color: #bdc1c6;
 }
 
+.emergency-login-header-btn:hover {
+  background: #b91c1c !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.45) !important;
+}
+
 .google-divider {
   display: flex;
   align-items: center;

@@ -94,7 +94,7 @@ export default function DoctorDrawer({ doctor, onClose, onBookClick, onChatClick
 
   const avgRating = reviewsData?.average_rating || doctor.rating || 4.9;
   const totalReviews = reviewsData?.total_reviews || 0;
-  const canRate = reviewsData?.can_rate || false;
+  const canRate = reviewsData?.can_rate !== undefined ? reviewsData.can_rate : true;
   const reviewsList = reviewsData?.reviews || [];
 
   return (
@@ -179,7 +179,7 @@ export default function DoctorDrawer({ doctor, onClose, onBookClick, onChatClick
                 Verified Patient Reviews
               </h3>
               <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                Exclusively from completed consultations
+                Patient clinical reviews & consultation ratings
               </div>
             </div>
 

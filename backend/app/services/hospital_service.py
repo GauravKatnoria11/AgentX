@@ -21,6 +21,7 @@ class HospitalService:
         hospital_type: Optional[str] = None,
         service: Optional[str] = None,
         disease: Optional[str] = None,
+        scheme: Optional[str] = None,
         emergency_only: bool = False,
         user_lat: Optional[float] = None,
         user_lon: Optional[float] = None,
@@ -46,6 +47,11 @@ class HospitalService:
                 matched_disease = any(disease_lower in d.lower() for d in h.get("diseases_treated", [])) or \
                                   any(disease_lower in s.lower() for s in h.get("services", []))
                 if not matched_disease:
+                    continue
+            if scheme:
+                scheme_lower = scheme.lower()
+                matched_scheme = any(scheme_lower in sc.lower() for sc in h.get("government_schemes", []))
+                if not matched_scheme:
                     continue
 
             h_dict = dict(h)
@@ -108,6 +114,7 @@ class HospitalService:
                 query_lower in h.get("address", "").lower() or
                 any(query_lower in s.lower() for s in h.get("services", [])) or
                 any(query_lower in d.lower() for d in h.get("diseases_treated", [])) or
+                any(query_lower in sc.lower() for sc in h.get("government_schemes", [])) or
                 (query_lower == "general" and "hospital" in h["name"].lower())
             )
             if h_match:

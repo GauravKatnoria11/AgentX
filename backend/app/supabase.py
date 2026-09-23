@@ -109,6 +109,14 @@ MOCK_DATA = {
             "min_fee": 20.0,
             "max_fee": 100.0,
             "fee_tier": "Government Subsidized (₹50)",
+            "government_schemes": [
+                "Ayushman Bharat (PM-JAY)",
+                "Mukh Mantri Sehat Bima Yojana (AB-SSBY)",
+                "Janani Shishu Suraksha Karyakram (JSSK)",
+                "Rashtriya Bal Swasthya Karyakram (RBSK)",
+                "National TB Elimination Program (Nikshay)",
+                "Free Generic Medicine Scheme"
+            ],
             "transportation_facilities": {
                 "ambulance_hotline": "108 / +91-1882-220022",
                 "ambulance_fleet": ["Punjab 108 Emergency Ambulance", "Govt Civil Hospital Trauma Mobile Unit"],
@@ -153,6 +161,13 @@ MOCK_DATA = {
             "min_fee": 500.0,
             "max_fee": 1200.0,
             "fee_tier": "Super-Specialty Tertiary (₹700)",
+            "government_schemes": [
+                "Ayushman Bharat (PM-JAY)",
+                "Ayushman Bharat Sarbat Sehat Bima Yojana (AB-SSBY)",
+                "ECHS (Ex-Servicemen Contributory Health Scheme)",
+                "CGHS (Central Government Health Scheme)",
+                "Chief Minister Cancer Relief Fund (Punjab)"
+            ],
             "transportation_facilities": {
                 "ambulance_hotline": "+91-1882-500108",
                 "ambulance_fleet": ["2x Level-3 Advanced Cardiac Life Support (ACLS) Ambulances with Ventilators", "1x Neonatal Transport Van"],
@@ -196,6 +211,11 @@ MOCK_DATA = {
             "min_fee": 350.0,
             "max_fee": 700.0,
             "fee_tier": "Private Multi-Specialty (₹450)",
+            "government_schemes": [
+                "Ayushman Bharat (PM-JAY)",
+                "Ayushman Bharat Sarbat Sehat Bima Yojana (AB-SSBY)",
+                "ECHS Empanelled"
+            ],
             "transportation_facilities": {
                 "ambulance_hotline": "+91-1882-241501",
                 "ambulance_fleet": ["1x Basic Life Support Ambulance", "1x NICU Incubator Ambulance"],
@@ -238,6 +258,11 @@ MOCK_DATA = {
             "min_fee": 300.0,
             "max_fee": 650.0,
             "fee_tier": "Orthopedic Care Center (₹400)",
+            "government_schemes": [
+                "Ayushman Bharat (PM-JAY)",
+                "ECHS Empanelled (Orthopedics & Spine)",
+                "ESI (Employees' State Insurance Scheme)"
+            ],
             "transportation_facilities": {
                 "ambulance_hotline": "+91-1882-255309",
                 "ambulance_fleet": ["Trauma Stretcher Van", "Spine Immobilization Ambulance"],
@@ -280,6 +305,11 @@ MOCK_DATA = {
             "min_fee": 250.0,
             "max_fee": 600.0,
             "fee_tier": "Neuro & General Critical (₹350)",
+            "government_schemes": [
+                "Ayushman Bharat (PM-JAY)",
+                "Ayushman Bharat Sarbat Sehat Bima Yojana (AB-SSBY)",
+                "Punjab Govt Employees Health Insurance"
+            ],
             "transportation_facilities": {
                 "ambulance_hotline": "+91-1882-234209",
                 "ambulance_fleet": ["Apex Rapid Response Mobile ER", "Basic BLS Ambulance"],
@@ -322,6 +352,11 @@ MOCK_DATA = {
             "min_fee": 400.0,
             "max_fee": 850.0,
             "fee_tier": "Cardiac Specialty & CCU (₹500)",
+            "government_schemes": [
+                "Ayushman Bharat (PM-JAY Cardiology)",
+                "ECHS Empanelled (Cardiac Emergency)",
+                "CGHS Empanelled"
+            ],
             "transportation_facilities": {
                 "ambulance_hotline": "+91-1882-277108",
                 "ambulance_fleet": ["Lifeline Cardiac Mobile ICU with Telemetry & Defibrillator", "Emergency Thrombolysis Ambulance"],
@@ -364,6 +399,11 @@ MOCK_DATA = {
             "min_fee": 200.0,
             "max_fee": 500.0,
             "fee_tier": "Eye Care & Day Surgery (₹300)",
+            "government_schemes": [
+                "Ayushman Bharat (PM-JAY Cataract & Retina)",
+                "National Blindness Control Programme (Free Cataract)",
+                "ECHS Empanelled (Ophthalmology)"
+            ],
             "transportation_facilities": {
                 "ambulance_hotline": "+91-1882-225605",
                 "ambulance_fleet": ["Patient Transfer Van"],

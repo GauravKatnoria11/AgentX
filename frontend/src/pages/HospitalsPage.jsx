@@ -26,6 +26,7 @@ import {
   Stethoscope,
   DollarSign,
   ArrowUpDown,
+  Landmark,
   Map as MapIcon
 } from 'lucide-react';
 import { fetchHospitals, searchHospitals, searchLocation } from '../api';
@@ -51,6 +52,15 @@ const DISEASE_FILTERS = [
   { id: 'kidney', label: 'Dialysis', query: 'dialysis', icon: Activity },
   { id: 'eye', label: 'Eye Care', query: 'eye', icon: Eye },
   { id: 'poison', label: 'Emergency', query: 'emergency', icon: ShieldAlert }
+];
+
+const GOVERNMENT_SCHEMES_FILTER = [
+  { id: 'all', label: 'All Schemes' },
+  { id: 'pmjay', label: 'Ayushman Bharat (PM-JAY)', query: 'PM-JAY' },
+  { id: 'ssby', label: 'Sarbat Sehat Bima (AB-SSBY)', query: 'AB-SSBY' },
+  { id: 'echs', label: 'ECHS (Ex-Servicemen)', query: 'ECHS' },
+  { id: 'cghs', label: 'CGHS Central Govt', query: 'CGHS' },
+  { id: 'jssk', label: 'Free Maternal (JSSK)', query: 'JSSK' }
 ];
 
 const getHospitalBannerTheme = (hospital, index) => {
@@ -96,6 +106,7 @@ export default function HospitalsPage({
   const [feeFilter, setFeeFilter] = useState('all'); // 'all' | 'subsidized' | 'mid' | 'premium'
   const [sortBy, setSortBy] = useState('best'); // 'best' | 'fee_asc' | 'distance' | 'rating'
   const [emergencyOnly, setEmergencyOnly] = useState(false);
+  const [selectedScheme, setSelectedScheme] = useState('all');
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -117,7 +128,7 @@ export default function HospitalsPage({
 
   useEffect(() => {
     loadHospitals();
-  }, [emergencyOnly, selectedDisease, activeLocation, feeFilter, sortBy]);
+  }, [emergencyOnly, selectedDisease, selectedScheme, activeLocation, feeFilter, sortBy]);
 
   // Debounced Google Maps Location Search for any Hoshiarpur location
   useEffect(() => {
@@ -207,9 +218,24 @@ export default function HospitalsPage({
           params.disease = filterItem.query;
         }
       }
+      if (selectedScheme !== 'all') {
+        const schemeItem = GOVERNMENT_SCHEMES_FILTER.find((s) => s.id === selectedScheme);
+        if (schemeItem?.query) {
+          params.scheme = schemeItem.query;
+        }
+      }
       const res = await fetchHospitals(params);
       if (res.success && res.data) {
         let items = res.data;
+
+        // Apply Government Scheme Filter (client-side guarantee)
+        if (selectedScheme !== 'all') {
+          const schemeItem = GOVERNMENT_SCHEMES_FILTER.find((s) => s.id === selectedScheme);
+          if (schemeItem?.query) {
+            const q = schemeItem.query.toLowerCase();
+            items = items.filter(h => (h.government_schemes || []).some(s => s.toLowerCase().includes(q)));
+          }
+        }
 
         // Apply Fee Filter
         if (feeFilter === 'subsidized') {
@@ -647,6 +673,38 @@ export default function HospitalsPage({
             );
           })}
         </div>
+
+        {/* Government Schemes Filter Row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '12px', paddingTop: '12px', borderTop: '1px dashed var(--border-subtle)' }}>
+          <span style={{ fontSize: '12px', fontWeight: 700, color: '#065f46', display: 'inline-flex', alignItems: 'center', gap: '5px', marginRight: '6px' }}>
+            <Landmark size={14} color="#059669" /> Govt Schemes:
+          </span>
+          {GOVERNMENT_SCHEMES_FILTER.map((sch) => {
+            const isSelected = selectedScheme === sch.id;
+            return (
+              <button
+                key={sch.id}
+                onClick={() => setSelectedScheme(sch.id)}
+                style={{
+                  background: isSelected ? '#059669' : '#ecfdf5',
+                  color: isSelected ? '#ffffff' : '#065f46',
+                  border: isSelected ? '1px solid #059669' : '1px solid #a7f3d0',
+                  padding: '5px 12px',
+                  borderRadius: '10px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <span>🏛️ {sch.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Hospitals Result Cards */}
@@ -734,6 +792,42 @@ export default function HospitalsPage({
                         +{h.diseases_treated.length - 3} more
                       </span>
                     )}
+                  </div>
+                )}
+
+                {/* Empanelled Government Healthcare Schemes Badges */}
+                {h.government_schemes?.length > 0 && (
+                  <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px dashed #e2e8f0' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 800, color: '#065f46', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '5px' }}>
+                      <Landmark size={12} color="#059669" />
+                      <span>Empanelled Govt Schemes:</span>
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                      {h.government_schemes.slice(0, 2).map((sch, sIdx) => (
+                        <span
+                          key={sIdx}
+                          style={{
+                            fontSize: '10.5px',
+                            fontWeight: 700,
+                            background: '#ecfdf5',
+                            color: '#065f46',
+                            border: '1px solid #a7f3d0',
+                            padding: '2px 7px',
+                            borderRadius: '6px',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '3px'
+                          }}
+                        >
+                          🏛️ {sch}
+                        </span>
+                      ))}
+                      {h.government_schemes.length > 2 && (
+                        <span style={{ fontSize: '10.5px', color: '#047857', fontWeight: 700, background: '#f0fdf4', padding: '2px 6px', borderRadius: '6px' }}>
+                          +{h.government_schemes.length - 2} more schemes
+                        </span>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

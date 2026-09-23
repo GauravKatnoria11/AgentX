@@ -65,9 +65,16 @@ function App() {
   });
 
   useEffect(() => {
-    initGuestAuth().then(user => {
-      if (user && !currentUser) setCurrentUser(user);
-    });
+    const isOAuthRedirect =
+      window.location.hash.includes('access_token') ||
+      window.location.hash.includes('id_token') ||
+      window.location.search.includes('code=');
+
+    if (!isOAuthRedirect) {
+      initGuestAuth().then(user => {
+        if (user && !currentUser) setCurrentUser(user);
+      });
+    }
 
     initOAuthRedirectListener((user) => {
       if (user) setCurrentUser(user);
@@ -518,6 +525,10 @@ function App() {
         onClose={() => setIsAuthModalOpen(false)}
         onAuthSuccess={(user) => {
           setCurrentUser(user);
+        }}
+        onEmergencyClick={() => {
+          setIsAuthModalOpen(false);
+          handleNavigate('emergency');
         }}
       />
     </div>

@@ -16,6 +16,7 @@ import {
   Calendar,
   ExternalLink,
   Ambulance,
+  Landmark,
   Car
 } from 'lucide-react';
 import { fetchHospitalById } from '../api';
@@ -290,6 +291,60 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
               ))}
             </div>
           </div>
+
+          {/* Empanelled Government Healthcare Schemes & Subsidies */}
+          {hospital.government_schemes?.length > 0 && (
+            <div className="card" style={{ padding: '24px', background: 'linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)', border: '1px solid #bbf7d0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <div style={{ background: '#dcfce7', padding: '6px', borderRadius: '8px', display: 'flex' }}>
+                  <Landmark size={20} color="#15803d" />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '17px', fontWeight: 800, color: '#14532d', margin: 0 }}>
+                    Empanelled Government Healthcare Schemes & Cashless Cover
+                  </h3>
+                  <div style={{ fontSize: '12px', color: '#166534' }}>
+                    Cashless hospitalization, surgical coverage & subsidized treatment accepted under state and national welfare programs
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '10px', marginTop: '16px' }}>
+                {hospital.government_schemes.map((sch, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      background: '#ffffff',
+                      border: '1px solid #86efac',
+                      borderRadius: '10px',
+                      padding: '12px 16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      boxShadow: '0 2px 4px rgba(22, 101, 52, 0.05)'
+                    }}
+                  >
+                    <span style={{ fontSize: '18px' }}>🏛️</span>
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 800, color: '#14532d' }}>
+                        {sch}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#15803d', marginTop: '2px' }}>
+                        Eligible Beneficiaries Accepted • Cashless Desk Available
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ marginTop: '16px', padding: '10px 14px', background: '#ecfdf5', borderRadius: '8px', fontSize: '12px', color: '#166534', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CheckCircle2 size={16} color="#16a34a" />
+                <span>
+                  <strong>Required Documentation at Admissions:</strong> Carry Aadhaar Card and PM-JAY / AB-SSBY Golden Card / ECHS Smart Card for immediate pre-authorization.
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

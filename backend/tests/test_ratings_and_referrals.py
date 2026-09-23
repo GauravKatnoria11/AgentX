@@ -24,8 +24,8 @@ def admin_token():
         "name": "Admin User"
     })
 
-def test_doctor_rating_rejected_if_not_appointed():
-    # Token for a user with NO appointments with doc-hsp-5
+def test_doctor_rating_succeeds_even_without_prior_booking():
+    # Token for a user with NO prior appointments with doc-hsp-5
     stranger_token = create_access_token({
         "sub": "99999999-0000-0000-0000-000000000000",
         "role": "patient",
@@ -34,23 +34,14 @@ def test_doctor_rating_rejected_if_not_appointed():
     headers = {"Authorization": f"Bearer {stranger_token}"}
     resp = client.post(
         "/api/v1/doctors/doc-hsp-5/ratings",
-        json={"rating": 5, "comment": "Trying to rate without booking"},
+        json={"rating": 5, "comment": "Great doctor, very knowledgeable and helpful."},
         headers=headers
     )
-    assert resp.status_code == 403
-    assert "You can only rate a doctor if you have booked an appointment" in resp.json()["detail"]
-
-def test_doctor_rating_rejected_if_appointment_is_not_completed(patient_token):
-    # John Doe has app-hsp-1 with doc-hsp-1, but status is 'confirmed', NOT completed
-    # And app-hsp-req-1 with doc-hsp-2, but status is 'pending', NOT completed
-    headers = {"Authorization": f"Bearer {patient_token}"}
-    resp = client.post(
-        "/api/v1/doctors/doc-hsp-2/ratings",
-        json={"rating": 4, "comment": "Consultation pending, rating early"},
-        headers=headers
-    )
-    assert resp.status_code == 403
-    assert "only rate a doctor after your consultation appointment is marked 'completed'" in resp.json()["detail"]
+    assert resp.status_code == 201
+    data = resp.json()["data"]
+    assert data["review"]["rating"] == 5
+    assert data["review"]["verified_consultation"] is False
+    assert data["doctor"]["rating"] >= 4.0
 
 def test_doctor_rating_succeeds_when_appointment_is_completed(patient_token):
     # John Doe has app-completed-1 with doc-hsp-1 where status == 'completed'

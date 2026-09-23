@@ -127,21 +127,18 @@ class DoctorService:
         doc["rating"] = avg_rating
         doc["review_count"] = len(reviews)
 
-        can_rate = False
+        can_rate = True  # Enabled for users to review doctors
         eligible_appointments = []
         user_review = None
 
         if current_user_id:
-            # Strictly find completed appointments between this patient and doctor
             user_apps = [
                 a for a in MOCK_DATA["appointments"]
                 if str(a.get("patient_id")) == str(current_user_id)
                 and str(a.get("doctor_id")) == str(doc["id"])
             ]
             completed_apps = [a for a in user_apps if a.get("status") == "completed"]
-            if completed_apps:
-                can_rate = True
-                eligible_appointments = completed_apps
+            eligible_appointments = completed_apps if completed_apps else user_apps
 
             user_rev = next(
                 (r for r in reviews if str(r.get("patient_id")) == str(current_user_id)),
@@ -177,50 +174,44 @@ class DoctorService:
         if not doc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Doctor not found.")
 
-        # 1. Strictly verify patient has an appointment with this doctor
+        # Find any matching appointments between this patient and doctor
         user_apps = [
             a for a in MOCK_DATA["appointments"]
             if str(a.get("patient_id")) == str(patient_id)
             and str(a.get("doctor_id")) == str(doc["id"])
         ]
-
-        if not user_apps:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Access denied: You can only rate a doctor if you have booked an appointment with them."
-            )
-
-        # 2. Strictly verify appointment is COMPLETED / DONE
         completed_apps = [a for a in user_apps if a.get("status") == "completed"]
-        if not completed_apps:
-            pending_app = user_apps[0]
-            curr_status = pending_app.get("status", "pending")
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Access denied: You can only rate a doctor after your consultation appointment is marked 'completed'. Your appointment status is currently '{curr_status}'. Please complete your visit first."
-            )
 
-        # 3. Choose the target completed appointment
         target_appt = None
         if appointment_id:
-            target_appt = next((a for a in completed_apps if str(a.get("id")) == str(appointment_id)), None)
-            if not target_appt:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="The specified appointment is not a completed consultation with this doctor."
-                )
-        else:
+            target_appt = next((a for a in MOCK_DATA["appointments"] if str(a.get("id")) == str(appointment_id)), None)
+        elif completed_apps:
             target_appt = completed_apps[0]
+        elif user_apps:
+            target_appt = user_apps[0]
 
-        # 4. Resolve patient name
+        is_verified = bool(completed_apps or (target_appt and target_appt.get("status") == "completed"))
+
+        # Update appointment record if linked
+        if target_appt:
+            target_appt["patient_rating"] = rating
+
+        # Resolve patient name
         patient_user = next((u for u in MOCK_DATA.get("profiles", []) if str(u["id"]) == str(patient_id)), None)
-        patient_name = (patient_user.get("full_name") or patient_user.get("name") if patient_user else None) or target_appt.get("patient_name") or "Verified Patient"
+        patient_name = (
+            (patient_user.get("full_name") or patient_user.get("name") if patient_user else None)
+            or (target_appt.get("patient_name") if target_appt else None)
+            or "Patient Reviewer"
+        )
 
-        # 5. Check if review already exists for this appointment or patient-doctor pair
+        # Check if review already exists for this patient-doctor pair or appointment
         existing_rev = next(
             (r for r in MOCK_DATA.get("doctor_reviews", [])
              if str(r.get("doctor_id")) == str(doc["id"])
-             and (str(r.get("appointment_id")) == str(target_appt["id"]) or str(r.get("patient_id")) == str(patient_id))),
+             and (
+                 (target_appt and str(r.get("appointment_id")) == str(target_appt["id"]))
+                 or str(r.get("patient_id")) == str(patient_id)
+             )),
             None
         )
 
@@ -229,6 +220,7 @@ class DoctorService:
             existing_rev["rating"] = rating
             existing_rev["comment"] = comment or existing_rev.get("comment", "")
             existing_rev["tags"] = tags or existing_rev.get("tags", [])
+            existing_rev["verified_consultation"] = is_verified or existing_rev.get("verified_consultation", True)
             existing_rev["updated_at"] = now_iso
             saved_review = existing_rev
         else:
@@ -239,12 +231,12 @@ class DoctorService:
                 "doctor_name": doc["name"],
                 "patient_id": str(patient_id),
                 "patient_name": patient_name,
-                "appointment_id": str(target_appt["id"]),
+                "appointment_id": str(target_appt["id"]) if target_appt else None,
                 "hospital_id": str(doc.get("hospital_id")),
                 "rating": rating,
                 "comment": comment or "Consultation completed. Excellent clinical care.",
                 "tags": tags or ["Accurate Diagnosis", "Compassionate Care"],
-                "verified_consultation": True,
+                "verified_consultation": is_verified,
                 "created_at": now_iso
             }
             if "doctor_reviews" not in MOCK_DATA:
@@ -266,7 +258,7 @@ class DoctorService:
             details={
                 "doctor_id": str(doc["id"]),
                 "rating": rating,
-                "appointment_id": str(target_appt["id"])
+                "appointment_id": str(target_appt["id"]) if target_appt else None
             }
         )
 

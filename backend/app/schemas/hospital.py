@@ -27,6 +27,7 @@ class HospitalBase(BaseModel):
     min_fee: Optional[float] = None
     max_fee: Optional[float] = None
     fee_tier: Optional[str] = None
+    government_schemes: List[str] = []
 
 
 class HospitalCreate(HospitalBase):

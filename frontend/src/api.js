@@ -493,14 +493,14 @@ export const updateHospitalEmergencyCase = async (alertId, payload, hospitalToke
 
 // --- Doctor Rating & Verified Reviews ---
 export const fetchDoctorReviews = async (doctorId) => {
-  const token = getGuestToken();
-  const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-  const res = await fetch(`${API_BASE}/doctors/${doctorId}/reviews`, { headers });
+  const token = getAuthToken();
+  const h = token ? { 'Authorization': `Bearer ${token}` } : {};
+  const res = await fetch(`${API_BASE}/doctors/${doctorId}/reviews`, { headers: h });
   return res.json();
 };
 
 export const submitDoctorRating = async (doctorId, payload) => {
-  const token = getGuestToken();
+  const token = getAuthToken();
   const res = await fetch(`${API_BASE}/doctors/${doctorId}/ratings`, {
     method: 'POST',
     headers: {
@@ -514,7 +514,7 @@ export const submitDoctorRating = async (doctorId, payload) => {
 
 // --- Appointment Completion & Resend Reminder ---
 export const completeAppointment = async (appointmentId) => {
-  const token = getGuestToken();
+  const token = getAuthToken();
   const res = await fetch(`${API_BASE}/appointments/${appointmentId}/complete`, {
     method: 'PATCH',
     headers: { 'Authorization': `Bearer ${token}` }
@@ -523,7 +523,7 @@ export const completeAppointment = async (appointmentId) => {
 };
 
 export const sendAppointmentReminder = async (appointmentId, recipientEmail = null) => {
-  const token = getGuestToken();
+  const token = getAuthToken();
   const res = await fetch(`${API_BASE}/appointments/${appointmentId}/send-reminder`, {
     method: 'POST',
     headers: {

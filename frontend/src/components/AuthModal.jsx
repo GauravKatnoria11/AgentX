@@ -10,7 +10,9 @@ import {
   CheckCircle2,
   AlertCircle,
   Building2,
-  ShieldCheck
+  ShieldCheck,
+  ShieldAlert,
+  PhoneCall
 } from 'lucide-react';
 import { loginUser, signupUser, oauthCallback } from '../api';
 import {
@@ -20,7 +22,7 @@ import {
   isLiveSupabase
 } from '../supabase';
 
-export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
+export default function AuthModal({ isOpen, onClose, onAuthSuccess, onEmergencyClick }) {
   const [mode, setMode] = useState('login'); // 'login' | 'signup'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -190,14 +192,43 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 
   return (
     <div className="fullscreen-login-overlay">
-      {/* Top Header with Back to Portal */}
-      <div className="fullscreen-login-header">
+      {/* Top Header with Back to Portal & High-Priority Emergency SOS */}
+      <div className="fullscreen-login-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <button
           onClick={onClose}
           className="btn-google-outline"
           style={{ padding: '8px 14px', fontSize: '13px' }}
         >
           <ArrowLeft size={16} /> Back to Carelink Portal
+        </button>
+
+        {/* Emergency SOS Quick Button */}
+        <button
+          type="button"
+          onClick={() => {
+            if (onEmergencyClick) {
+              onEmergencyClick();
+            } else {
+              window.location.href = 'tel:108';
+            }
+          }}
+          className="btn-google-danger emergency-login-header-btn"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            fontSize: '13px',
+            fontWeight: 800,
+            borderRadius: '10px',
+            background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
+            color: '#ffffff',
+            border: 'none',
+            cursor: 'pointer',
+            boxShadow: '0 4px 12px rgba(220, 38, 38, 0.35)'
+          }}
+        >
+          <ShieldAlert size={16} /> EMERGENCY SOS (108 / 112)
         </button>
       </div>
 
@@ -216,6 +247,60 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
               ? 'Access hospital bookings, prescriptions & medical records'
               : 'Sign up for instant appointment booking & health tracking'}
           </p>
+        </div>
+
+        {/* Emergency Fast-Track Card (Skip Login in Critical Moments) */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+            padding: '12px 14px',
+            background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+            border: '1px solid #fecaca',
+            borderRadius: '10px',
+            marginBottom: '16px'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ background: '#fee2e2', padding: '6px', borderRadius: '8px', color: '#dc2626', display: 'flex' }}>
+              <PhoneCall size={16} />
+            </div>
+            <div>
+              <div style={{ fontSize: '12.5px', fontWeight: 800, color: '#991b1b' }}>
+                Medical Emergency?
+              </div>
+              <div style={{ fontSize: '11px', color: '#b91c1c' }}>
+                Skip login for 108 ambulance & trauma triage
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (onEmergencyClick) {
+                onEmergencyClick();
+              } else {
+                window.location.href = 'tel:108';
+              }
+            }}
+            style={{
+              background: '#dc2626',
+              color: '#ffffff',
+              border: 'none',
+              padding: '6px 12px',
+              borderRadius: '8px',
+              fontSize: '11.5px',
+              fontWeight: 800,
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              boxShadow: '0 2px 6px rgba(220, 38, 38, 0.25)'
+            }}
+          >
+            Launch SOS 🚨
+          </button>
         </div>
 
         {/* Error and Success Alerts */}

@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from app.schemas.auth import SignUpRequest, LoginRequest, OAuthCallbackRequest, TokenResponse, UserProfileSummary
 from app.schemas.common import ApiResponse
 from app.utils.security import hash_password, verify_password, create_access_token
-from app.utils.validators import validate_email, validate_phone, verify_hcaptcha_token
+from app.utils.validators import validate_email, validate_phone
 from app.dependencies import get_current_user
 from app.supabase import MOCK_DATA
 from app.utils.permissions import log_audit_event
@@ -14,10 +14,7 @@ router = APIRouter(prefix="/api/v1/auth", tags=["Authentication"])
 
 @router.post("/signup", response_model=ApiResponse[TokenResponse], status_code=status.HTTP_201_CREATED)
 async def signup(req: SignUpRequest):
-    # 1. Verify hCaptcha token
-    await verify_hcaptcha_token(req.captcha_token)
-
-    # 2. Validate email and phone
+    # 1. Validate email and phone
     clean_email = validate_email(req.email)
     clean_phone = validate_phone(req.phone)
 
@@ -73,10 +70,7 @@ async def signup(req: SignUpRequest):
 
 @router.post("/login", response_model=ApiResponse[TokenResponse])
 async def login(req: LoginRequest):
-    # 1. Verify hCaptcha token
-    await verify_hcaptcha_token(req.captcha_token)
-
-    # 2. Check credentials
+    # Check credentials
     clean_email = validate_email(req.email)
     user = next((p for p in MOCK_DATA["profiles"] if p["email"].lower() == clean_email), None)
 
