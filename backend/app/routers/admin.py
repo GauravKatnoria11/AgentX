@@ -7,7 +7,7 @@ from app.schemas.common import ApiResponse
 from app.dependencies import require_role
 from app.services.admin_service import admin_service
 from app.services.medical_record_service import medical_record_service
-from app.supabase import MOCK_DATA
+from app.supabase import MOCK_DATA, supabase_service
 from app.utils.permissions import log_audit_event
 import uuid
 from datetime import datetime, timezone
@@ -329,6 +329,10 @@ async def settle_patient_prescription(
     and personalized diet plan categorized by appointment and disease.
     """
     appointment = next((a for a in MOCK_DATA["appointments"] if str(a["id"]) == str(req.appointment_id)), None)
+    if not appointment and supabase_service.is_live:
+        appointment = supabase_service.get_appointment_by_id(str(req.appointment_id))
+        if appointment:
+            MOCK_DATA["appointments"].append(appointment)
     
     patient_id = req.patient_id or (appointment["patient_id"] if appointment else "11111111-1111-1111-1111-111111111111")
     doctor_id = req.doctor_id or (appointment.get("doctor_id") if appointment else "doc-hsp-1")
@@ -377,9 +381,17 @@ async def settle_patient_prescription(
     # 3. Update appointment if linked
     if appointment:
         appointment["prescription_id"] = presc_id
-        appointment["status"] = "confirmed"
+        appointment["status"] = "completed"
+        appointment["completed_at"] = datetime.now(timezone.utc).isoformat()
         if not appointment.get("notes") or "Prescription" not in appointment.get("notes", ""):
             appointment["notes"] = (appointment.get("notes", "") + f" [Prescription & Diet Settled for {req.disease_category}]").strip()
+
+        supabase_service.update_appointment(str(appointment["id"]), {
+            "status": "completed",
+            "prescription_id": presc_id,
+            "completed_at": appointment["completed_at"],
+            "notes": appointment.get("notes")
+        })
 
     # 4. Notify patient
     doc = next((d for d in MOCK_DATA["doctors"] if str(d["id"]) == str(doctor_id)), None)

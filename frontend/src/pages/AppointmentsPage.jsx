@@ -178,10 +178,12 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
   };
 
   const upcomingAppointments = appointments.filter((a) => a.status === 'confirmed' || a.status === 'pending');
-  const doneAppointments = appointments.filter((a) => a.status === 'completed' || a.status === 'cancelled');
+  const doneAppointments = appointments.filter((a) => ['completed', 'done', 'settled', 'cancelled'].includes(a.status));
   const displayedAppointments = activeFilter === 'upcoming'
     ? upcomingAppointments
-    : doneAppointments;
+    : activeFilter === 'done'
+    ? doneAppointments
+    : appointments;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -198,8 +200,25 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
         </button>
       </div>
 
-      {/* Segmented Filter Controls — 2 Tabs */}
+      {/* Segmented Filter Controls — Tabs */}
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <button
+          type="button"
+          onClick={() => setActiveFilter('all')}
+          style={{
+            padding: '7px 16px',
+            fontSize: '12px',
+            fontWeight: activeFilter === 'all' ? 700 : 500,
+            background: activeFilter === 'all' ? 'var(--primary-blue)' : '#ffffff',
+            color: activeFilter === 'all' ? '#ffffff' : 'var(--text-main)',
+            border: '1px solid ' + (activeFilter === 'all' ? 'var(--primary-blue)' : 'var(--border-subtle)'),
+            borderRadius: '3px',
+            cursor: 'pointer'
+          }}
+        >
+          All ({appointments.length})
+        </button>
+
         <button
           type="button"
           onClick={() => setActiveFilter('upcoming')}
@@ -258,7 +277,7 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {displayedAppointments.map((a) => {
-            const isCompleted = a.status === 'completed';
+            const isCompleted = ['completed', 'done', 'settled'].includes(a.status);
             const isCancelled = a.status === 'cancelled';
             const isConfirmed = a.status === 'confirmed';
 

@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from app.schemas.common import ApiResponse
-from app.supabase import MOCK_DATA
+from app.supabase import MOCK_DATA, supabase_service
 from app.utils.security import create_access_token, decode_access_token
 from app.services.medical_record_service import medical_record_service
 from app.services.email_service import email_reminder_service
@@ -21,6 +21,15 @@ router = APIRouter(
 )
 
 security_bearer = HTTPBearer(auto_error=False)
+
+
+def _get_hospital_appointment(appointment_id: str) -> Optional[Dict[str, Any]]:
+    app = next((a for a in MOCK_DATA["appointments"] if str(a["id"]) == str(appointment_id)), None)
+    if not app and supabase_service.is_live:
+        app = supabase_service.get_appointment_by_id(str(appointment_id))
+        if app:
+            MOCK_DATA["appointments"].append(app)
+    return app
 
 # Accredited Hospital Authentication Registry for Hoshiarpur District
 HOSPITAL_ACCOUNTS = {
@@ -201,9 +210,21 @@ async def get_hospital_dashboard(
     """
     hosp_id = str(current_hospital["id"])
 
-    # 1. Filter appointments for this hospital
+    # 1. Filter appointments for this hospital (merge Supabase live + MOCK_DATA)
+    all_appointments = list(MOCK_DATA["appointments"])
+    if supabase_service.is_live:
+        try:
+            sb_apps = supabase_service.client.table("appointments").select("*").execute()
+            if sb_apps and sb_apps.data:
+                app_map = {str(a["id"]): a for a in all_appointments}
+                for a in sb_apps.data:
+                    app_map[str(a["id"])] = a
+                all_appointments = list(app_map.values())
+        except Exception as e:
+            logger.warning(f"Error fetching Supabase appointments in hospital dashboard: {e}")
+
     hosp_appointments = [
-        dict(a) for a in MOCK_DATA["appointments"]
+        dict(a) for a in all_appointments
         if str(a.get("hospital_id")) == hosp_id or (hosp_id == "hosp-1" and str(a.get("hospital_id")) in ("hosp-1", "hosp-hoshiarpur-1"))
     ]
 
@@ -274,7 +295,7 @@ async def hospital_allot_appointment(
     """
     Hospital confirms timing, assigns their attending doctor, and issues a queue token.
     """
-    appointment = next((a for a in MOCK_DATA["appointments"] if str(a["id"]) == str(appointment_id)), None)
+    appointment = _get_hospital_appointment(appointment_id)
     if not appointment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Appointment not found.")
 
@@ -299,6 +320,15 @@ async def hospital_allot_appointment(
 
     if req.notes:
         appointment["notes"] = f"{current_hospital['name']} Desk: {req.notes}"
+
+    supabase_service.update_appointment(str(appointment["id"]), {
+        "appointment_date": appointment["appointment_date"],
+        "appointment_time": appointment["appointment_time"],
+        "status": "confirmed",
+        "doctor_id": appointment.get("doctor_id"),
+        "queue_number": appointment.get("queue_number"),
+        "notes": appointment.get("notes")
+    })
 
     # Notify patient
     doc = next((d for d in MOCK_DATA["doctors"] if str(d["id"]) == str(appointment.get("doctor_id"))), None)
@@ -412,7 +442,7 @@ async def hospital_prescribe_patient(
     Hospital specialist prescribes medicine regimen (morning/afternoon/evening/night)
     and personalized diet plan directly to their hospital's patient.
     """
-    appointment = next((a for a in MOCK_DATA["appointments"] if str(a["id"]) == str(appointment_id)), None)
+    appointment = _get_hospital_appointment(appointment_id)
     if not appointment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Appointment not found.")
 
@@ -470,7 +500,15 @@ async def hospital_prescribe_patient(
     # 3. Update appointment
     appointment["prescription_id"] = presc_id
     appointment["status"] = "completed"
+    appointment["completed_at"] = datetime.now(timezone.utc).isoformat()
     appointment["notes"] = f"{appointment.get('notes', '')} [Prescription & Diet Settled by {current_hospital['name']}]".strip()
+
+    supabase_service.update_appointment(str(appointment["id"]), {
+        "status": "completed",
+        "prescription_id": presc_id,
+        "completed_at": appointment["completed_at"],
+        "notes": appointment.get("notes")
+    })
 
     # 4. Notify patient
     doc = next((d for d in MOCK_DATA["doctors"] if str(d["id"]) == str(doctor_id)), None)
@@ -505,7 +543,7 @@ async def hospital_complete_appointment(
     Hospital marks an appointment consultation as completed/done.
     This unlocks the patient's verified doctor rating capability.
     """
-    appointment = next((a for a in MOCK_DATA["appointments"] if str(a["id"]) == str(appointment_id)), None)
+    appointment = _get_hospital_appointment(appointment_id)
     if not appointment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Appointment not found.")
 
@@ -517,6 +555,11 @@ async def hospital_complete_appointment(
 
     appointment["status"] = "completed"
     appointment["completed_at"] = datetime.now(timezone.utc).isoformat()
+
+    supabase_service.update_appointment(str(appointment["id"]), {
+        "status": "completed",
+        "completed_at": appointment["completed_at"]
+    })
 
     doc = next((d for d in MOCK_DATA["doctors"] if str(d["id"]) == str(appointment.get("doctor_id"))), None)
     doc_name = doc["name"] if doc else "Attending Doctor"
@@ -591,7 +634,7 @@ async def hospital_cancel_appointment(
     """
     Hospital cancels an appointment slot.
     """
-    appointment = next((a for a in MOCK_DATA["appointments"] if str(a["id"]) == str(appointment_id)), None)
+    appointment = _get_hospital_appointment(appointment_id)
     if not appointment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Appointment not found.")
 
@@ -603,6 +646,11 @@ async def hospital_cancel_appointment(
 
     appointment["status"] = "cancelled"
     appointment["cancellation_reason"] = req.reason
+
+    supabase_service.update_appointment(str(appointment["id"]), {
+        "status": "cancelled",
+        "cancellation_reason": req.reason
+    })
 
     return ApiResponse(
         success=True,
