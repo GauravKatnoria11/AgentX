@@ -2,7 +2,7 @@ import uuid
 from datetime import date, time, datetime, timezone
 from typing import List, Dict, Any, Optional
 from fastapi import HTTPException, status
-from app.supabase import MOCK_DATA
+from app.supabase import MOCK_DATA, supabase_service
 from app.utils.permissions import ensure_patient_ownership, log_audit_event
 
 
@@ -50,14 +50,16 @@ class AppointmentService:
         # 4. Check double-booking conflict (Prevent booking unavailable slots / double bookings)
         time_str = appointment_time.strftime("%H:%M:%S")
         date_str = str(appointment_date)
+        resolved_doc_id = str(doctor["id"])
+        resolved_hosp_id = str(hospital["id"])
 
         existing_conflict = next(
             (
                 a for a in MOCK_DATA["appointments"]
-                if str(a["doctor_id"]) == str(doctor_id)
-                and str(a["appointment_date"]) == date_str
-                and str(a["appointment_time"])[:5] == time_str[:5]
-                and a["status"] != "cancelled"
+                if str(a.get("doctor_id")) in [str(doctor_id), resolved_doc_id]
+                and str(a.get("appointment_date")) == date_str
+                and str(a.get("appointment_time"))[:5] == time_str[:5]
+                and a.get("status") != "cancelled"
             ),
             None
         )
@@ -70,7 +72,7 @@ class AppointmentService:
         # 5. Compute queue number for that doctor/date
         day_appointments = [
             a for a in MOCK_DATA["appointments"]
-            if str(a["doctor_id"]) == str(doctor_id) and str(a["appointment_date"]) == date_str
+            if str(a.get("doctor_id")) in [str(doctor_id), resolved_doc_id] and str(a.get("appointment_date")) == date_str
         ]
         queue_number = len(day_appointments) + 1
 
@@ -87,7 +89,7 @@ class AppointmentService:
         patient_name = patient_profile.get("full_name") if patient_profile else "Patient"
         patient_email = (patient_profile.get("email") if patient_profile else None) or MOCK_DATA.get("last_active_user_email")
 
-        # 6. Save appointment
+        # 6. Save appointment to Supabase Database
         appointment_id = str(uuid.uuid4())
         new_appointment = {
             "id": appointment_id,
@@ -96,8 +98,8 @@ class AppointmentService:
             "patient_email": patient_email,
             "patient_phone": effective_phone,
             "blood_group": effective_blood,
-            "doctor_id": str(doctor_id),
-            "hospital_id": str(hospital_id),
+            "doctor_id": resolved_doc_id,
+            "hospital_id": resolved_hosp_id,
             "department_id": str(department_id) if department_id else doctor.get("department_id"),
             "appointment_date": date_str,
             "appointment_time": time_str,
@@ -108,7 +110,7 @@ class AppointmentService:
             "cancellation_reason": None,
             "created_at": datetime.now(timezone.utc).isoformat()
         }
-        MOCK_DATA["appointments"].append(new_appointment)
+        saved_record = supabase_service.create_appointment(new_appointment)
 
         # Create notification for patient
         MOCK_DATA["notifications"].append({
@@ -127,31 +129,17 @@ class AppointmentService:
             resource_type="appointment",
             resource_id=appointment_id,
             user_id=str(patient_id),
-            details={"doctor_id": doctor_id, "date": date_str, "time": time_str}
+            details={"doctor_id": resolved_doc_id, "date": date_str, "time": time_str}
         )
 
-        return self.enrich_appointment(new_appointment)
+        return self.enrich_appointment(saved_record)
 
     def get_patient_appointments(self, patient_id: str, patient_email: Optional[str] = None) -> List[Dict[str, Any]]:
-        appointments = [
-            a for a in MOCK_DATA["appointments"]
-            if str(a.get("patient_id")) == str(patient_id)
-            or (patient_email and a.get("patient_email") == patient_email)
-            or (str(patient_id) in ["11111111-1111-1111-1111-111111111111", "guest", "default"] and str(a.get("patient_id")) == "11111111-1111-1111-1111-111111111111")
-        ]
-        # Deduplicate
-        seen = set()
-        deduped = []
-        for a in appointments:
-            if a["id"] not in seen:
-                seen.add(a["id"])
-                deduped.append(a)
-
-        deduped.sort(key=lambda x: (str(x.get("appointment_date", "")), str(x.get("appointment_time", ""))), reverse=True)
-        return [self.enrich_appointment(a) for a in deduped]
+        appointments = supabase_service.get_patient_appointments(patient_id, patient_email=patient_email)
+        return [self.enrich_appointment(a) for a in appointments]
 
     def get_appointment_by_id(self, appointment_id: str, current_user: Dict[str, Any]) -> Dict[str, Any]:
-        appointment = next((a for a in MOCK_DATA["appointments"] if str(a["id"]) == str(appointment_id)), None)
+        appointment = supabase_service.get_appointment_by_id(appointment_id)
         if not appointment:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -163,7 +151,7 @@ class AppointmentService:
         return self.enrich_appointment(appointment)
 
     def cancel_appointment(self, appointment_id: str, current_user: Dict[str, Any], cancellation_reason: Optional[str] = None) -> Dict[str, Any]:
-        appointment = next((a for a in MOCK_DATA["appointments"] if str(a["id"]) == str(appointment_id)), None)
+        appointment = supabase_service.get_appointment_by_id(appointment_id)
         if not appointment:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -173,35 +161,40 @@ class AppointmentService:
         # Enforce patient ownership rule
         ensure_patient_ownership(current_user, appointment["patient_id"])
 
-        if appointment["status"] == "cancelled":
+        if appointment.get("status") == "cancelled":
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Appointment is already cancelled."
             )
 
-        appointment["status"] = "cancelled"
-        appointment["cancellation_reason"] = cancellation_reason or "Cancelled by user"
+        reason = cancellation_reason or "Cancelled by user"
+        updated = supabase_service.update_appointment(appointment_id, {
+            "status": "cancelled",
+            "cancellation_reason": reason
+        })
 
         log_audit_event(
             action="appointment_cancelled",
             resource_type="appointment",
             resource_id=appointment_id,
             user_id=str(current_user.get("id")),
-            details={"reason": appointment["cancellation_reason"]}
+            details={"reason": reason}
         )
 
-        return self.enrich_appointment(appointment)
+        return self.enrich_appointment(updated or appointment)
 
     def complete_appointment(self, appointment_id: str, current_user: Dict[str, Any]) -> Dict[str, Any]:
-        appointment = next((a for a in MOCK_DATA["appointments"] if str(a["id"]) == str(appointment_id)), None)
+        appointment = supabase_service.get_appointment_by_id(appointment_id)
         if not appointment:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Appointment not found."
             )
 
-        appointment["status"] = "completed"
-        appointment["completed_at"] = datetime.now(timezone.utc).isoformat()
+        updated = supabase_service.update_appointment(appointment_id, {
+            "status": "completed",
+            "completed_at": datetime.now(timezone.utc).isoformat()
+        })
 
         log_audit_event(
             action="appointment_completed",
@@ -211,7 +204,7 @@ class AppointmentService:
             details={"doctor_id": appointment.get("doctor_id")}
         )
 
-        return self.enrich_appointment(appointment)
+        return self.enrich_appointment(updated or appointment)
 
     def enrich_appointment(self, appointment: Dict[str, Any]) -> Dict[str, Any]:
         res = dict(appointment)
@@ -236,21 +229,13 @@ class AppointmentService:
         return res
 
     def clear_patient_appointments(self, patient_id: str, patient_email: Optional[str] = None) -> int:
-        initial_len = len(MOCK_DATA["appointments"])
-        MOCK_DATA["appointments"] = [
-            a for a in MOCK_DATA["appointments"]
-            if not (
-                str(a.get("patient_id")) == str(patient_id)
-                or (patient_email and a.get("patient_email") == patient_email)
-                or str(patient_id) in ["11111111-1111-1111-1111-111111111111", "guest", "default"]
-            )
-        ]
-        return initial_len - len(MOCK_DATA["appointments"])
+        return supabase_service.clear_patient_appointments(patient_id, patient_email=patient_email)
 
     def delete_appointment(self, appointment_id: str, current_user: Dict[str, Any]) -> None:
-        idx = next((i for i, a in enumerate(MOCK_DATA["appointments"]) if str(a.get("id")) == str(appointment_id)), None)
-        if idx is not None:
-            MOCK_DATA["appointments"].pop(idx)
+        appointment = supabase_service.get_appointment_by_id(appointment_id)
+        if appointment:
+            ensure_patient_ownership(current_user, appointment["patient_id"])
+        supabase_service.delete_appointment(appointment_id)
 
 
 appointment_service = AppointmentService()

@@ -1,4 +1,6 @@
 import logging
+import uuid
+from datetime import datetime, timezone
 from typing import Optional, Dict, Any, List
 from supabase import create_client, Client
 from app.config import settings
@@ -1599,6 +1601,376 @@ class SupabaseService:
 
     def get_table_data(self, table_name: str) -> List[Dict[str, Any]]:
         return MOCK_DATA.get(table_name, [])
+
+    # ==========================================
+    # APPOINTMENTS CRUD OPERATIONS
+    # ==========================================
+    def create_appointment(self, appointment_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Creates an appointment in Supabase database table 'appointments'
+        and synchronizes with in-memory store.
+        """
+        appt_id = str(appointment_data.get("id") or uuid.uuid4())
+        record = {
+            "id": appt_id,
+            "patient_id": str(appointment_data.get("patient_id")),
+            "doctor_id": str(appointment_data.get("doctor_id")),
+            "hospital_id": str(appointment_data.get("hospital_id")),
+            "department_id": str(appointment_data.get("department_id")) if appointment_data.get("department_id") else None,
+            "appointment_date": str(appointment_data.get("appointment_date")),
+            "appointment_time": str(appointment_data.get("appointment_time")),
+            "status": appointment_data.get("status", "pending"),
+            "reason": appointment_data.get("reason"),
+            "queue_number": appointment_data.get("queue_number"),
+            "notes": appointment_data.get("notes"),
+            "patient_phone": appointment_data.get("patient_phone"),
+            "blood_group": appointment_data.get("blood_group"),
+            "cancellation_reason": appointment_data.get("cancellation_reason"),
+            "created_at": appointment_data.get("created_at") or datetime.now(timezone.utc).isoformat(),
+            "updated_at": appointment_data.get("updated_at") or datetime.now(timezone.utc).isoformat()
+        }
+
+        full_record = dict(record)
+        if "patient_name" in appointment_data:
+            full_record["patient_name"] = appointment_data["patient_name"]
+        if "patient_email" in appointment_data:
+            full_record["patient_email"] = appointment_data["patient_email"]
+
+        if self.is_live:
+            try:
+                self.client.table("appointments").insert(record).execute()
+                logger.info(f"Appointment {appt_id} saved to Supabase database successfully.")
+            except Exception as e:
+                logger.error(f"Failed to insert appointment into Supabase: {e}")
+
+        # Sync in-memory store
+        existing_idx = next((i for i, a in enumerate(MOCK_DATA["appointments"]) if str(a.get("id")) == appt_id), None)
+        if existing_idx is not None:
+            MOCK_DATA["appointments"][existing_idx] = full_record
+        else:
+            MOCK_DATA["appointments"].append(full_record)
+
+        return full_record
+
+    def get_appointment_by_id(self, appointment_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Retrieves an appointment by ID from Supabase (or in-memory fallback).
+        """
+        if self.is_live:
+            try:
+                res = self.client.table("appointments").select("*").eq("id", str(appointment_id)).execute()
+                if res.data and len(res.data) > 0:
+                    appt = res.data[0]
+                    cached = next((a for a in MOCK_DATA["appointments"] if str(a.get("id")) == str(appointment_id)), None)
+                    if cached:
+                        for k, v in cached.items():
+                            if k not in appt or appt[k] is None:
+                                appt[k] = v
+                    return appt
+            except Exception as e:
+                logger.error(f"Failed to fetch appointment {appointment_id} from Supabase: {e}")
+
+        return next((a for a in MOCK_DATA["appointments"] if str(a.get("id")) == str(appointment_id)), None)
+
+    def get_patient_appointments(self, patient_id: str, patient_email: Optional[str] = None) -> List[Dict[str, Any]]:
+        """
+        Retrieves all appointments for a patient from Supabase (and in-memory fallback).
+        """
+        results: Dict[str, Dict[str, Any]] = {}
+
+        if self.is_live:
+            try:
+                res = self.client.table("appointments").select("*").eq("patient_id", str(patient_id)).order("appointment_date", desc=True).order("appointment_time", desc=True).execute()
+                if res.data:
+                    for row in res.data:
+                        results[str(row["id"])] = row
+            except Exception as e:
+                logger.error(f"Failed to fetch patient appointments from Supabase: {e}")
+
+        # Merge matching items from MOCK_DATA
+        for a in MOCK_DATA["appointments"]:
+            is_match = (
+                str(a.get("patient_id")) == str(patient_id)
+                or (patient_email and a.get("patient_email") == patient_email)
+                or (str(patient_id) in ["11111111-1111-1111-1111-111111111111", "guest", "default"] and str(a.get("patient_id")) == "11111111-1111-1111-1111-111111111111")
+            )
+            if is_match and str(a.get("id")) not in results:
+                results[str(a["id"])] = a
+            elif is_match and str(a.get("id")) in results:
+                for k, v in a.items():
+                    if k not in results[str(a["id"])] or results[str(a["id"])][k] is None:
+                        results[str(a["id"])][k] = v
+
+        appt_list = list(results.values())
+        appt_list.sort(key=lambda x: (str(x.get("appointment_date", "")), str(x.get("appointment_time", ""))), reverse=True)
+        return appt_list
+
+    def update_appointment(self, appointment_id: str, updates: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """
+        Updates an existing appointment in Supabase database and in-memory store.
+        """
+        clean_updates = dict(updates)
+        clean_updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+        db_columns = {
+            "doctor_id", "hospital_id", "department_id", "appointment_date",
+            "appointment_time", "status", "reason", "queue_number", "notes",
+            "patient_phone", "blood_group", "cancellation_reason", "updated_at"
+        }
+        db_updates = {k: v for k, v in clean_updates.items() if k in db_columns}
+
+        if self.is_live and db_updates:
+            try:
+                self.client.table("appointments").update(db_updates).eq("id", str(appointment_id)).execute()
+                logger.info(f"Appointment {appointment_id} updated in Supabase database.")
+            except Exception as e:
+                logger.error(f"Failed to update appointment {appointment_id} in Supabase: {e}")
+
+        # Update in-memory store
+        for a in MOCK_DATA["appointments"]:
+            if str(a.get("id")) == str(appointment_id):
+                a.update(clean_updates)
+                return a
+
+        if self.is_live:
+            return self.get_appointment_by_id(appointment_id)
+
+        return None
+
+    def delete_appointment(self, appointment_id: str) -> bool:
+        """
+        Deletes an appointment from Supabase database and in-memory store.
+        """
+        success = True
+        if self.is_live:
+            try:
+                self.client.table("appointments").delete().eq("id", str(appointment_id)).execute()
+                logger.info(f"Appointment {appointment_id} deleted from Supabase database.")
+            except Exception as e:
+                logger.error(f"Failed to delete appointment {appointment_id} from Supabase: {e}")
+                success = False
+
+        idx = next((i for i, a in enumerate(MOCK_DATA["appointments"]) if str(a.get("id")) == str(appointment_id)), None)
+        if idx is not None:
+            MOCK_DATA["appointments"].pop(idx)
+
+        return success
+
+    def clear_patient_appointments(self, patient_id: str, patient_email: Optional[str] = None) -> int:
+        """
+        Clears all appointments for a patient in Supabase and in-memory store.
+        """
+        deleted_count = 0
+        if self.is_live:
+            try:
+                res = self.client.table("appointments").delete().eq("patient_id", str(patient_id)).execute()
+                deleted_count = len(res.data) if res.data else 0
+                logger.info(f"Cleared {deleted_count} appointments from Supabase for patient {patient_id}.")
+            except Exception as e:
+                logger.error(f"Failed to clear appointments from Supabase: {e}")
+
+        initial_len = len(MOCK_DATA["appointments"])
+        MOCK_DATA["appointments"] = [
+            a for a in MOCK_DATA["appointments"]
+            if not (
+                str(a.get("patient_id")) == str(patient_id)
+                or (patient_email and a.get("patient_email") == patient_email)
+                or str(patient_id) in ["11111111-1111-1111-1111-111111111111", "guest", "default"]
+            )
+        ]
+        mem_deleted = initial_len - len(MOCK_DATA["appointments"])
+        return max(deleted_count, mem_deleted)
+
+    # ==========================================
+    # MEDICAL RECORDS CRUD OPERATIONS
+    # ==========================================
+    def create_medical_record(self, record_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Creates a medical record in Supabase database table 'medical_records'
+        and synchronizes with in-memory store.
+        """
+        rec_id = str(record_data.get("id") or uuid.uuid4())
+
+        meta = dict(record_data.get("metadata") or {})
+        for field in ["disease_category", "appointment_id", "medicines", "diet_plan"]:
+            if field in record_data and field not in meta:
+                meta[field] = record_data[field]
+
+        now_iso = datetime.now(timezone.utc).isoformat()
+        db_row = {
+            "id": rec_id,
+            "patient_id": str(record_data.get("patient_id")),
+            "doctor_id": str(record_data.get("doctor_id")) if record_data.get("doctor_id") else None,
+            "hospital_id": str(record_data.get("hospital_id")) if record_data.get("hospital_id") else None,
+            "title": record_data.get("title", "Medical Record"),
+            "record_type": record_data.get("record_type", "General Record"),
+            "file_url": record_data.get("file_url"),
+            "file_name": record_data.get("file_name"),
+            "file_size_bytes": record_data.get("file_size_bytes"),
+            "notes": record_data.get("notes"),
+            "metadata": meta,
+            "created_at": record_data.get("created_at") or now_iso,
+            "updated_at": record_data.get("updated_at") or now_iso
+        }
+
+        full_record = {
+            "id": rec_id,
+            "patient_id": str(record_data.get("patient_id")),
+            "doctor_id": db_row["doctor_id"],
+            "hospital_id": db_row["hospital_id"],
+            "title": db_row["title"],
+            "record_type": db_row["record_type"],
+            "file_url": db_row["file_url"],
+            "file_name": db_row["file_name"],
+            "file_size_bytes": db_row["file_size_bytes"],
+            "notes": db_row["notes"],
+            "disease_category": meta.get("disease_category", "General Medicine"),
+            "appointment_id": meta.get("appointment_id"),
+            "medicines": meta.get("medicines", []),
+            "diet_plan": meta.get("diet_plan"),
+            "metadata": meta,
+            "created_at": db_row["created_at"],
+            "updated_at": db_row["updated_at"]
+        }
+
+        if self.is_live:
+            try:
+                self.client.table("medical_records").insert(db_row).execute()
+                logger.info(f"Medical record {rec_id} saved to Supabase database successfully.")
+            except Exception as e:
+                logger.error(f"Failed to insert medical record into Supabase: {e}")
+
+        # Sync in-memory store
+        existing_idx = next((i for i, r in enumerate(MOCK_DATA["medical_records"]) if str(r.get("id")) == rec_id), None)
+        if existing_idx is not None:
+            MOCK_DATA["medical_records"][existing_idx] = full_record
+        else:
+            MOCK_DATA["medical_records"].append(full_record)
+
+        return full_record
+
+    def get_medical_record_by_id(self, record_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Retrieves a medical record by ID from Supabase (or in-memory fallback).
+        """
+        if self.is_live:
+            try:
+                res = self.client.table("medical_records").select("*").eq("id", str(record_id)).execute()
+                if res.data and len(res.data) > 0:
+                    return self._unpack_medical_record_row(res.data[0])
+            except Exception as e:
+                logger.error(f"Failed to fetch medical record {record_id} from Supabase: {e}")
+
+        return next((r for r in MOCK_DATA["medical_records"] if str(r.get("id")) == str(record_id)), None)
+
+    def get_patient_medical_records(self, patient_id: str) -> List[Dict[str, Any]]:
+        """
+        Retrieves all medical records for a patient from Supabase (and in-memory fallback).
+        """
+        results: Dict[str, Dict[str, Any]] = {}
+
+        if self.is_live:
+            try:
+                res = self.client.table("medical_records").select("*").eq("patient_id", str(patient_id)).order("created_at", desc=True).execute()
+                if res.data:
+                    for row in res.data:
+                        rec = self._unpack_medical_record_row(row)
+                        results[str(rec["id"])] = rec
+            except Exception as e:
+                logger.error(f"Failed to fetch patient medical records from Supabase: {e}")
+
+        for r in MOCK_DATA["medical_records"]:
+            if str(r.get("patient_id")) == str(patient_id) and str(r.get("id")) not in results:
+                results[str(r["id"])] = r
+
+        rec_list = list(results.values())
+        rec_list.sort(key=lambda x: str(x.get("created_at", "")), reverse=True)
+        return rec_list
+
+    def update_medical_record(self, record_id: str, updates: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """
+        Updates an existing medical record in Supabase database and in-memory store.
+        """
+        clean_updates = dict(updates)
+        clean_updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+        existing = self.get_medical_record_by_id(record_id)
+        if not existing:
+            return None
+
+        meta = dict(existing.get("metadata") or {})
+        for field in ["disease_category", "appointment_id", "medicines", "diet_plan"]:
+            if field in clean_updates:
+                meta[field] = clean_updates[field]
+        if "metadata" in clean_updates and isinstance(clean_updates["metadata"], dict):
+            meta.update(clean_updates["metadata"])
+
+        db_columns = {"title", "record_type", "doctor_id", "hospital_id", "file_url", "file_name", "file_size_bytes", "notes", "updated_at"}
+        db_updates = {k: v for k, v in clean_updates.items() if k in db_columns}
+        db_updates["metadata"] = meta
+
+        if self.is_live and db_updates:
+            try:
+                self.client.table("medical_records").update(db_updates).eq("id", str(record_id)).execute()
+                logger.info(f"Medical record {record_id} updated in Supabase database.")
+            except Exception as e:
+                logger.error(f"Failed to update medical record {record_id} in Supabase: {e}")
+
+        # Update in-memory store
+        for r in MOCK_DATA["medical_records"]:
+            if str(r.get("id")) == str(record_id):
+                r.update(clean_updates)
+                r["metadata"] = meta
+                for f in ["disease_category", "appointment_id", "medicines", "diet_plan"]:
+                    if f in meta:
+                        r[f] = meta[f]
+                return r
+
+        return self.get_medical_record_by_id(record_id)
+
+    def delete_medical_record(self, record_id: str) -> bool:
+        """
+        Deletes a medical record from Supabase database and in-memory store.
+        """
+        success = True
+        if self.is_live:
+            try:
+                self.client.table("medical_records").delete().eq("id", str(record_id)).execute()
+                logger.info(f"Medical record {record_id} deleted from Supabase database.")
+            except Exception as e:
+                logger.error(f"Failed to delete medical record {record_id} from Supabase: {e}")
+                success = False
+
+        idx = next((i for i, r in enumerate(MOCK_DATA["medical_records"]) if str(r.get("id")) == str(record_id)), None)
+        if idx is not None:
+            MOCK_DATA["medical_records"].pop(idx)
+
+        return success
+
+    def _unpack_medical_record_row(self, row: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Helper to unpack metadata fields into top-level dictionary attributes.
+        """
+        meta = row.get("metadata") or {}
+        return {
+            "id": row.get("id"),
+            "patient_id": row.get("patient_id"),
+            "doctor_id": row.get("doctor_id"),
+            "hospital_id": row.get("hospital_id"),
+            "title": row.get("title"),
+            "record_type": row.get("record_type"),
+            "file_url": row.get("file_url"),
+            "file_name": row.get("file_name"),
+            "file_size_bytes": row.get("file_size_bytes"),
+            "notes": row.get("notes"),
+            "disease_category": meta.get("disease_category", "General Medicine"),
+            "appointment_id": meta.get("appointment_id"),
+            "medicines": meta.get("medicines", []),
+            "diet_plan": meta.get("diet_plan"),
+            "metadata": meta,
+            "created_at": row.get("created_at"),
+            "updated_at": row.get("updated_at")
+        }
 
 
 supabase_service = SupabaseService()

@@ -1,6 +1,6 @@
-from typing import List
+from typing import List, Dict, Any
 from fastapi import APIRouter, Depends, status
-from app.schemas.medical_record import MedicalRecordCreate, MedicalRecordResponse
+from app.schemas.medical_record import MedicalRecordCreate, MedicalRecordUpdate, MedicalRecordResponse
 from app.schemas.common import ApiResponse
 from app.dependencies import get_current_user
 from app.services.medical_record_service import medical_record_service
@@ -58,4 +58,32 @@ async def upload_medical_record(
         success=True,
         message="Medical record stored successfully",
         data=MedicalRecordResponse(**record)
+    )
+
+
+@router.patch("/{record_id}", response_model=ApiResponse[MedicalRecordResponse])
+async def update_medical_record(
+    record_id: str,
+    req: MedicalRecordUpdate,
+    current_user: dict = Depends(get_current_user)
+):
+    updates = req.model_dump(exclude_unset=True)
+    updated = medical_record_service.update_record(record_id, updates, current_user)
+    return ApiResponse(
+        success=True,
+        message="Medical record updated successfully",
+        data=MedicalRecordResponse(**updated)
+    )
+
+
+@router.delete("/{record_id}", response_model=ApiResponse[Dict[str, Any]])
+async def delete_medical_record(
+    record_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    medical_record_service.delete_record(record_id, current_user)
+    return ApiResponse(
+        success=True,
+        message="Medical record deleted successfully",
+        data={"id": record_id}
     )

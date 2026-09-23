@@ -17,6 +17,20 @@ class MedicalRecordCreate(BaseModel):
     notes: Optional[str] = None
     metadata: Optional[Dict[str, Any]] = None
 
+class MedicalRecordUpdate(BaseModel):
+    title: Optional[str] = None
+    record_type: Optional[str] = None
+    disease_category: Optional[str] = None
+    appointment_id: Optional[str] = None
+    doctor_id: Optional[str] = None
+    hospital_id: Optional[str] = None
+    file_url: Optional[str] = None
+    file_name: Optional[str] = None
+    file_size_bytes: Optional[int] = None
+    medicines: Optional[List[Dict[str, Any]]] = None
+    diet_plan: Optional[Dict[str, Any]] = None
+    notes: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
 
 class MedicalRecordResponse(BaseModel):
     id: str

@@ -155,6 +155,36 @@ def seed():
         except Exception as e:
             logger.warning(f"Review {rev['id']} notice: {e}")
 
+    # 7. Seed Medical Records
+    logger.info("Seeding medical records...")
+    for rec in MOCK_DATA.get("medical_records", []):
+        try:
+            meta = dict(rec.get("metadata") or {})
+            if "disease_category" in rec and "disease_category" not in meta:
+                meta["disease_category"] = rec["disease_category"]
+            if "appointment_id" in rec and "appointment_id" not in meta:
+                meta["appointment_id"] = rec["appointment_id"]
+            if "medicines" in rec and "medicines" not in meta:
+                meta["medicines"] = rec["medicines"]
+            if "diet_plan" in rec and "diet_plan" not in meta:
+                meta["diet_plan"] = rec["diet_plan"]
+
+            sb.table("medical_records").upsert({
+                "id": rec["id"],
+                "patient_id": rec["patient_id"],
+                "doctor_id": rec.get("doctor_id"),
+                "hospital_id": rec.get("hospital_id"),
+                "title": rec["title"],
+                "record_type": rec["record_type"],
+                "file_url": rec.get("file_url"),
+                "file_name": rec.get("file_name"),
+                "file_size_bytes": rec.get("file_size_bytes"),
+                "notes": rec.get("notes"),
+                "metadata": meta
+            }).execute()
+        except Exception as e:
+            logger.warning(f"Medical record {rec['id']} notice: {e}")
+
     logger.info("All tables seeded into Supabase successfully!")
 
 if __name__ == "__main__":

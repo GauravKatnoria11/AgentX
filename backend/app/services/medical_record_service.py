@@ -2,14 +2,13 @@ import uuid
 from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
 from fastapi import HTTPException, status
-from app.supabase import MOCK_DATA
+from app.supabase import MOCK_DATA, supabase_service
 from app.utils.permissions import ensure_patient_ownership, log_audit_event
 
 
 class MedicalRecordService:
     def get_patient_records(self, patient_id: str) -> List[Dict[str, Any]]:
-        records = [r for r in MOCK_DATA["medical_records"] if str(r["patient_id"]) == str(patient_id)]
-        records.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+        records = supabase_service.get_patient_medical_records(patient_id)
         log_audit_event(
             action="medical_record_list_view",
             resource_type="medical_record",
@@ -19,14 +18,14 @@ class MedicalRecordService:
         return [self.enrich_record(r) for r in records]
 
     def get_record_by_id(self, record_id: str, current_user: Dict[str, Any]) -> Dict[str, Any]:
-        record = next((r for r in MOCK_DATA["medical_records"] if str(r["id"]) == str(record_id)), None)
+        record = supabase_service.get_medical_record_by_id(record_id)
         if not record:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Medical record not found."
             )
 
-        # Strictly enforce Patient Isolation (Page 15)
+        # Strictly enforce Patient Isolation
         ensure_patient_ownership(current_user, record["patient_id"])
 
         log_audit_event(
@@ -74,7 +73,7 @@ class MedicalRecordService:
             "metadata": metadata or {},
             "created_at": datetime.now(timezone.utc).isoformat()
         }
-        MOCK_DATA["medical_records"].append(record)
+        saved_record = supabase_service.create_medical_record(record)
 
         log_audit_event(
             action="medical_record_created",
@@ -84,7 +83,52 @@ class MedicalRecordService:
             details={"title": title, "type": record_type}
         )
 
-        return self.enrich_record(record)
+        return self.enrich_record(saved_record)
+
+    def update_record(
+        self,
+        record_id: str,
+        updates: Dict[str, Any],
+        current_user: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        record = supabase_service.get_medical_record_by_id(record_id)
+        if not record:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Medical record not found."
+            )
+        ensure_patient_ownership(current_user, record["patient_id"])
+
+        updated = supabase_service.update_medical_record(record_id, updates)
+        log_audit_event(
+            action="medical_record_updated",
+            resource_type="medical_record",
+            resource_id=record_id,
+            user_id=str(current_user.get("id"))
+        )
+        return self.enrich_record(updated or record)
+
+    def delete_record(
+        self,
+        record_id: str,
+        current_user: Dict[str, Any]
+    ) -> bool:
+        record = supabase_service.get_medical_record_by_id(record_id)
+        if not record:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Medical record not found."
+            )
+        ensure_patient_ownership(current_user, record["patient_id"])
+
+        success = supabase_service.delete_medical_record(record_id)
+        log_audit_event(
+            action="medical_record_deleted",
+            resource_type="medical_record",
+            resource_id=record_id,
+            user_id=str(current_user.get("id"))
+        )
+        return success
 
     def enrich_record(self, record: Dict[str, Any]) -> Dict[str, Any]:
         res = dict(record)

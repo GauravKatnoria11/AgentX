@@ -161,3 +161,275 @@ export const initOAuthRedirectListener = async (onUserLoaded) => {
     });
   }
 };
+
+/**
+ * ========================================================
+ * SUPABASE APPOINTMENTS CRUD OPERATIONS
+ * ========================================================
+ */
+export const supabaseAppointments = {
+  /**
+   * Create an appointment directly in Supabase
+   */
+  async create(data) {
+    if (!supabase) throw new Error('Supabase client is not configured.');
+    const appointmentRow = {
+      id: data.id || crypto.randomUUID(),
+      patient_id: data.patient_id,
+      doctor_id: data.doctor_id,
+      hospital_id: data.hospital_id,
+      department_id: data.department_id || null,
+      appointment_date: data.appointment_date,
+      appointment_time: data.appointment_time,
+      status: data.status || 'confirmed',
+      reason: data.reason || null,
+      queue_number: data.queue_number || null,
+      notes: data.notes || null,
+      patient_phone: data.patient_phone || null,
+      blood_group: data.blood_group || null,
+      cancellation_reason: data.cancellation_reason || null
+    };
+
+    const { data: inserted, error } = await supabase
+      .from('appointments')
+      .insert(appointmentRow)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return inserted;
+  },
+
+  /**
+   * Get an appointment by ID
+   */
+  async getById(id) {
+    if (!supabase) throw new Error('Supabase client is not configured.');
+    const { data, error } = await supabase
+      .from('appointments')
+      .select('*, doctors(name, specialization), hospitals(name, address)')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Get all appointments for a patient
+   */
+  async getByPatient(patientId) {
+    if (!supabase) throw new Error('Supabase client is not configured.');
+    const { data, error } = await supabase
+      .from('appointments')
+      .select('*, doctors(name, specialization), hospitals(name, address)')
+      .eq('patient_id', patientId)
+      .order('appointment_date', { ascending: false })
+      .order('appointment_time', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Update an appointment by ID
+   */
+  async update(id, updates) {
+    if (!supabase) throw new Error('Supabase client is not configured.');
+    const { data, error } = await supabase
+      .from('appointments')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Cancel an appointment
+   */
+  async cancel(id, cancellationReason = 'Cancelled by user') {
+    return this.update(id, {
+      status: 'cancelled',
+      cancellation_reason: cancellationReason
+    });
+  },
+
+  /**
+   * Mark appointment as completed
+   */
+  async complete(id) {
+    return this.update(id, {
+      status: 'completed'
+    });
+  },
+
+  /**
+   * Delete an appointment by ID
+   */
+  async delete(id) {
+    if (!supabase) throw new Error('Supabase client is not configured.');
+    const { error } = await supabase
+      .from('appointments')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return true;
+  }
+};
+
+/**
+ * ========================================================
+ * SUPABASE MEDICAL RECORDS CRUD OPERATIONS
+ * ========================================================
+ */
+export const supabaseMedicalRecords = {
+  /**
+   * Create a medical record directly in Supabase
+   */
+  async create(data) {
+    if (!supabase) throw new Error('Supabase client is not configured.');
+    const meta = {
+      ...(data.metadata || {}),
+      disease_category: data.disease_category || 'General Medicine',
+      appointment_id: data.appointment_id || null,
+      medicines: data.medicines || [],
+      diet_plan: data.diet_plan || null
+    };
+
+    const row = {
+      id: data.id || crypto.randomUUID(),
+      patient_id: data.patient_id,
+      doctor_id: data.doctor_id || null,
+      hospital_id: data.hospital_id || null,
+      title: data.title || 'Medical Record',
+      record_type: data.record_type || 'General Record',
+      file_url: data.file_url || null,
+      file_name: data.file_name || null,
+      file_size_bytes: data.file_size_bytes || null,
+      notes: data.notes || null,
+      metadata: meta
+    };
+
+    const { data: inserted, error } = await supabase
+      .from('medical_records')
+      .insert(row)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return {
+      ...inserted,
+      disease_category: inserted.metadata?.disease_category || 'General Medicine',
+      medicines: inserted.metadata?.medicines || [],
+      diet_plan: inserted.metadata?.diet_plan || null,
+      appointment_id: inserted.metadata?.appointment_id || null
+    };
+  },
+
+  /**
+   * Get a medical record by ID
+   */
+  async getById(id) {
+    if (!supabase) throw new Error('Supabase client is not configured.');
+    const { data, error } = await supabase
+      .from('medical_records')
+      .select('*, doctors(name, specialization), hospitals(name, address)')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    return {
+      ...data,
+      disease_category: data.metadata?.disease_category || 'General Medicine',
+      medicines: data.metadata?.medicines || [],
+      diet_plan: data.metadata?.diet_plan || null,
+      appointment_id: data.metadata?.appointment_id || null
+    };
+  },
+
+  /**
+   * Get all medical records for a patient
+   */
+  async getByPatient(patientId) {
+    if (!supabase) throw new Error('Supabase client is not configured.');
+    const { data, error } = await supabase
+      .from('medical_records')
+      .select('*, doctors(name, specialization), hospitals(name, address)')
+      .eq('patient_id', patientId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return (data || []).map(r => ({
+      ...r,
+      disease_category: r.metadata?.disease_category || 'General Medicine',
+      medicines: r.metadata?.medicines || [],
+      diet_plan: r.metadata?.diet_plan || null,
+      appointment_id: r.metadata?.appointment_id || null
+    }));
+  },
+
+  /**
+   * Update a medical record by ID
+   */
+  async update(id, updates) {
+    if (!supabase) throw new Error('Supabase client is not configured.');
+    
+    const existing = await this.getById(id);
+    const meta = {
+      ...(existing?.metadata || {}),
+      ...(updates.metadata || {})
+    };
+    if (updates.disease_category) meta.disease_category = updates.disease_category;
+    if (updates.medicines) meta.medicines = updates.medicines;
+    if (updates.diet_plan) meta.diet_plan = updates.diet_plan;
+    if (updates.appointment_id) meta.appointment_id = updates.appointment_id;
+
+    const rowUpdates = {
+      ...updates,
+      metadata: meta,
+      updated_at: new Date().toISOString()
+    };
+    delete rowUpdates.disease_category;
+    delete rowUpdates.medicines;
+    delete rowUpdates.diet_plan;
+    delete rowUpdates.appointment_id;
+
+    const { data, error } = await supabase
+      .from('medical_records')
+      .update(rowUpdates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return {
+      ...data,
+      disease_category: data.metadata?.disease_category || 'General Medicine',
+      medicines: data.metadata?.medicines || [],
+      diet_plan: data.metadata?.diet_plan || null,
+      appointment_id: data.metadata?.appointment_id || null
+    };
+  },
+
+  /**
+   * Delete a medical record by ID
+   */
+  async delete(id) {
+    if (!supabase) throw new Error('Supabase client is not configured.');
+    const { error } = await supabase
+      .from('medical_records')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return true;
+  }
+};
+
