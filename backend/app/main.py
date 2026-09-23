@@ -131,6 +131,19 @@ def health_check():
     return {"status": "ok"}
 
 
+@app.get("/health/db", tags=["Health"])
+def health_check_db():
+    from app.supabase import supabase_service
+    is_live = supabase_service.is_live
+    has_credentials = bool(settings.SUPABASE_URL and (settings.SUPABASE_SERVICE_ROLE_KEY or settings.SUPABASE_ANON_KEY))
+    return {
+        "status": "ok",
+        "database": "connected (Supabase PostgreSQL)" if is_live else "local_mock_fallback",
+        "supabase_configured": has_credentials,
+        "environment": settings.APP_ENV
+    }
+
+
 @app.get("/", tags=["Health"])
 def root():
     return {

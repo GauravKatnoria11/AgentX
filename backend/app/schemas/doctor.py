@@ -21,6 +21,7 @@ class DoctorBase(BaseModel):
     bio: Optional[str] = None
     rating: Optional[float] = 4.8
     review_count: Optional[int] = 0
+    room_number: Optional[str] = "Room 101, Main OPD"
     is_available: bool = True
 
 

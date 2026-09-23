@@ -27,7 +27,8 @@ const HOSHIARPUR_ORIGINS = [
   'District Session Courts, Phagwara Road, Hoshiarpur',
   'Railway Station Road, Hoshiarpur',
   'Chandigarh Road Bypass, Hoshiarpur',
-  'Purhiran, GT Road, Hoshiarpur'
+  'Purhiran, GT Road, Hoshiarpur',
+  'Rayat Bahra Professional University, Bohan, Hoshiarpur'
 ];
 
 const HOSHIARPUR_HOSPITALS = [

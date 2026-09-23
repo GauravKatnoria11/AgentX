@@ -28,7 +28,8 @@ const HOSHIARPUR_LOCATIONS = [
   { name: 'Phagwara Road / Session Courts, Hoshiarpur', lat: 31.5188, lon: 75.9082 },
   { name: 'Chandigarh Road / Bypass, Hoshiarpur', lat: 31.5165, lon: 75.9285 },
   { name: 'Railway Station Road, Hoshiarpur', lat: 31.5245, lon: 75.9055 },
-  { name: 'Mahilpur Road / Bullowal Area', lat: 31.4850, lon: 75.9550 }
+  { name: 'Mahilpur Road / Bullowal Area', lat: 31.4850, lon: 75.9550 },
+  { name: 'Rayat Bahra Professional University (Bohan)', lat: 31.4820, lon: 75.9591 }
 ];
 
 const EMERGENCY_CONDITIONS = [

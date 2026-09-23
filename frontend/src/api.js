@@ -1,5 +1,20 @@
+const isBrowser = typeof window !== 'undefined';
+const isLocalhost = isBrowser && (
+  window.location.hostname === 'localhost' || 
+  window.location.hostname === '127.0.0.1' ||
+  window.location.hostname === '0.0.0.0'
+);
+
 const buildInjectedUrl = typeof __API_URL__ !== 'undefined' ? __API_URL__ : '';
-const rawApiUrl = buildInjectedUrl || import.meta.env.VITE_API_URL || import.meta.env.BACKEND_URL || import.meta.env.VITE_BASE_API_URL || import.meta.env.VITE_BASE_API || 'http://localhost:8000';
+const defaultRemoteUrl = 'https://agentx-ly7x.onrender.com';
+const defaultLocalUrl = 'http://localhost:8000';
+
+const configuredUrl = import.meta.env.VITE_API_URL || 
+  import.meta.env.BACKEND_URL || 
+  import.meta.env.VITE_BASE_API_URL || 
+  import.meta.env.VITE_BASE_API;
+
+const rawApiUrl = buildInjectedUrl || configuredUrl || (isLocalhost ? defaultLocalUrl : defaultRemoteUrl);
 export const API_BASE = rawApiUrl.replace(/\/+$/, '') + '/api/v1';
 
 // Default mock patient token for initial seamless viewing

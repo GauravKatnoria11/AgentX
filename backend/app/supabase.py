@@ -515,6 +515,7 @@ MOCK_DATA = {
             "consultation_fee": 500.00,
             "bio": "Senior interventional cardiologist with over 4,000 successful coronary angioplasties. Trained at premier medical institutes.",
             "rating": 4.9,
+            "room_number": "Room 204, 2nd Floor (Cardiac Wing)",
             "is_available": True
         },
         {
@@ -529,6 +530,7 @@ MOCK_DATA = {
             "consultation_fee": 450.00,
             "bio": "Renowned orthopedic trauma and joint surgeon specializing in computer-assisted knee/hip replacements and fracture reconstructions.",
             "rating": 4.9,
+            "room_number": "Room 105, Ground Floor (Joint Clinic)",
             "is_available": True
         },
         {
@@ -543,6 +545,7 @@ MOCK_DATA = {
             "consultation_fee": 400.00,
             "bio": "Expert in high-risk obstetric care, painless delivery, and laparoscopic fertility-preserving surgery.",
             "rating": 4.8,
+            "room_number": "Room 302, 3rd Floor (Women's Health OPD)",
             "is_available": True
         },
         {
@@ -557,6 +560,7 @@ MOCK_DATA = {
             "consultation_fee": 50.00,
             "bio": "Head of Emergency Casualty at Civil Hospital. Expert in polytrauma triage, toxicological emergencies, and resuscitation.",
             "rating": 4.7,
+            "room_number": "Room 01, Ground Floor (Emergency Casualty)",
             "is_available": True
         },
         {
@@ -571,6 +575,7 @@ MOCK_DATA = {
             "consultation_fee": 600.00,
             "bio": "Specialist in acute stroke intervention, cranial aneurysms, and minimally invasive endoscopic spine surgery.",
             "rating": 4.9,
+            "room_number": "Room 210, 2nd Floor (Neuro Tower)",
             "is_available": True
         },
         {
@@ -585,6 +590,7 @@ MOCK_DATA = {
             "consultation_fee": 450.00,
             "bio": "Intensive care and lung specialist dealing with severe ARDS, respiratory emergencies, and advanced cardiac monitoring.",
             "rating": 4.8,
+            "room_number": "Room 108, Ground Floor (Chest & Pulmonology OPD)",
             "is_available": True
         },
         {
@@ -599,6 +605,7 @@ MOCK_DATA = {
             "consultation_fee": 350.00,
             "bio": "Premier ophthalmologist in Hoshiarpur with extensive experience in cataract phacoemulsification and diabetic eye care.",
             "rating": 4.9,
+            "room_number": "Room 102, Ground Floor (Eye OPD & Laser)",
             "is_available": True
         },
         {
@@ -613,6 +620,7 @@ MOCK_DATA = {
             "consultation_fee": 350.00,
             "bio": "Apex Hospital lead consultant for neuro-emergencies, traumatic head injuries, and seizure disorders.",
             "rating": 4.8,
+            "room_number": "Room 201, 2nd Floor (Trauma & Neuro OPD)",
             "is_available": True
         },
         {
@@ -627,6 +635,7 @@ MOCK_DATA = {
             "consultation_fee": 50.00,
             "bio": "Civil Hospital senior surgical specialist providing subsidized trauma surgeries, emergency laparotomies, and abdominal care.",
             "rating": 4.7,
+            "room_number": "Room 14, 1st Floor (Surgical Complex)",
             "is_available": True
         }
     ],

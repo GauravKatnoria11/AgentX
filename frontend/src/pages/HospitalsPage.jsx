@@ -38,9 +38,9 @@ const DEFAULT_HOSHIARPUR_LOCALITIES = [
   { name: 'Shimla Pahari', formatted_address: 'Shimla Pahari Chowk, Mall Road, Hoshiarpur 146001', lat: 31.5328, lon: 75.9196 },
   { name: 'Bajwara', formatted_address: 'Bajwara Kalan & Khurd, NH503A, Hoshiarpur 146023', lat: 31.5186, lon: 75.9535 },
   { name: 'District Session Courts', formatted_address: 'District & Session Courts, Phagwara Road, Hoshiarpur 146001', lat: 31.5188, lon: 75.9082 },
-  { name: 'Railway Station Road', formatted_address: 'Railway Station Road, Hoshiarpur 146001', lat: 31.5245, lon: 75.9055 },
   { name: 'Purhiran', formatted_address: 'Purhiran, GT Road / Phagwara Highway, Hoshiarpur 146001', lat: 31.5050, lon: 75.9100 },
-  { name: 'Piplanwala', formatted_address: 'Piplanwala, Dasuya Road Bypass, Hoshiarpur 146022', lat: 31.5420, lon: 75.9250 }
+  { name: 'Piplanwala', formatted_address: 'Piplanwala, Dasuya Road Bypass, Hoshiarpur 146022', lat: 31.5420, lon: 75.9250 },
+  { name: 'Rayat Bahra University', formatted_address: 'Rayat Bahra Professional University, V.P.O. Bohan, Chandigarh Road, Hoshiarpur 146101', lat: 31.4820, lon: 75.9591 }
 ];
 
 const DISEASE_FILTERS = [

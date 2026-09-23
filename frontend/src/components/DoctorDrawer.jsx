@@ -158,6 +158,9 @@ export default function DoctorDrawer({ doctor, onClose, onBookClick, onChatClick
             <span className="drawer-tag">{doctor.specialization || "General Medicine"}</span>
             <span className="drawer-tag">Consultation: ₹{doctor.consultation_fee || 500}</span>
             <span className="drawer-tag">{doctor.experience_years || 10}+ Yrs Exp</span>
+            <span className="drawer-tag" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fde68a' }}>
+              📍 {doctor.room_number || "Room 101, Main OPD"}
+            </span>
           </div>
 
           <div style={{ display: 'flex', gap: '10px', width: '100%', marginTop: '20px' }}>

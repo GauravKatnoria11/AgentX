@@ -15,7 +15,8 @@ import {
   ArrowRight,
   Phone,
   Droplet,
-  CreditCard
+  CreditCard,
+  DoorClosed
 } from 'lucide-react';
 import { fetchDoctors, fetchDoctorAvailability, bookAppointment, fetchHospitals } from '../api';
 
@@ -429,6 +430,14 @@ export default function DoctorsPage({
                   </span>
                 </div>
 
+                {/* OPD Room / Cabin */}
+                <div className="classroom-meta-row">
+                  <DoorClosed size={16} color="#d97706" />
+                  <span style={{ fontSize: '13px', color: 'var(--text-body)' }}>
+                    OPD / Cabin: <strong style={{ color: '#b45309' }}>{doc.room_number || 'Room 101, Main OPD'}</strong>
+                  </span>
+                </div>
+
                 {/* Experience */}
                 <div className="classroom-meta-row">
                   <Award size={16} color="#059669" />
@@ -518,7 +527,7 @@ export default function DoctorsPage({
             </div>
 
             <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px', background: '#f8fafc', padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
-              Specialty: <strong>{bookingDoctor.specialization}</strong> • Dept: <strong>{bookingDoctor.department_name}</strong> • Consultation Fee: <strong style={{ color: 'var(--primary-blue)' }}>₹{bookingDoctor.consultation_fee}</strong>
+              Specialty: <strong>{bookingDoctor.specialization}</strong> • Dept: <strong>{bookingDoctor.department_name}</strong> • OPD: <strong style={{ color: '#b45309' }}>{bookingDoctor.room_number || 'Room 101, Main OPD'}</strong> • Fee: <strong style={{ color: 'var(--primary-blue)' }}>₹{bookingDoctor.consultation_fee}</strong>
             </div>
 
             {bookingSuccess ? (
@@ -528,8 +537,8 @@ export default function DoctorsPage({
                 <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
                   Your appointment at <strong>{bookingDoctor.hospital_name}</strong> is scheduled for <strong>{bookingSuccess.appointment_date}</strong> at <strong>{bookingSuccess.appointment_time?.slice(0, 5)}</strong>.
                 </p>
-                <div style={{ margin: '14px 0', padding: '12px', background: '#eff6ff', borderRadius: '10px', fontSize: '15px', color: 'var(--primary-blue)', fontWeight: 800, border: '1px solid #bfdbfe' }}>
-                  Token Queue Number: #{bookingSuccess.queue_number || 1}
+                <div style={{ margin: '14px 0', padding: '12px', background: '#eff6ff', borderRadius: '10px', fontSize: '14px', color: 'var(--primary-blue)', fontWeight: 800, border: '1px solid #bfdbfe' }}>
+                  Token Queue Number: #{bookingSuccess.queue_number || 1} • Consultation: {bookingSuccess.room_number || bookingDoctor.room_number || 'Room 101, Main OPD'}
                 </div>
                 <div style={{ margin: '8px 0 20px 0', fontSize: '13px', color: '#475569' }}>
                   Patient Mobile: <strong>{bookingSuccess.patient_phone || patientPhone}</strong> • Blood Group: <strong style={{ color: '#b91c1c' }}>{bookingSuccess.blood_group || bloodGroup}</strong>

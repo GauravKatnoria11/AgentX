@@ -40,6 +40,7 @@ class DoctorService:
             dept = next((d for d in MOCK_DATA["departments"] if str(d["id"]) == str(doc["department_id"])), None)
             d_dict["hospital_name"] = hosp["name"] if hosp else "Unknown Hospital"
             d_dict["department_name"] = dept["name"] if dept else "General"
+            d_dict["room_number"] = doc.get("room_number", "Room 101, Main OPD")
             results.append(d_dict)
         return results
 
@@ -55,6 +56,7 @@ class DoctorService:
         dept = next((d for d in MOCK_DATA["departments"] if str(d["id"]) == str(res["department_id"])), None)
         res["hospital_name"] = hosp["name"] if hosp else "Unknown Hospital"
         res["department_name"] = dept["name"] if dept else "General"
+        res["room_number"] = doc.get("room_number", "Room 101, Main OPD")
         res["schedules"] = [s for s in MOCK_DATA["doctor_schedules"] if str(s["doctor_id"]) == str(res["id"]) and s.get("is_active", True)]
         return res
 

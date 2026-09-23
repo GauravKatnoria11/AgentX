@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { oauthCallback, setAuthToken } from './api';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://sample-project.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://zvfysitimzyvwrnjwtbx.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2ZnlzaXRpbXp5dndybmp3dGJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwMDI1NjgsImV4cCI6MjEwNTU3ODU2OH0.RVwa_ETjLp1bdA09kO2datjI1zVIfhUJRQ-dyiP9F-k';
 
 export const SUPABASE_CALLBACK_URL = 'https://zvfysitimzyvwrnjwtbx.supabase.co/auth/v1/callback';
 

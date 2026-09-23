@@ -45,6 +45,7 @@ class Settings(BaseSettings):
     def cors_origins(self) -> List[str]:
         origins = [
             self.FRONTEND_URL,
+            "https://agent-x-fawn.vercel.app",
             "https://agent-x-bice-eight.vercel.app",
             "http://localhost:3000",
             "http://localhost:5173",

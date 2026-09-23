@@ -40,7 +40,10 @@ HOSHIARPUR_PLACES: List[Dict[str, Any]] = [
     {"name": "Apex Hospital & Critical Care", "formatted_address": "Sutheri Road, Near Central Bus Stand, Hoshiarpur, Punjab 146001", "latitude": 31.5335, "longitude": 75.9160, "locality": "Sutheri Road"},
     {"name": "Lifeline Heart Hospital", "formatted_address": "Phagwara Road, Opposite Session Courts, Hoshiarpur, Punjab 146001", "latitude": 31.5188, "longitude": 75.9082, "locality": "Phagwara Road"},
     {"name": "Grover Eye Hospital & Laser Centre", "formatted_address": "Model Town Road, Near Sessions Chowk, Hoshiarpur, Punjab 146001", "latitude": 31.5275, "longitude": 75.9150, "locality": "Model Town Road"},
-    {"name": "Rayat Bahra University Hoshiarpur", "formatted_address": "Rayat Bahra University, Hoshiarpur Campus, Hoshiarpur, Punjab 146001", "latitude": 31.5356, "longitude": 75.9136, "locality": "Hoshiarpur"}
+    {"name": "Rayat Bahra Professional University Hoshiarpur", "formatted_address": "Rayat Bahra Professional University, V.P.O. Bohan, Chandigarh Road, Hoshiarpur, Punjab 146101", "latitude": 31.4820, "longitude": 75.9591, "locality": "Bohan"},
+    {"name": "Rayat Bahra University Hoshiarpur", "formatted_address": "Rayat Bahra University, Hoshiarpur Campus, V.P.O. Bohan, Chandigarh Road, Hoshiarpur, Punjab 146101", "latitude": 31.4820, "longitude": 75.9591, "locality": "Bohan"},
+    {"name": "Rayat Bahra Campus Bohan", "formatted_address": "Rayat Bahra Group of Institutes, Chandigarh Road, Bohan, Hoshiarpur, Punjab 146101", "latitude": 31.4820, "longitude": 75.9591, "locality": "Bohan"},
+    {"name": "RBPU Hoshiarpur", "formatted_address": "Rayat Bahra Professional University, Bohan Campus, Hoshiarpur, Punjab 146101", "latitude": 31.4820, "longitude": 75.9591, "locality": "Bohan"}
 ]
 
 

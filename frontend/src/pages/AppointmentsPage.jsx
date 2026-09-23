@@ -312,7 +312,7 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                       {a.doctor_name || 'Specialist Consultation'}
                     </h3>
                     <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                      {a.department_name} • <strong>{a.hospital_name}</strong>
+                      {a.department_name} • <strong>{a.hospital_name}</strong> • <span style={{ color: '#b45309', fontWeight: 600 }}>📍 {a.room_number || 'Room 101, Main OPD'}</span>
                     </div>
 
                     {(a.patient_phone || a.blood_group) && (

@@ -216,6 +216,7 @@ class AppointmentService:
         res["doctor_name"] = doc["name"] if doc else "Doctor"
         res["hospital_name"] = hosp["name"] if hosp else "Hospital"
         res["department_name"] = dept["name"] if dept else "General"
+        res["room_number"] = doc.get("room_number", "Room 101, Main OPD") if doc else "Room 101, Main OPD"
         res["patient_name"] = res.get("patient_name") or (patient["full_name"] if patient else "Patient")
         res["patient_email"] = res.get("patient_email") or (patient.get("email") if patient else None) or MOCK_DATA.get("last_active_user_email")
         res["patient_phone"] = res.get("patient_phone") or (patient.get("phone") if patient else None)
