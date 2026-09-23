@@ -1,4 +1,5 @@
-const rawApiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_BASE_API_URL || import.meta.env.VITE_BASE_API || 'http://localhost:8000';
+const buildInjectedUrl = typeof __API_URL__ !== 'undefined' ? __API_URL__ : '';
+const rawApiUrl = buildInjectedUrl || import.meta.env.VITE_API_URL || import.meta.env.BACKEND_URL || import.meta.env.VITE_BASE_API_URL || import.meta.env.VITE_BASE_API || 'http://localhost:8000';
 export const API_BASE = rawApiUrl.replace(/\/+$/, '') + '/api/v1';
 
 // Default mock patient token for initial seamless viewing
