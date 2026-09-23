@@ -157,7 +157,7 @@ export default function EmergencyPage({ onNavigateToRoute }) {
         style={{
           background: 'linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%)',
           borderRadius: '10px',
-          padding: '24px 28px',
+          padding: 'clamp(16px, 4vw, 24px) clamp(16px, 4vw, 28px)',
           color: '#ffffff',
           boxShadow: '0 10px 25px -5px rgba(185, 28, 28, 0.4)',
           display: 'flex',
@@ -184,7 +184,7 @@ export default function EmergencyPage({ onNavigateToRoute }) {
               24/7 Emergency Dispatch
             </span>
           </div>
-          <h2 style={{ fontSize: '24px', fontWeight: 800, margin: '6px 0', letterSpacing: '-0.02em' }}>
+          <h2 style={{ fontSize: 'clamp(20px, 4vw, 24px)', fontWeight: 800, margin: '6px 0', letterSpacing: '-0.02em' }}>
             Emergency Response & Ambulance Dispatch
           </h2>
           <p style={{ fontSize: '13px', opacity: 0.95, lineHeight: 1.4, margin: 0 }}>
@@ -193,12 +193,14 @@ export default function EmergencyPage({ onNavigateToRoute }) {
         </div>
 
         {/* Quick Dial Buttons */}
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', width: '100%', maxWidth: '420px' }}>
           <a
             href="tel:108"
             style={{
+              flex: '1 1 180px',
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
               gap: '8px',
               background: '#ffffff',
               color: '#b91c1c',
@@ -215,8 +217,10 @@ export default function EmergencyPage({ onNavigateToRoute }) {
           <a
             href="tel:+911882220022"
             style={{
+              flex: '1 1 180px',
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
               gap: '8px',
               background: 'rgba(255, 255, 255, 0.15)',
               border: '1px solid rgba(255, 255, 255, 0.4)',
@@ -240,7 +244,7 @@ export default function EmergencyPage({ onNavigateToRoute }) {
           style={{
             border: '2px solid #ef4444',
             background: '#fef2f2',
-            padding: '24px',
+            padding: 'clamp(16px, 3.5vw, 24px)',
             borderRadius: '10px'
           }}
         >
@@ -275,7 +279,8 @@ export default function EmergencyPage({ onNavigateToRoute }) {
                 padding: '14px 22px',
                 borderRadius: '10px',
                 textAlign: 'center',
-                boxShadow: '0 4px 10px rgba(239, 68, 68, 0.1)'
+                boxShadow: '0 4px 10px rgba(239, 68, 68, 0.1)',
+                minWidth: 'min(100%, 200px)'
               }}
             >
               <div style={{ fontSize: '11px', fontWeight: 700, color: '#dc2626', textTransform: 'uppercase' }}>
@@ -291,7 +296,7 @@ export default function EmergencyPage({ onNavigateToRoute }) {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
               gap: '16px',
               marginTop: '20px'
             }}
@@ -307,7 +312,7 @@ export default function EmergencyPage({ onNavigateToRoute }) {
               <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '5px' }}>
                 <MapPin size={13} /> {sosResult.nearest_hospital.address}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginTop: '12px', fontSize: '13px', fontWeight: 700 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginTop: '12px', fontSize: '13px', fontWeight: 700, flexWrap: 'wrap' }}>
                 <span style={{ color: '#059669', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                   <CheckCircle2 size={14} /> {sosResult.nearest_hospital.available_icu_beds} ICU Beds Available
                 </span>
@@ -342,9 +347,9 @@ export default function EmergencyPage({ onNavigateToRoute }) {
       )}
 
       {/* SOS Configuration & Trigger Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '24px' }}>
         {/* Step 1: Select Emergency Condition */}
-        <div className="card" style={{ padding: '24px' }}>
+        <div className="card" style={{ padding: 'clamp(16px, 3.5vw, 24px)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
             <span
               style={{
@@ -432,7 +437,7 @@ export default function EmergencyPage({ onNavigateToRoute }) {
         </div>
 
         {/* Step 2: Location in Hoshiarpur & Patient Info */}
-        <div className="card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        <div className="card" style={{ padding: 'clamp(16px, 3.5vw, 24px)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
               <span
@@ -487,7 +492,7 @@ export default function EmergencyPage({ onNavigateToRoute }) {
             </div>
 
             {/* Patient Name and Contact */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))', gap: '12px', marginBottom: '16px' }}>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
                   PATIENT NAME

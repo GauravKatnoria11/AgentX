@@ -350,11 +350,11 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                     )}
                   </div>
 
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end' }}>
+                    <div style={{ minWidth: '130px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                      <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <Calendar size={14} color="var(--primary-blue)" /> {a.appointment_date}
                       </div>
-                      <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end' }}>
+                      <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <Clock size={13} /> {a.appointment_time?.slice(0, 5)}
                       </div>
                     </div>
@@ -379,7 +379,7 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                   )}
 
                   {/* Bottom Actions */}
-                  <div style={{ display: 'flex', gap: '10px', marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--border-subtle)', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--border-subtle)', flexWrap: 'wrap', alignItems: 'center' }}>
                     {/* Route & ETA */}
                     <button
                       className="btn-google-outline"
@@ -428,7 +428,7 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                   {!isCancelled && !isCompleted && (
                     <button
                       className="btn-secondary"
-                      style={{ fontSize: '12px', padding: '8px 16px', color: '#b91c1c', marginLeft: 'auto', borderRadius: '3px' }}
+                      style={{ fontSize: '12px', padding: '8px 16px', color: '#b91c1c', borderRadius: '3px' }}
                       onClick={() => setCancellingId(a.id)}
                     >
                       Cancel Slot
@@ -446,7 +446,7 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
         <div className="doctor-drawer-overlay" onClick={() => setRatingAppt(null)}>
           <div
             className="card"
-            style={{ width: '480px', maxWidth: '92%', margin: 'auto', padding: '24px', borderRadius: '3px' }}
+            style={{ width: '480px', maxWidth: 'min(480px, 94vw)', margin: 'auto', padding: 'clamp(16px, 4vw, 24px)', borderRadius: '3px', maxHeight: '90vh', overflowY: 'auto' }}
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
@@ -480,7 +480,7 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                 <label style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>
                   Select Consultation Score
                 </label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       key={star}
@@ -567,11 +567,11 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+              <div style={{ display: 'flex', gap: '10px', marginTop: '6px', flexWrap: 'wrap' }}>
                 <button
                   type="button"
                   className="btn-google-outline"
-                  style={{ flex: 1, justifyContent: 'center', borderRadius: '3px' }}
+                  style={{ flex: 1, minWidth: '100px', justifyContent: 'center', borderRadius: '3px' }}
                   onClick={() => setRatingAppt(null)}
                 >
                   Cancel
@@ -580,7 +580,7 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                   type="submit"
                   className="btn-google-primary"
                   disabled={isSubmittingRating}
-                  style={{ flex: 2, justifyContent: 'center', background: '#0d904f', borderColor: '#0d904f', borderRadius: '3px' }}
+                  style={{ flex: 2, minWidth: '160px', justifyContent: 'center', background: '#0d904f', borderColor: '#0d904f', borderRadius: '3px' }}
                 >
                   {isSubmittingRating ? 'Publishing...' : 'Submit Verified Rating'}
                 </button>
@@ -593,7 +593,7 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
       {/* Cancel Reason Modal */}
       {cancellingId && (
         <div className="doctor-drawer-overlay" onClick={() => setCancellingId(null)}>
-          <div className="card" style={{ width: '400px', margin: 'auto', borderRadius: '3px' }} onClick={(e) => e.stopPropagation()}>
+          <div className="card" style={{ width: '400px', maxWidth: 'min(400px, 94vw)', margin: 'auto', padding: 'clamp(16px, 4vw, 24px)', borderRadius: '3px' }} onClick={(e) => e.stopPropagation()}>
             <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '8px' }}>Cancel Appointment</h3>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '14px' }}>
               Are you sure you want to cancel this appointment? Please state a reason:
@@ -612,13 +612,13 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                 fontSize: '13px'
               }}
             />
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button className="btn-google-outline" style={{ flex: 1, justifyContent: 'center', borderRadius: '3px' }} onClick={() => setCancellingId(null)}>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <button className="btn-google-outline" style={{ flex: 1, minWidth: '100px', justifyContent: 'center', borderRadius: '3px' }} onClick={() => setCancellingId(null)}>
                 Keep Slot
               </button>
               <button
                 className="btn-google-danger"
-                style={{ flex: 1, justifyContent: 'center', borderRadius: '3px' }}
+                style={{ flex: 1, minWidth: '120px', justifyContent: 'center', borderRadius: '3px' }}
                 onClick={() => handleCancel(cancellingId)}
               >
                 Confirm Cancel

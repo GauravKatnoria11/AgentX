@@ -316,7 +316,7 @@ export default function DoctorsPage({
           <label style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
             <Stethoscope size={13} /> Filter by Medical Specialty
           </label>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', overflowX: 'auto', paddingBottom: '2px' }}>
             {categories.map((cat) => (
               <button
                 key={cat}
@@ -331,7 +331,8 @@ export default function DoctorsPage({
                   background: specialization === cat ? 'var(--primary-blue)' : '#f1f5f9',
                   color: specialization === cat ? '#ffffff' : '#475569',
                   border: specialization === cat ? '1px solid var(--primary-blue)' : '1px solid #e2e8f0',
-                  transition: 'all 0.1s ease'
+                  transition: 'all 0.1s ease',
+                  whiteSpace: 'nowrap'
                 }}
               >
                 {cat}
@@ -386,7 +387,7 @@ export default function DoctorsPage({
           </button>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '22px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '20px' }}>
           {doctors.map((doc, index) => (
             <div key={doc.id} className="classroom-card">
               {/* Google Classroom Style Thematic Banner Cover */}
@@ -494,12 +495,12 @@ export default function DoctorsPage({
             className="card"
             style={{
               width: '540px',
-              maxWidth: '94%',
+              maxWidth: 'min(540px, 94vw)',
               margin: 'auto',
               maxHeight: '90vh',
               overflowY: 'auto',
               borderRadius: '10px',
-              padding: '28px 30px',
+              padding: 'clamp(16px, 4vw, 28px)',
               background: '#ffffff',
               boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
               position: 'relative',
@@ -548,7 +549,7 @@ export default function DoctorsPage({
                     <button
                       type="button"
                       className="btn-google-primary"
-                      style={{ flex: 1.4, justifyContent: 'center', padding: '11px 16px' }}
+                      style={{ flex: 1.4, minWidth: '160px', justifyContent: 'center', padding: '11px 16px' }}
                       onClick={() => {
                         closeBookingModal();
                         onNavigateToAppointments();
@@ -560,7 +561,7 @@ export default function DoctorsPage({
                   <button
                     type="button"
                     className="btn-google-outline"
-                    style={{ flex: 1, justifyContent: 'center', padding: '11px 16px' }}
+                    style={{ flex: 1, minWidth: '100px', justifyContent: 'center', padding: '11px 16px' }}
                     onClick={closeBookingModal}
                   >
                     Done
@@ -576,10 +577,10 @@ export default function DoctorsPage({
                 )}
 
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap', gap: '6px' }}>
                     <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)' }}>Consultation Date</label>
                     {/* Quick date chips */}
-                    <div style={{ display: 'flex', gap: '6px' }}>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                       {[0, 1, 2].map((offset) => {
                         const target = new Date();
                         target.setDate(target.getDate() + offset);
@@ -630,7 +631,7 @@ export default function DoctorsPage({
                 </div>
 
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap', gap: '6px' }}>
                     <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)' }}>
                       Hospital Consultation Slots for {appointmentDate}
                     </label>
@@ -640,7 +641,7 @@ export default function DoctorsPage({
                       </span>
                     )}
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: '8px', marginTop: '6px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 75px), 1fr))', gap: '8px', marginTop: '6px' }}>
                     {loadingSlots ? (
                       <div style={{ gridColumn: '1 / -1', fontSize: '12px', color: 'var(--text-muted)', padding: '12px', background: '#f8fafc', borderRadius: '10px', textAlign: 'center' }}>
                         Loading doctor slots...
@@ -681,7 +682,7 @@ export default function DoctorsPage({
                 </div>
 
                 {/* Patient Mobile Number & Blood Group Intake */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: '12px' }}>
                   <div>
                     <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '5px' }}>
                       <Phone size={13} color="var(--primary-blue)" /> Patient Mobile Number *

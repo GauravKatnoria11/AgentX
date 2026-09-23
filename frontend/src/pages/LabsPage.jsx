@@ -158,8 +158,8 @@ export default function LabsPage() {
 
         {/* Search Bar & Category Pills */}
         <div style={{ marginTop: '20px' }}>
-          <form onSubmit={handleSearch} style={{ display: 'flex', gap: '12px' }}>
-            <div style={{ flex: 1, position: 'relative' }}>
+          <form onSubmit={handleSearch} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <div style={{ flex: '1 1 240px', position: 'relative' }}>
               <input
                 type="text"
                 placeholder="Search by test name (e.g. CBC, MRI, Lipid, Dengue, HbA1c, Thyroid)..."
@@ -175,13 +175,13 @@ export default function LabsPage() {
                 }}
               />
             </div>
-            <button type="submit" className="btn-primary" style={{ padding: '8px 24px' }}>
+            <button type="submit" className="btn-primary" style={{ padding: '8px 24px', flex: '0 1 auto' }}>
               Search Tests
             </button>
           </form>
 
           {/* Categories */}
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '14px' }}>
+          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '4px', marginTop: '14px' }}>
             {TEST_CATEGORIES.map((cat) => {
               const isSelected = selectedCategory === cat.id;
               return (
@@ -197,7 +197,8 @@ export default function LabsPage() {
                     fontSize: '12px',
                     fontWeight: 700,
                     cursor: 'pointer',
-                    transition: 'all 0.15s ease'
+                    transition: 'all 0.15s ease',
+                    whiteSpace: 'nowrap'
                   }}
                 >
                   {cat.label}
@@ -220,7 +221,7 @@ export default function LabsPage() {
               No diagnostic tests found matching your search.
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '20px' }}>
               {tests.map((t, idx) => (
                 <div
                   key={idx}
@@ -296,9 +297,9 @@ export default function LabsPage() {
 
       {/* VIEW MODE 2: LAB CENTRES DIRECTORY */}
       {viewMode === 'labs' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '20px' }}>
           {labs.map((lab) => (
-            <div key={lab.id} className="card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div key={lab.id} className="card" style={{ padding: 'clamp(16px, 3vw, 24px)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
@@ -360,8 +361,8 @@ export default function LabsPage() {
 
       {/* BOOKING MODAL */}
       {selectedTestToBook && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
-          <div style={{ background: '#ffffff', borderRadius: '10px', width: '100%', maxWidth: '540px', padding: '28px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', maxHeight: '90vh', overflowY: 'auto' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 'clamp(10px, 3vw, 20px)' }}>
+          <div style={{ background: '#ffffff', borderRadius: '10px', width: '100%', maxWidth: 'min(540px, 94vw)', padding: 'clamp(16px, 4vw, 28px)', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <div>
                 <span className="pill-badge blue">Hoshiarpur Diagnostic Desk</span>
@@ -419,7 +420,7 @@ export default function LabsPage() {
             ) : (
               <form onSubmit={handleConfirmBooking} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {/* Summary Banner */}
-                <div style={{ background: '#eff6ff', padding: '14px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ background: '#eff6ff', padding: '14px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                   <div>
                     <div style={{ fontSize: '11px', color: 'var(--primary-blue)', fontWeight: 700, textTransform: 'uppercase' }}>Selected Test</div>
                     <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-main)' }}>{selectedTestToBook.name}</div>
@@ -435,7 +436,7 @@ export default function LabsPage() {
                   <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>
                     SAMPLE COLLECTION PREFERENCE
                   </label>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))', gap: '12px' }}>
                     <div
                       onClick={() => setCollectionType('home_collection')}
                       style={{
@@ -471,7 +472,7 @@ export default function LabsPage() {
                 </div>
 
                 {/* Patient Details */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: '12px' }}>
                   <div>
                     <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
                       PATIENT NAME
@@ -499,7 +500,7 @@ export default function LabsPage() {
                 </div>
 
                 {/* Date and Time */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: '12px' }}>
                   <div>
                     <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
                       COLLECTION DATE

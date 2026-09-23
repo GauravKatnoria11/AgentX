@@ -17,7 +17,8 @@ import {
   LogOut,
   ChevronDown,
   User,
-  ShieldCheck
+  ShieldCheck,
+  X
 } from 'lucide-react';
 import './App.css';
 import { initGuestAuth, fetchCurrentUser, logoutUser, getStoredUser } from './api';
@@ -46,6 +47,7 @@ function App() {
   });
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Default to AI Search as main page
   const [currentPage, setCurrentPage] = useState('ai-guide');
@@ -119,6 +121,7 @@ function App() {
       setDoctorToBook(null);
     }
     setCurrentPage(page);
+    setIsMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -202,8 +205,15 @@ function App() {
 
   return (
     <div className="app-container">
+      {/* Mobile Drawer Backdrop */}
+      <div
+        className={`sidebar-backdrop ${isMobileMenuOpen ? 'active' : ''}`}
+        onClick={() => setIsMobileMenuOpen(false)}
+        aria-hidden="true"
+      />
+
       {/* Sidebar Navigation */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
         {/* Brand Header */}
         <div
           className="brand-header"
@@ -215,6 +225,19 @@ function App() {
             <Building2 size={20} />
           </div>
           <span className="brand-title">Carelink</span>
+
+          {/* Close button for mobile off-canvas drawer */}
+          <button
+            type="button"
+            className="sidebar-close-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsMobileMenuOpen(false);
+            }}
+            aria-label="Close menu"
+          >
+            <X size={18} />
+          </button>
         </div>
 
         {/* Navigation Items */}
@@ -246,6 +269,16 @@ function App() {
         {/* Top Header */}
         <header className="top-header">
           <div className="header-left">
+            {/* Hamburger button for Mobile / Tablet */}
+            <button
+              type="button"
+              className="mobile-menu-btn"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Toggle navigation menu"
+              title="Menu"
+            >
+              <Menu size={20} />
+            </button>
             <h1 className="page-title">{meta.title}</h1>
           </div>
 
@@ -254,10 +287,12 @@ function App() {
             {/* Emergency SOS Quick Button in Top Bar */}
             <button
               onClick={() => handleNavigate('emergency')}
-              className="btn-google-danger"
-              style={{ padding: '6px 14px', borderRadius: '3px', fontSize: '12px' }}
+              className="btn-google-danger emergency-header-btn"
+              style={{ padding: '6px 12px', borderRadius: '3px', fontSize: '12px' }}
             >
-              <ShieldAlert size={15} /> Emergency SOS
+              <ShieldAlert size={15} />
+              <span className="sos-full-text">Emergency SOS</span>
+              <span className="sos-short-text">SOS</span>
             </button>
 
             {/* Notification Bell */}
@@ -492,6 +527,31 @@ function App() {
           handleNavigate('emergency');
         }}
       />
+
+      {/* Mobile Bottom Navigation Bar (5 Primary Touch Flows) */}
+      <nav className="mobile-bottom-nav" aria-label="Mobile Navigation">
+        {[
+          { id: 'ai-guide', label: 'AI Search', icon: Sparkles },
+          { id: 'emergency', label: 'SOS', icon: ShieldAlert, isEmergency: true },
+          { id: 'hospitals', label: 'Hospitals', icon: Building2 },
+          { id: 'doctors', label: 'Doctors', icon: Stethoscope },
+          { id: 'appointments', label: 'Bookings', icon: Calendar }
+        ].map((item) => {
+          const Icon = item.icon;
+          const isActive = currentPage === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              className={`mobile-nav-item ${isActive ? 'active' : ''} ${item.isEmergency ? 'emergency' : ''}`}
+              onClick={() => handleNavigate(item.id)}
+            >
+              <Icon size={18} />
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
+      </nav>
     </div>
   );
 }

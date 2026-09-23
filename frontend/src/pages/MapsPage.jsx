@@ -220,9 +220,9 @@ export default function MapsPage({
       </div>
 
       {/* Input Route Controls Form */}
-      <div className="card" style={{ padding: '24px' }}>
+      <div className="card" style={{ padding: 'clamp(14px, 3.5vw, 24px)' }}>
         <form onSubmit={handleSearch} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '16px' }}>
             {/* Origin with Live Google Maps Autocomplete */}
             <div style={{ position: 'relative' }} ref={dropdownRef}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
@@ -419,7 +419,7 @@ export default function MapsPage({
 
           {/* Mode Selector & Action */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginTop: '8px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', marginRight: '6px' }}>
                 Travel Mode:
               </span>
@@ -476,7 +476,7 @@ export default function MapsPage({
             </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
               {origin.split(',')[0]} to {destination.split('(')[0]}
             </span>
@@ -500,7 +500,7 @@ export default function MapsPage({
         </div>
 
         {/* Real Embedded Google Map with Turn-by-Turn Route */}
-        <div style={{ width: '100%', height: '480px', position: 'relative', background: '#e2e8f0' }}>
+        <div style={{ width: '100%', height: 'clamp(300px, 50vh, 480px)', position: 'relative', background: '#e2e8f0' }}>
           <iframe
             title="Google Maps Hospital Route"
             width="100%"
@@ -516,14 +516,14 @@ export default function MapsPage({
 
       {/* Route & ETA Telemetry Cards */}
       {routeData && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '20px' }}>
           {/* Left: Journey Metrics */}
-          <div className="card" style={{ padding: '24px' }}>
+          <div className="card" style={{ padding: 'clamp(16px, 3.5vw, 24px)' }}>
             <h3 style={{ fontSize: '16px', fontWeight: 800, marginBottom: '16px', color: 'var(--text-main)' }}>
               Route Telemetry: Journey Overview & Corridor Telemetry
             </h3>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))', gap: '12px', marginBottom: '16px' }}>
               <div style={{ padding: '16px', background: '#eff6ff', borderRadius: '10px', border: '1px solid #dbeafe' }}>
                 <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--primary-blue)', textTransform: 'uppercase' }}>
                   Road Distance

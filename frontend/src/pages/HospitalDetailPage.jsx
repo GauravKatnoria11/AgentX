@@ -88,7 +88,7 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* Top Breadcrumb & Return Action */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <button
           onClick={onBack}
           style={{
@@ -108,7 +108,7 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
           <ArrowLeft size={16} /> Back to All Hospitals
         </button>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <button
             className="btn-secondary"
             onClick={() => onNavigateToRoute && onNavigateToRoute(hospital.name)}
@@ -131,14 +131,14 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
       <div
         className="card"
         style={{
-          padding: '28px',
+          padding: '24px',
           background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)',
           borderRadius: '10px',
           border: '1px solid var(--border-subtle)'
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
-          <div style={{ maxWidth: '680px' }}>
+          <div style={{ maxWidth: '680px', flex: '1 1 300px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', flexWrap: 'wrap' }}>
               <span className="pill-badge blue">{hospital.type}</span>
               {hospital.emergency_available && (
@@ -149,7 +149,7 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
               </span>
             </div>
 
-            <h1 style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-main)', margin: '4px 0 12px 0' }}>
+            <h1 style={{ fontSize: '26px', fontWeight: 800, color: 'var(--text-main)', margin: '4px 0 12px 0' }}>
               {hospital.name}
             </h1>
 
@@ -173,7 +173,8 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
               border: '1px solid var(--border-subtle)',
               borderRadius: '10px',
               padding: '20px 24px',
-              minWidth: '220px',
+              minWidth: 'min(100%, 220px)',
+              flex: '1 1 200px',
               boxShadow: '0 4px 12px rgba(0,0,0,0.04)'
             }}
           >
@@ -205,7 +206,7 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
         </div>
 
         {/* Tab Navigation */}
-        <div style={{ display: 'flex', gap: '12px', marginTop: '28px', borderBottom: '1px solid var(--border-subtle)', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '8px', marginTop: '24px', borderBottom: '1px solid var(--border-subtle)', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '2px', flexWrap: 'nowrap' }}>
           {[
             { id: 'overview', label: 'Overview' },
             { id: 'departments', label: `Departments (${hospital.departments?.length || 0})` },
@@ -219,10 +220,11 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
               style={{
                 background: 'none',
                 border: 'none',
-                padding: '12px 18px',
-                fontSize: '14px',
+                padding: '10px 16px',
+                fontSize: '13px',
                 fontWeight: 700,
                 cursor: 'pointer',
+                whiteSpace: 'nowrap',
                 color: activeTab === tab.id ? 'var(--primary-blue)' : 'var(--text-muted)',
                 borderBottom: activeTab === tab.id ? '2px solid var(--primary-blue)' : '2px solid transparent',
                 transition: 'all 0.15s ease'
@@ -306,7 +308,7 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '10px', marginTop: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: '10px', marginTop: '16px' }}>
                 {hospital.government_schemes.map((sch, i) => (
                   <div
                     key={i}
@@ -346,7 +348,7 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
 
       {/* Tab 2: Departments */}
       {activeTab === 'departments' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '16px' }}>
           {hospital.departments?.length > 0 ? (
             hospital.departments.map((dept) => (
               <div key={dept.id} className="card" style={{ padding: '20px' }}>
@@ -374,7 +376,7 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
 
       {/* Tab 3: Doctors on Staff */}
       {activeTab === 'doctors' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '16px' }}>
           {hospital.doctors?.length > 0 ? (
             hospital.doctors.map((doc) => (
               <div key={doc.id} className="card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>

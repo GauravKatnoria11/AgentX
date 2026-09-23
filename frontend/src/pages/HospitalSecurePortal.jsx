@@ -525,8 +525,8 @@ export default function HospitalSecurePortal({ onExitPortal }) {
   // ==========================================
   if (!isAuthenticated) {
     return (
-      <div style={{ minHeight: '100vh', background: '#080e1e', color: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: 'Inter, system-ui, sans-serif' }}>
-        <div style={{ width: '100%', maxWidth: '480px', background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', padding: '36px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+      <div style={{ minHeight: '100vh', background: '#080e1e', color: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'clamp(14px, 3vw, 24px)', fontFamily: 'Inter, system-ui, sans-serif' }}>
+        <div style={{ width: '100%', maxWidth: 'min(480px, 94vw)', background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', padding: 'clamp(18px, 4vw, 36px)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
             <div style={{ background: '#059669', padding: '10px', borderRadius: '10px' }}>
@@ -686,13 +686,13 @@ export default function HospitalSecurePortal({ onExitPortal }) {
   return (
     <div style={{ minHeight: '100vh', background: '#080e1e', color: '#f8fafc', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, system-ui, sans-serif' }}>
       {/* Top Bar with Hospital Branding */}
-      <header style={{ background: '#0b1329', borderBottom: '1px solid #1e293b', padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
+      <header style={{ background: '#0b1329', borderBottom: '1px solid #1e293b', padding: '16px clamp(14px, 3vw, 32px)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div style={{ background: '#059669', padding: '10px', borderRadius: '10px' }}>
             <Building2 size={24} color="#ffffff" />
           </div>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <h2 style={{ fontSize: '19px', fontWeight: 800, margin: 0, color: '#ffffff' }}>
                 {hospital.name || 'Hospital Authority Console'}
               </h2>
@@ -706,7 +706,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
           <button
             onClick={() => loadDashboard(hospitalToken)}
             style={{
@@ -745,7 +745,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
       </header>
 
       {/* Main Container */}
-      <main style={{ padding: '28px 32px', flex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <main style={{ padding: '24px clamp(14px, 3vw, 32px)', flex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
         {/* Metric Cards Banner */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
           {/* Card 1: Total Patients */}
@@ -823,7 +823,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
 
         {/* Tab Navigation */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px', borderBottom: '1px solid #1e293b', paddingBottom: '14px' }}>
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', maxWidth: '100%', paddingBottom: '4px' }}>
             {[
               { id: 'patients', label: `Patients & Appointments (${appointments.length})`, icon: Users },
               { id: 'beds', label: 'ICU & Bed Capacity Studio', icon: Bed },
@@ -847,6 +847,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                     fontSize: '13px',
                     fontWeight: 700,
                     cursor: 'pointer',
+                    whiteSpace: 'nowrap',
                     transition: 'all 0.15s ease'
                   }}
                 >
@@ -858,9 +859,9 @@ export default function HospitalSecurePortal({ onExitPortal }) {
           </div>
 
           {activeTab === 'patients' && (
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
               {/* Filter Pills */}
-              <div style={{ display: 'flex', gap: '6px' }}>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                 {['all', 'pending', 'confirmed', 'completed', 'cancelled'].map((f) => (
                   <button
                     key={f}
@@ -883,7 +884,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
               </div>
 
               {/* Search Bar */}
-              <div style={{ position: 'relative', width: '220px' }}>
+              <div style={{ position: 'relative', width: '220px', maxWidth: '100%' }}>
                 <Search size={14} color="#94a3b8" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type="text"
@@ -915,8 +916,8 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                 <CheckCircle2 size={16} /> {actionNotice}
               </div>
             )}
-            <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', overflow: 'hidden' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
+            <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', width: '100%' }}>
+              <table style={{ width: '100%', minWidth: '780px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
                 <thead>
                   <tr style={{ background: '#090e1c', borderBottom: '1px solid #1e293b', color: '#94a3b8', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     <th style={{ padding: '14px 20px' }}>Patient Details</th>
@@ -1235,10 +1236,10 @@ export default function HospitalSecurePortal({ onExitPortal }) {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '16px' }}>
               {(dashboardData?.emergency_alerts || []).map((alert) => (
                 <div key={alert.id} style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', padding: '20px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
                     <div>
                       <span style={{ background: '#dc2626', color: '#ffffff', fontSize: '10px', fontWeight: 800, padding: '3px 8px', borderRadius: '10px', textTransform: 'uppercase' }}>
                         ALERT: CODE RED INBOUND
@@ -1259,7 +1260,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                      Pick-up: <strong>{alert.current_location}</strong>
                   </div>
 
-                  <div style={{ marginTop: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ marginTop: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                     <span style={{ fontSize: '11px', color: '#94a3b8' }}>Triage Action:</span>
                     <select
                       value={alert.status}
@@ -1291,7 +1292,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
       {/* ==================================================== */}
       {selectedAppForAllot && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }}>
-          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', padding: '28px', width: '100%', maxWidth: '520px', color: '#ffffff' }}>
+          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', padding: 'clamp(16px, 4vw, 28px)', width: '100%', maxWidth: 'min(520px, 94vw)', color: '#ffffff', maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <h3 style={{ fontSize: '17px', fontWeight: 800, margin: 0 }}>
                 Allot Appointment Slot & Issue Token
@@ -1320,7 +1321,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                   />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))', gap: '12px' }}>
                   <div>
                     <label style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', display: 'block', marginBottom: '4px' }}>
                       CONFIRMED DATE
@@ -1348,7 +1349,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))', gap: '12px' }}>
                   <div>
                     <label style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', display: 'block', marginBottom: '4px' }}>
                       ASSIGN ATTENDING SPECIALIST
@@ -1393,18 +1394,18 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                   />
                 </div>
 
-                <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '6px', flexWrap: 'wrap' }}>
                   <button
                     type="button"
                     onClick={() => setSelectedAppForAllot(null)}
-                    style={{ flex: 1, padding: '10px', borderRadius: '10px', background: '#1e293b', border: 'none', color: '#ffffff', fontWeight: 700, cursor: 'pointer' }}
+                    style={{ flex: 1, minWidth: '100px', padding: '10px', borderRadius: '10px', background: '#1e293b', border: 'none', color: '#ffffff', fontWeight: 700, cursor: 'pointer' }}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmittingAllot}
-                    style={{ flex: 2, padding: '10px', borderRadius: '10px', background: '#059669', border: 'none', color: '#ffffff', fontWeight: 800, cursor: 'pointer' }}
+                    style={{ flex: 2, minWidth: '160px', padding: '10px', borderRadius: '10px', background: '#059669', border: 'none', color: '#ffffff', fontWeight: 800, cursor: 'pointer' }}
                   >
                     {isSubmittingAllot ? 'Confirming...' : 'Confirm Slot & Issue Token'}
                   </button>
@@ -1420,7 +1421,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
       {/* ==================================================== */}
       {selectedAppForPrescribe && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }}>
-          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', padding: '28px', width: '100%', maxWidth: '760px', color: '#ffffff', maxHeight: '90vh', overflowY: 'auto' }}>
+          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', padding: 'clamp(16px, 4vw, 28px)', width: '100%', maxWidth: 'min(760px, 94vw)', color: '#ffffff', maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px', borderBottom: '1px solid #1e293b', paddingBottom: '14px' }}>
               <div>
                 <h3 style={{ fontSize: '17px', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1683,8 +1684,10 @@ export default function HospitalSecurePortal({ onExitPortal }) {
             border: '1px solid #334155',
             borderRadius: '10px',
             width: '100%',
-            maxWidth: '520px',
-            padding: '24px',
+            maxWidth: 'min(520px, 94vw)',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            padding: 'clamp(16px, 4vw, 24px)',
             color: '#ffffff',
             boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)'
           }}>

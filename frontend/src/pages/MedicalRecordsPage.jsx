@@ -85,7 +85,7 @@ export default function MedicalRecordsPage() {
       </div>
 
       {/* Disease Category Filter Chips & Search Bar */}
-      <div className="card" style={{ padding: '20px 24px', background: '#ffffff', display: 'flex', flexDirection: 'column', gap: '16px', borderRadius: '3px' }}>
+      <div className="card" style={{ padding: 'clamp(14px, 3vw, 20px)', background: '#ffffff', display: 'flex', flexDirection: 'column', gap: '16px', borderRadius: '3px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Activity size={18} color="var(--primary-blue)" />
@@ -181,7 +181,7 @@ export default function MedicalRecordsPage() {
                   borderRadius: '10px', 
                   border: '1px solid #e2e8f0', 
                   boxShadow: '0 2px 10px rgba(0,0,0,0.03)',
-                  padding: '26px 28px'
+                  padding: 'clamp(16px, 3.5vw, 26px)'
                 }}
               >
                 {/* Header: Disease Category & Appointment ID */}
@@ -243,11 +243,11 @@ export default function MedicalRecordsPage() {
                     </div>
                   </div>
 
-                  <div style={{ textAlign: 'right' }}>
+                  <div style={{ minWidth: '130px', textAlign: 'left' }}>
                     <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-main)' }}>
                       Prescribed: {r.created_at ? new Date(r.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recent'}
                     </div>
-                    <div style={{ fontSize: '11px', color: '#16a34a', marginTop: '6px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '5px' }}>
+                    <div style={{ fontSize: '11px', color: '#16a34a', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '5px' }}>
                       <ShieldCheck size={14} /> Doctor Verified & Signed
                     </div>
                   </div>
@@ -276,7 +276,7 @@ export default function MedicalRecordsPage() {
                     </span>
                   </div>
 
-                  {hasMedicines ? (
+                    {hasMedicines ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       {r.medicines.map((med, idx) => {
                         const timing = med.timing || {};
@@ -287,16 +287,16 @@ export default function MedicalRecordsPage() {
                               background: '#ffffff',
                               border: '1px solid #e2e8f0',
                               borderRadius: '10px',
-                              padding: '16px 20px',
+                              padding: 'clamp(12px, 2.5vw, 16px) clamp(12px, 3vw, 20px)',
                               display: 'flex',
                               justifyContent: 'space-between',
                               alignItems: 'center',
                               flexWrap: 'wrap',
-                              gap: '16px'
+                              gap: '14px'
                             }}
                           >
                             {/* Medicine Info */}
-                            <div style={{ minWidth: '220px', flex: 1 }}>
+                            <div style={{ minWidth: 'min(100%, 220px)', flex: '1 1 200px' }}>
                               <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-main)' }}>
                                 {med.name}
                               </div>
@@ -403,7 +403,7 @@ export default function MedicalRecordsPage() {
 
                 {/* 2. DOCTOR'S PRESCRIBED DIET PLAN SECTION */}
                 {hasDiet && (
-                  <div style={{ marginTop: '26px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', padding: '22px 24px' }}>
+                  <div style={{ marginTop: '26px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', padding: 'clamp(16px, 3.5vw, 22px)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <div style={{ background: '#dcfce7', color: '#16a34a', padding: '6px 8px', borderRadius: '10px' }}>
@@ -425,7 +425,7 @@ export default function MedicalRecordsPage() {
                     </div>
 
                     {/* Meal Grid */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px', marginTop: '12px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '14px', marginTop: '12px' }}>
                       {/* Breakfast */}
                       {r.diet_plan.breakfast && (
                         <div style={{ background: '#ffffff', padding: '14px 16px', borderRadius: '10px', border: '1px solid #dcfce7' }}>
@@ -503,7 +503,7 @@ export default function MedicalRecordsPage() {
                     )}
 
                     {/* Hydration & Doctor's Guidance */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px', marginTop: '16px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '12px', marginTop: '16px' }}>
                       {r.diet_plan.hydration_advice && (
                         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '12px', color: '#1e3a8a', background: '#e0f2fe', padding: '12px 14px', borderRadius: '10px' }}>
                           <Droplets size={16} color="#0284c7" style={{ flexShrink: 0, marginTop: '2px' }} />
@@ -556,7 +556,7 @@ export default function MedicalRecordsPage() {
       {/* AI Summary Modal */}
       {selectedRecordForAI && (
         <div className="doctor-drawer-overlay" onClick={() => setSelectedRecordForAI(null)}>
-          <div className="card" style={{ width: '580px', maxWidth: '92%', margin: 'auto', maxHeight: '90vh', overflowY: 'auto', padding: '28px 32px', borderRadius: '10px' }} onClick={(e) => e.stopPropagation()}>
+          <div className="card" style={{ width: '580px', maxWidth: 'min(580px, 94vw)', margin: 'auto', maxHeight: '90vh', overflowY: 'auto', padding: 'clamp(16px, 4vw, 28px)', borderRadius: '10px' }} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--primary-blue)', marginBottom: '8px' }}>
               <Sparkles size={22} />
               <h3 style={{ fontSize: '18px', fontWeight: 700 }}>Gemini AI Record & Regimen Summary</h3>

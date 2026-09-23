@@ -219,7 +219,7 @@ export default function PrescriptionsPage() {
       </div>
 
       {/* STEP 1: Select Pharmacy */}
-      <div className="card" style={{ padding: '20px 24px', borderRadius: '3px' }}>
+      <div className="card" style={{ padding: 'clamp(14px, 3vw, 20px)', borderRadius: '3px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
           <span
             style={{
@@ -241,7 +241,7 @@ export default function PrescriptionsPage() {
           Choose a verified local pharmacy in Hoshiarpur to query real-time stock and pricing.
         </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: '12px' }}>
           {pharmacies.map((ph) => {
             const isSelected = selectedPharmacy?.id === ph.id;
             return (
@@ -307,7 +307,7 @@ export default function PrescriptionsPage() {
 
       {/* STEP 2 & 3: Medicine Search & Availability */}
       {selectedPharmacy && (
-        <div className="card" style={{ padding: '20px 24px', borderRadius: '3px' }}>
+        <div className="card" style={{ padding: 'clamp(14px, 3vw, 20px)', borderRadius: '3px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
@@ -333,7 +333,7 @@ export default function PrescriptionsPage() {
             </div>
 
             {/* In-Stock Filter Toggle */}
-            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
               <button
                 type="button"
                 onClick={() => handleFilterStockToggle(false)}
@@ -370,8 +370,8 @@ export default function PrescriptionsPage() {
           </div>
 
           {/* Search Form */}
-          <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
-            <div style={{ position: 'relative', flex: 1 }}>
+          <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '10px', marginBottom: '16px', flexWrap: 'wrap' }}>
+            <div style={{ position: 'relative', flex: '1 1 220px', minWidth: 'min(100%, 200px)' }}>
               <input
                 type="text"
                 placeholder={`Search medicines in ${selectedPharmacy.name} (e.g. Paracetamol, Atorvastatin, Metformin)...`}

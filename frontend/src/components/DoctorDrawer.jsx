@@ -99,7 +99,7 @@ export default function DoctorDrawer({ doctor, onClose, onBookClick, onChatClick
 
   return (
     <div className="doctor-drawer-overlay" onClick={onClose}>
-      <div className="doctor-drawer" style={{ maxWidth: '440px', width: '92%' }} onClick={(e) => e.stopPropagation()}>
+      <div className="doctor-drawer" style={{ maxWidth: 'min(440px, 94vw)', width: '100%' }} onClick={(e) => e.stopPropagation()}>
         <div className="drawer-header">
           <button className="icon-btn" onClick={onClose} title="Close">
             <X size={18} />
@@ -163,11 +163,11 @@ export default function DoctorDrawer({ doctor, onClose, onBookClick, onChatClick
             </span>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px', width: '100%', marginTop: '20px' }}>
-            <button className="btn-google-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => onBookClick(doctor)}>
+          <div style={{ display: 'flex', gap: '10px', width: '100%', marginTop: '20px', flexWrap: 'wrap' }}>
+            <button className="btn-google-primary" style={{ flex: '1 1 140px', justifyContent: 'center' }} onClick={() => onBookClick(doctor)}>
               <Calendar size={16} /> Book Appointment
             </button>
-            <button className="btn-google-outline" style={{ flex: 1, justifyContent: 'center' }} onClick={() => onChatClick(doctor)}>
+            <button className="btn-google-outline" style={{ flex: '1 1 120px', justifyContent: 'center' }} onClick={() => onChatClick(doctor)}>
               <MessageSquare size={16} /> AI Chat Guide
             </button>
           </div>
@@ -308,7 +308,7 @@ export default function DoctorDrawer({ doctor, onClose, onBookClick, onChatClick
           <div className="doctor-drawer-overlay" onClick={() => setShowRateModal(false)}>
             <div
               className="card"
-              style={{ width: '400px', maxWidth: '90%', margin: 'auto', padding: '20px' }}
+              style={{ width: '400px', maxWidth: 'min(400px, 94vw)', margin: 'auto', padding: 'clamp(16px, 4vw, 20px)' }}
               onClick={(e) => e.stopPropagation()}
             >
               <h3 style={{ fontSize: '16px', fontWeight: 800, marginBottom: '6px' }}>

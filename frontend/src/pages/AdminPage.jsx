@@ -172,10 +172,10 @@ export default function AdminPage({ onExitAdmin }) {
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: '10px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px' }}>
+      <div style={{ display: 'flex', gap: '10px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         <button
           className={`pill-badge ${activeTab === 'queue' ? 'blue' : ''}`}
-          style={{ cursor: 'pointer', padding: '8px 18px', border: '1px solid var(--border-subtle)' }}
+          style={{ cursor: 'pointer', padding: '8px 18px', border: '1px solid var(--border-subtle)', whiteSpace: 'nowrap', flexShrink: 0 }}
           onClick={() => setActiveTab('queue')}
         >
           <Users size={14} /> Live Patient Queue ({queue.length})
@@ -183,7 +183,7 @@ export default function AdminPage({ onExitAdmin }) {
 
         <button
           className={`pill-badge ${activeTab === 'analytics' ? 'blue' : ''}`}
-          style={{ cursor: 'pointer', padding: '8px 18px', border: '1px solid var(--border-subtle)' }}
+          style={{ cursor: 'pointer', padding: '8px 18px', border: '1px solid var(--border-subtle)', whiteSpace: 'nowrap', flexShrink: 0 }}
           onClick={() => setActiveTab('analytics')}
         >
           <Activity size={14} /> Platform Metrics
@@ -191,7 +191,7 @@ export default function AdminPage({ onExitAdmin }) {
 
         <button
           className={`pill-badge ${activeTab === 'audit' ? 'blue' : ''}`}
-          style={{ cursor: 'pointer', padding: '8px 18px', border: '1px solid var(--border-subtle)' }}
+          style={{ cursor: 'pointer', padding: '8px 18px', border: '1px solid var(--border-subtle)', whiteSpace: 'nowrap', flexShrink: 0 }}
           onClick={() => setActiveTab('audit')}
         >
           <ClipboardList size={14} /> Audit Trail ({auditLogs.length})
@@ -199,7 +199,7 @@ export default function AdminPage({ onExitAdmin }) {
 
         <button
           className={`pill-badge ${activeTab === 'new-hospital' ? 'blue' : ''}`}
-          style={{ cursor: 'pointer', padding: '8px 18px', border: '1px solid var(--border-subtle)' }}
+          style={{ cursor: 'pointer', padding: '8px 18px', border: '1px solid var(--border-subtle)', whiteSpace: 'nowrap', flexShrink: 0 }}
           onClick={() => setActiveTab('new-hospital')}
         >
           <PlusCircle size={14} /> Register Hospital
@@ -338,8 +338,8 @@ export default function AdminPage({ onExitAdmin }) {
               />
             </div>
 
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              <div style={{ flex: '1 1 180px' }}>
                 <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>City</label>
                 <input
                   type="text"
@@ -349,7 +349,7 @@ export default function AdminPage({ onExitAdmin }) {
                 />
               </div>
 
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: '1 1 180px' }}>
                 <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Phone</label>
                 <input
                   type="text"

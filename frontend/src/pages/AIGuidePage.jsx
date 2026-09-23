@@ -316,7 +316,7 @@ export default function AIGuidePage({
       </div>
 
       {/* Sub-nav switcher */}
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', overflowX: 'auto', paddingBottom: '2px' }}>
         <button
           className={`pill-badge ${activeTab === 'search' ? 'blue' : ''}`}
           style={{
@@ -331,7 +331,8 @@ export default function AIGuidePage({
             alignItems: 'center',
             gap: '8px',
             cursor: 'pointer',
-            transition: 'all 0.15s ease'
+            transition: 'all 0.15s ease',
+            whiteSpace: 'nowrap'
           }}
           onClick={() => setActiveTab('search')}
         >
@@ -352,7 +353,8 @@ export default function AIGuidePage({
             alignItems: 'center',
             gap: '8px',
             cursor: 'pointer',
-            transition: 'all 0.15s ease'
+            transition: 'all 0.15s ease',
+            whiteSpace: 'nowrap'
           }}
           onClick={() => setActiveTab('symptoms')}
         >
@@ -373,7 +375,8 @@ export default function AIGuidePage({
             alignItems: 'center',
             gap: '8px',
             cursor: 'pointer',
-            transition: 'all 0.15s ease'
+            transition: 'all 0.15s ease',
+            whiteSpace: 'nowrap'
           }}
           onClick={() => setActiveTab('chat')}
         >
@@ -399,7 +402,7 @@ export default function AIGuidePage({
               placeholder="e.g. Find hospital for heart bypass or stent, knee arthritis surgery, normal delivery..."
               style={{
                 flex: 1,
-                minWidth: '260px',
+                minWidth: 'min(100%, 260px)',
                 padding: '11px 16px',
                 borderRadius: '3px',
                 border: '1px solid var(--border-subtle)',
@@ -512,7 +515,7 @@ export default function AIGuidePage({
                   </div>
 
                   {/* Cost Breakdown Grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px', marginBottom: '14px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: '10px', marginBottom: '14px' }}>
                     <div style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: '3px', border: '1px solid #e2e8f0' }}>
                       <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>OPD Doctor Consultation</div>
                       <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)', marginTop: '4px' }}>
@@ -590,7 +593,7 @@ export default function AIGuidePage({
                 </div>
 
                 {searchResult.hospitals?.length > 0 ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '20px' }}>
                     {searchResult.hospitals.map((h, idx) => renderHospitalCard(h, idx, 'AI Verified Match'))}
                   </div>
                 ) : (
@@ -604,7 +607,7 @@ export default function AIGuidePage({
               {searchResult.doctors?.length > 0 && (
                 <div>
                   <h4 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px', color: 'var(--text-main)' }}>Recommended Specialists</h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '14px' }}>
                     {searchResult.doctors?.map((d) => (
                       <div key={d.id} style={{ border: '1px solid var(--border-subtle)', borderRadius: '3px', padding: '16px 18px', background: '#ffffff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                         <div>
@@ -638,7 +641,7 @@ export default function AIGuidePage({
                     </span>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '20px' }}>
                     {otherRecommendedHospitals.map((h, idx) => renderHospitalCard(h, idx + 10, 'Regional Facility'))}
                   </div>
                 </div>
@@ -660,7 +663,7 @@ export default function AIGuidePage({
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '20px' }}>
                 {allHospitals.map((h, idx) => renderHospitalCard(h, idx, 'Regional Facility'))}
               </div>
             </div>

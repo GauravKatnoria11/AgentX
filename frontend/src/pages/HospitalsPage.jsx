@@ -355,7 +355,7 @@ export default function HospitalsPage({
         </div>
 
         {/* Global Hospital Search Bar */}
-        <form onSubmit={handleSearch} style={{ display: 'flex', gap: '12px' }}>
+        <form onSubmit={handleSearch} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
           <input
             type="text"
             placeholder="Search by hospital name, condition (e.g. Heart Attack, Kidney Dialysis), or doctor..."
@@ -363,6 +363,7 @@ export default function HospitalsPage({
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
               flex: 1,
+              minWidth: 'min(100%, 240px)',
               padding: '12px 18px',
               borderRadius: '10px',
               border: '1px solid var(--border-subtle)',
@@ -578,7 +579,7 @@ export default function HospitalsPage({
         </div>
 
         {/* 2-Factor Controls: Fee Budget & Sorting */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginTop: '18px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '16px', marginTop: '18px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
           {/* Fee Affordability Filter */}
           <div>
             <label style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '6px' }}>
@@ -635,8 +636,8 @@ export default function HospitalsPage({
         </div>
 
         {/* Disease / Specialty Quick Filter Chips */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
-          <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', marginRight: '6px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)', overflowX: 'auto', paddingBottom: '2px' }}>
+          <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', marginRight: '6px', whiteSpace: 'nowrap' }}>
             Specialty Filter:
           </span>
           {DISEASE_FILTERS.map((f) => {
@@ -658,7 +659,8 @@ export default function HospitalsPage({
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '6px',
-                  transition: 'all 0.15s ease'
+                  transition: 'all 0.15s ease',
+                  whiteSpace: 'nowrap'
                 }}
               >
                 {FilterIcon && <FilterIcon size={13} />}
@@ -669,8 +671,8 @@ export default function HospitalsPage({
         </div>
 
         {/* Government Schemes Filter Row */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '12px', paddingTop: '12px', borderTop: '1px dashed var(--border-subtle)' }}>
-          <span style={{ fontSize: '12px', fontWeight: 700, color: '#065f46', display: 'inline-flex', alignItems: 'center', gap: '5px', marginRight: '6px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '12px', paddingTop: '12px', borderTop: '1px dashed var(--border-subtle)', overflowX: 'auto', paddingBottom: '2px' }}>
+          <span style={{ fontSize: '12px', fontWeight: 700, color: '#065f46', display: 'inline-flex', alignItems: 'center', gap: '5px', marginRight: '6px', whiteSpace: 'nowrap' }}>
             <Landmark size={14} color="#059669" /> Govt Schemes:
           </span>
           {GOVERNMENT_SCHEMES_FILTER.map((sch) => {
@@ -691,7 +693,8 @@ export default function HospitalsPage({
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '5px',
-                  transition: 'all 0.15s ease'
+                  transition: 'all 0.15s ease',
+                  whiteSpace: 'nowrap'
                 }}
               >
                 <span>🏛️ {sch.label}</span>
@@ -711,7 +714,7 @@ export default function HospitalsPage({
           No facilities found matching your fee and disease criteria. Try adjusting the budget filter.
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '22px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '22px' }}>
           {hospitals.map((h, index) => (
             <div key={h.id} className="classroom-card">
               {/* Google Classroom Style Thematic Banner Cover */}

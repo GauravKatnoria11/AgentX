@@ -228,7 +228,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, onEmergencyC
             boxShadow: '0 2px 8px rgba(220, 38, 38, 0.3)'
           }}
         >
-          <ShieldAlert size={16} /> EMERGENCY SOS (108 / 112)
+          <ShieldAlert size={16} /> <span className="sos-full-text">EMERGENCY SOS (108 / 112)</span><span className="sos-short-text">108 SOS</span>
         </button>
       </div>
 

@@ -74,7 +74,7 @@ export default function FollowupsPage() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
           {followups.map((f) => (
-            <div key={f.id} className="card" style={{ padding: '24px 28px', borderRadius: '10px' }}>
+            <div key={f.id} className="card" style={{ padding: 'clamp(16px, 3.5vw, 28px)', borderRadius: '10px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -125,7 +125,7 @@ export default function FollowupsPage() {
       {/* Check-in Modal */}
       {activeFollowup && (
         <div className="doctor-drawer-overlay" onClick={() => setActiveFollowup(null)}>
-          <div className="card" style={{ width: '540px', maxWidth: '92%', margin: 'auto', maxHeight: '90vh', overflowY: 'auto', padding: '28px 32px', borderRadius: '10px' }} onClick={(e) => e.stopPropagation()}>
+          <div className="card" style={{ width: '100%', maxWidth: 'min(540px, 94vw)', margin: 'auto', maxHeight: '90vh', overflowY: 'auto', padding: 'clamp(16px, 4vw, 28px)', borderRadius: '10px' }} onClick={(e) => e.stopPropagation()}>
             <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '6px' }}>
               Patient Recovery Check-in
             </h3>
