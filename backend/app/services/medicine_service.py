@@ -29,6 +29,8 @@ class MedicineService:
             pharm = next((p for p in MOCK_DATA["pharmacies"] if str(p["id"]) == str(m.get("pharmacy_id"))), None)
             m_dict["pharmacy_name"] = pharm["name"] if pharm else "Partner Pharmacy"
             results.append(m_dict)
+
+        results.sort(key=lambda x: (not x.get("in_stock", True), x.get("name", "")))
         return results
 
     def get_medicine_by_id(self, medicine_id: str) -> Optional[Dict[str, Any]]:

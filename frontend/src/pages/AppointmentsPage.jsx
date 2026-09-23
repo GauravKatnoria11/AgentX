@@ -26,6 +26,7 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
   const [loading, setLoading] = useState(true);
   const [cancellingId, setCancellingId] = useState(null);
   const [cancelReason, setCancelReason] = useState('');
+  const [activeFilter, setActiveFilter] = useState('all'); // 'all' | 'upcoming' | 'past'
 
   // Rating Modal State
   const [ratingAppt, setRatingAppt] = useState(null);
@@ -54,12 +55,57 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
   const loadAppointments = async () => {
     setLoading(true);
     try {
-      const res = await fetchMyAppointments();
-      if (res.success && res.data) {
-        setAppointments(res.data);
+      // 1. Read cached historical appointments
+      const cachedRaw = localStorage.getItem('carelink_customer_appointments_history');
+      let cachedList = [];
+      if (cachedRaw) {
+        try {
+          cachedList = JSON.parse(cachedRaw);
+        } catch (e) {
+          console.error('Error parsing appointment cache', e);
+        }
       }
+
+      // 2. Fetch server appointments
+      const res = await fetchMyAppointments();
+      const serverList = (res.success && res.data) ? res.data : [];
+
+      // 3. Merge server list with cached history by appointment ID
+      const map = new Map();
+      if (Array.isArray(cachedList)) {
+        cachedList.forEach((a) => {
+          if (a && a.id) map.set(a.id, a);
+        });
+      }
+      if (Array.isArray(serverList)) {
+        serverList.forEach((a) => {
+          if (a && a.id) {
+            // Merge with existing properties
+            const existing = map.get(a.id) || {};
+            map.set(a.id, { ...existing, ...a });
+          }
+        });
+      }
+
+      const merged = Array.from(map.values());
+      // Sort newest / upcoming first
+      merged.sort((a, b) => {
+        const dateA = a.appointment_date || '';
+        const dateB = b.appointment_date || '';
+        return dateB.localeCompare(dateA);
+      });
+
+      setAppointments(merged);
+      localStorage.setItem('carelink_customer_appointments_history', JSON.stringify(merged));
     } catch (e) {
       console.error(e);
+      // Fallback cache
+      const cachedRaw = localStorage.getItem('carelink_customer_appointments_history');
+      if (cachedRaw) {
+        try {
+          setAppointments(JSON.parse(cachedRaw));
+        } catch (err) {}
+      }
     } finally {
       setLoading(false);
     }
@@ -107,7 +153,14 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
       };
       const res = await submitDoctorRating(ratingAppt.doctor_id, payload);
       if (res.success) {
-        setRatingSuccess(`Review submitted successfully! ${res.data?.doctor?.name} rating updated to ${res.data?.doctor?.rating}.`);
+        // Update local appointment state immediately
+        const updatedList = appointments.map((a) =>
+          a.id === ratingAppt.id ? { ...a, patient_rating: selectedStars, notes: payload.comment } : a
+        );
+        setAppointments(updatedList);
+        localStorage.setItem('carelink_customer_appointments_history', JSON.stringify(updatedList));
+
+        setRatingSuccess(`Review submitted successfully! ${res.data?.doctor?.name || 'Doctor'} rating updated to ${res.data?.doctor?.rating || selectedStars}.`);
         setTimeout(() => {
           setRatingAppt(null);
           loadAppointments();
@@ -122,18 +175,80 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
     }
   };
 
+  const upcomingAppointments = appointments.filter((a) => a.status === 'confirmed' || a.status === 'pending');
+  const pastAppointments = appointments.filter((a) => a.status === 'completed' || a.status === 'cancelled');
+  const displayedAppointments = activeFilter === 'upcoming'
+    ? upcomingAppointments
+    : activeFilter === 'past'
+    ? pastAppointments
+    : appointments;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Toast alert for Resend */}
+      {/* Header */}
       <div className="section-header">
         <div>
-          <h2 className="section-title">My Appointments & Verified Reviews</h2>
+          <h2 className="section-title">My Appointments & Clinical History</h2>
           <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-            Track your consultation schedules, navigate to medical facilities, and rate completed doctor visits
+            Track your consultation schedules, review verified past visits, and rate completed doctor appointments
           </div>
         </div>
-        <button className="btn-google-outline" onClick={loadAppointments}>
+        <button className="btn-google-outline" style={{ borderRadius: '3px' }} onClick={loadAppointments}>
           Refresh
+        </button>
+      </div>
+
+      {/* Segmented Filter Controls */}
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <button
+          type="button"
+          onClick={() => setActiveFilter('all')}
+          style={{
+            padding: '7px 16px',
+            fontSize: '12px',
+            fontWeight: activeFilter === 'all' ? 700 : 500,
+            background: activeFilter === 'all' ? 'var(--primary-blue)' : '#ffffff',
+            color: activeFilter === 'all' ? '#ffffff' : 'var(--text-main)',
+            border: '1px solid ' + (activeFilter === 'all' ? 'var(--primary-blue)' : 'var(--border-subtle)'),
+            borderRadius: '3px',
+            cursor: 'pointer'
+          }}
+        >
+          All Consultations ({appointments.length})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveFilter('upcoming')}
+          style={{
+            padding: '7px 16px',
+            fontSize: '12px',
+            fontWeight: activeFilter === 'upcoming' ? 700 : 500,
+            background: activeFilter === 'upcoming' ? 'var(--primary-blue)' : '#ffffff',
+            color: activeFilter === 'upcoming' ? '#ffffff' : 'var(--text-main)',
+            border: '1px solid ' + (activeFilter === 'upcoming' ? 'var(--primary-blue)' : 'var(--border-subtle)'),
+            borderRadius: '3px',
+            cursor: 'pointer'
+          }}
+        >
+          Upcoming & Active ({upcomingAppointments.length})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveFilter('past')}
+          style={{
+            padding: '7px 16px',
+            fontSize: '12px',
+            fontWeight: activeFilter === 'past' ? 700 : 500,
+            background: activeFilter === 'past' ? 'var(--primary-blue)' : '#ffffff',
+            color: activeFilter === 'past' ? '#ffffff' : 'var(--text-main)',
+            border: '1px solid ' + (activeFilter === 'past' ? 'var(--primary-blue)' : 'var(--border-subtle)'),
+            borderRadius: '3px',
+            cursor: 'pointer'
+          }}
+        >
+          Past History ({pastAppointments.length})
         </button>
       </div>
 
@@ -141,17 +256,25 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
         <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
           Loading your appointments...
         </div>
-      ) : appointments.length === 0 ? (
-        <div className="card" style={{ textAlign: 'center', padding: '40px' }}>
+      ) : displayedAppointments.length === 0 ? (
+        <div className="card" style={{ textAlign: 'center', padding: '40px', borderRadius: '3px' }}>
           <Calendar size={40} color="var(--primary-blue)" style={{ margin: '0 auto 12px' }} />
-          <h3 style={{ fontSize: '16px', fontWeight: 700 }}>No Appointments Yet</h3>
+          <h3 style={{ fontSize: '16px', fontWeight: 700 }}>
+            {activeFilter === 'upcoming'
+              ? 'No Upcoming Consultations'
+              : activeFilter === 'past'
+              ? 'No Past Consultations on File'
+              : 'No Appointments Found'}
+          </h3>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
-            Book a consultation with our verified doctors to start your healthcare journey.
+            {activeFilter === 'upcoming'
+              ? 'You do not have any pending or confirmed upcoming consultations.'
+              : 'Book a consultation with our verified doctors to start your healthcare journey.'}
           </p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {appointments.map((a) => {
+          {displayedAppointments.map((a) => {
             const isCompleted = a.status === 'completed';
             const isCancelled = a.status === 'cancelled';
             const isConfirmed = a.status === 'confirmed';
@@ -195,7 +318,7 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                           fontSize: '11px',
                           fontWeight: 700,
                           padding: '3px 10px',
-                          borderRadius: '10px'
+                          borderRadius: '3px'
                         }}>
                           <Star size={12} fill="#d97706" color="#d97706" /> Rated {a.patient_rating}
                         </span>
@@ -212,12 +335,12 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                     {(a.patient_phone || a.blood_group) && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px', fontSize: '12px', flexWrap: 'wrap' }}>
                         {a.patient_phone && (
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#f1f5f9', color: '#334155', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#f1f5f9', color: '#334155', padding: '2px 8px', borderRadius: '3px', fontWeight: 600 }}>
                             <Phone size={12} color="var(--primary-blue)" /> {a.patient_phone}
                           </span>
                         )}
                         {a.blood_group && (
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#fef2f2', color: '#b91c1c', padding: '2px 8px', borderRadius: '10px', fontWeight: 700, border: '1px solid #fee2e2' }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#fef2f2', color: '#b91c1c', padding: '2px 8px', borderRadius: '3px', fontWeight: 700, border: '1px solid #fee2e2' }}>
                             <Droplet size={12} color="#ef4444" /> Blood: {a.blood_group}
                           </span>
                         )}
@@ -236,19 +359,19 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                   </div>
 
                   {a.reason && (
-                    <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '12px', background: '#f8fafc', padding: '10px 14px', borderRadius: '10px' }}>
+                    <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '12px', background: '#f8fafc', padding: '10px 14px', borderRadius: '3px' }}>
                       <strong>Clinical Reason:</strong> {a.reason}
                     </div>
                   )}
 
                   {a.notes && (
-                    <div style={{ fontSize: '12px', color: '#475569', marginTop: '8px', background: '#f1f5f9', padding: '8px 12px', borderRadius: '10px', borderLeft: '3px solid #cbd5e1' }}>
+                    <div style={{ fontSize: '12px', color: '#475569', marginTop: '8px', background: '#f1f5f9', padding: '8px 12px', borderRadius: '3px', borderLeft: '3px solid #cbd5e1' }}>
                       <strong>Facility Desk Note:</strong> {a.notes}
                     </div>
                   )}
 
                   {isCancelled && a.cancellation_reason && (
-                    <div style={{ fontSize: '13px', color: '#b91c1c', marginTop: '10px', background: '#fee2e2', padding: '8px 12px', borderRadius: '10px' }}>
+                    <div style={{ fontSize: '13px', color: '#b91c1c', marginTop: '10px', background: '#fee2e2', padding: '8px 12px', borderRadius: '3px' }}>
                       Cancelled: {a.cancellation_reason}
                     </div>
                   )}
@@ -291,7 +414,7 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                         color: '#64748b',
                         background: '#f8fafc',
                         padding: '6px 12px',
-                        borderRadius: '10px',
+                        borderRadius: '3px',
                         border: '1px solid #e2e8f0'
                       }}
                     >
@@ -303,7 +426,7 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                   {!isCancelled && !isCompleted && (
                     <button
                       className="btn-secondary"
-                      style={{ fontSize: '12px', padding: '8px 16px', color: '#b91c1c', marginLeft: 'auto' }}
+                      style={{ fontSize: '12px', padding: '8px 16px', color: '#b91c1c', marginLeft: 'auto', borderRadius: '3px' }}
                       onClick={() => setCancellingId(a.id)}
                     >
                       Cancel Slot
@@ -321,11 +444,11 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
         <div className="doctor-drawer-overlay" onClick={() => setRatingAppt(null)}>
           <div
             className="card"
-            style={{ width: '480px', maxWidth: '92%', margin: 'auto', padding: '24px' }}
+            style={{ width: '480px', maxWidth: '92%', margin: 'auto', padding: '24px', borderRadius: '3px' }}
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-              <span style={{ background: '#dcfce7', color: '#166534', fontSize: '11px', fontWeight: 800, padding: '3px 10px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ background: '#dcfce7', color: '#166534', fontSize: '11px', fontWeight: 800, padding: '3px 10px', borderRadius: '3px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <Check size={12} /> Verified Completed Consultation
               </span>
             </div>
@@ -338,13 +461,13 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
             </p>
 
             {ratingError && (
-              <div style={{ padding: '10px 14px', background: '#fee2e2', color: '#b91c1c', borderRadius: '10px', fontSize: '13px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ padding: '10px 14px', background: '#fee2e2', color: '#b91c1c', borderRadius: '3px', fontSize: '13px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <AlertTriangle size={16} /> {ratingError}
               </div>
             )}
 
             {ratingSuccess && (
-              <div style={{ padding: '10px 14px', background: '#ecfdf5', color: '#065f46', borderRadius: '10px', fontSize: '13px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ padding: '10px 14px', background: '#ecfdf5', color: '#065f46', borderRadius: '3px', fontSize: '13px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Check size={16} /> {ratingSuccess}
               </div>
             )}
@@ -406,7 +529,7 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                           color: active ? '#ffffff' : 'var(--text-main)',
                           border: active ? '1px solid var(--primary-blue)' : '1px solid #dadce0',
                           padding: '6px 12px',
-                          borderRadius: '10px',
+                          borderRadius: '3px',
                           fontSize: '12px',
                           fontWeight: active ? 700 : 500,
                           cursor: 'pointer'
@@ -433,7 +556,7 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                   style={{
                     width: '100%',
                     padding: '10px 14px',
-                    borderRadius: '10px',
+                    borderRadius: '3px',
                     border: '1px solid var(--border-subtle)',
                     fontSize: '13px',
                     fontFamily: 'inherit',
@@ -446,7 +569,7 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                 <button
                   type="button"
                   className="btn-google-outline"
-                  style={{ flex: 1, justifyContent: 'center' }}
+                  style={{ flex: 1, justifyContent: 'center', borderRadius: '3px' }}
                   onClick={() => setRatingAppt(null)}
                 >
                   Cancel
@@ -455,7 +578,7 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                   type="submit"
                   className="btn-google-primary"
                   disabled={isSubmittingRating}
-                  style={{ flex: 2, justifyContent: 'center', background: '#0d904f', borderColor: '#0d904f' }}
+                  style={{ flex: 2, justifyContent: 'center', background: '#0d904f', borderColor: '#0d904f', borderRadius: '3px' }}
                 >
                   {isSubmittingRating ? 'Publishing...' : 'Submit Verified Rating'}
                 </button>
@@ -468,7 +591,7 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
       {/* Cancel Reason Modal */}
       {cancellingId && (
         <div className="doctor-drawer-overlay" onClick={() => setCancellingId(null)}>
-          <div className="card" style={{ width: '400px', margin: 'auto' }} onClick={(e) => e.stopPropagation()}>
+          <div className="card" style={{ width: '400px', margin: 'auto', borderRadius: '3px' }} onClick={(e) => e.stopPropagation()}>
             <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '8px' }}>Cancel Appointment</h3>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '14px' }}>
               Are you sure you want to cancel this appointment? Please state a reason:
@@ -481,19 +604,19 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
               style={{
                 width: '100%',
                 padding: '10px 14px',
-                borderRadius: '10px',
+                borderRadius: '3px',
                 border: '1px solid var(--border-subtle)',
                 marginBottom: '16px',
                 fontSize: '13px'
               }}
             />
             <div style={{ display: 'flex', gap: '10px' }}>
-              <button className="btn-google-outline" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setCancellingId(null)}>
+              <button className="btn-google-outline" style={{ flex: 1, justifyContent: 'center', borderRadius: '3px' }} onClick={() => setCancellingId(null)}>
                 Keep Slot
               </button>
               <button
                 className="btn-google-danger"
-                style={{ flex: 1, justifyContent: 'center' }}
+                style={{ flex: 1, justifyContent: 'center', borderRadius: '3px' }}
                 onClick={() => handleCancel(cancellingId)}
               >
                 Confirm Cancel

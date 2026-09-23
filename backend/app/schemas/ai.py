@@ -18,12 +18,26 @@ class StructuredSearchIntent(BaseModel):
     keywords: List[str] = []
 
 
+class EstimatedCostPrediction(BaseModel):
+    condition_or_procedure: str
+    disease_category: str
+    estimated_total_range: str
+    opd_consultation: str
+    diagnostic_tests: str
+    treatment_or_procedure: str
+    hospitalization_per_day: Optional[str] = None
+    government_schemes_coverage: List[str] = []
+    savings_tips: Optional[str] = None
+    disclaimer: str = "Estimates reflect prevailing regional Punjab PM-JAY / CGHS benchmarks. Actual clinical expenses vary based on individual diagnosis and complications."
+
+
 class AISearchResponse(BaseModel):
     intent: StructuredSearchIntent
     hospitals: List[Dict[str, Any]] = []
     doctors: List[Dict[str, Any]] = []
     suggested_departments: List[str] = []
     ai_guidance: str
+    estimated_cost: Optional[EstimatedCostPrediction] = None
 
 
 class SymptomIntakeRequest(BaseModel):

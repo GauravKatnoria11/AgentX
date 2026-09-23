@@ -38,3 +38,16 @@ def test_ai_healthcare_chat(client):
     assert presc_query_resp.status_code == 200
     reply = presc_query_resp.json()["data"]["reply"]
     assert "not authorized to prescribe" in reply.lower() or "physician" in reply.lower()
+
+
+def test_ai_disease_cost_prediction(client):
+    resp = client.post("/api/v1/ai/search", json={
+        "query": "Knee arthritis and joint replacement cost"
+    })
+    assert resp.status_code == 200
+    data = resp.json()["data"]
+    assert "estimated_cost" in data
+    assert data["estimated_cost"] is not None
+    assert "Knee" in data["estimated_cost"]["condition_or_procedure"]
+    assert "Ayushman Bharat" in str(data["estimated_cost"]["government_schemes_coverage"])
+

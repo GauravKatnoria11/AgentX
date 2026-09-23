@@ -43,7 +43,8 @@ async def create_appointment(
 @router.get("/my", response_model=ApiResponse[List[AppointmentResponse]])
 async def get_my_appointments(current_user: dict = Depends(get_current_user)):
     patient_id = str(current_user["id"])
-    appointments = appointment_service.get_patient_appointments(patient_id)
+    patient_email = current_user.get("email")
+    appointments = appointment_service.get_patient_appointments(patient_id, patient_email=patient_email)
     return ApiResponse(
         success=True,
         message="Appointments retrieved successfully",

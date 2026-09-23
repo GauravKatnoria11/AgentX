@@ -12,6 +12,7 @@ class MedicineBase(BaseModel):
     price: float = 0.0
     prescription_required: bool = False
     in_stock: bool = True
+    stock_units: Optional[int] = 0
 
 
 class MedicineCreate(MedicineBase):

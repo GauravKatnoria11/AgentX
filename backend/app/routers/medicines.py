@@ -10,9 +10,10 @@ router = APIRouter(prefix="/api/v1/medicines", tags=["Medicines"])
 @router.get("", response_model=ApiResponse[List[MedicineResponse]])
 async def list_medicines(
     pharmacy_id: Optional[str] = Query(None, description="Filter by pharmacy ID"),
-    in_stock_only: bool = Query(True, description="Show only medicines in stock")
+    search: Optional[str] = Query(None, description="Search term for medicine brand or generic name"),
+    in_stock_only: bool = Query(False, description="Show only medicines in stock")
 ):
-    medicines = medicine_service.get_medicines(pharmacy_id=pharmacy_id, in_stock_only=in_stock_only)
+    medicines = medicine_service.get_medicines(pharmacy_id=pharmacy_id, search=search, in_stock_only=in_stock_only)
     return ApiResponse(
         success=True,
         message="Medicines fetched successfully",
@@ -23,9 +24,10 @@ async def list_medicines(
 @router.get("/search", response_model=ApiResponse[List[MedicineResponse]])
 async def search_medicines(
     q: str = Query(..., min_length=1, description="Search term for medicine brand or generic name"),
-    pharmacy_id: Optional[str] = Query(None)
+    pharmacy_id: Optional[str] = Query(None),
+    in_stock_only: bool = Query(False)
 ):
-    results = medicine_service.get_medicines(pharmacy_id=pharmacy_id, search=q)
+    results = medicine_service.get_medicines(pharmacy_id=pharmacy_id, search=q, in_stock_only=in_stock_only)
     return ApiResponse(
         success=True,
         message="Medicine search completed successfully",
