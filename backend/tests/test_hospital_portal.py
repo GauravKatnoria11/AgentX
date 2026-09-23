@@ -1,6 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app
+from app.supabase import MOCK_DATA
 
 client = TestClient(app)
 
@@ -31,6 +32,19 @@ def test_hospital_portal_login_and_multi_tenant_isolation():
     assert civil_json["data"]["hospital"]["id"] == "hosp-1"
 
     # 3. Check Ivy Hospital Dashboard
+    if not any(a.get("hospital_id") == "hosp-hoshiarpur-2" for a in MOCK_DATA["appointments"]):
+        MOCK_DATA["appointments"].append({
+            "id": "app-hsp-ivy-test",
+            "hospital_id": "hosp-hoshiarpur-2",
+            "doctor_id": "doc-hsp-1",
+            "patient_id": "11111111-1111-1111-1111-111111111111",
+            "patient_name": "Test Patient",
+            "patient_phone": "+91-99999-99999",
+            "status": "pending",
+            "appointment_date": "2026-09-30",
+            "appointment_time": "Pending Allotment",
+            "reason": "Test consultation"
+        })
     ivy_headers = {"Authorization": f"Bearer {ivy_token}"}
     dash_resp = client.get("/api/v1/hospital-portal/dashboard", headers=ivy_headers)
     assert dash_resp.status_code == 200
@@ -120,6 +134,21 @@ def test_hospital_portal_invalid_credentials():
 
 
 def test_hospital_portal_send_reminder():
+    # Seed fixture appointment since mock data was cleared
+    if not any(a.get("id") == "app-hsp-1" for a in MOCK_DATA["appointments"]):
+        MOCK_DATA["appointments"].append({
+            "id": "app-hsp-1",
+            "hospital_id": "hosp-hoshiarpur-2",
+            "doctor_id": "doc-hsp-1",
+            "patient_id": "11111111-1111-1111-1111-111111111111",
+            "patient_name": "Test Patient",
+            "patient_phone": "+91-99999-99999",
+            "status": "confirmed",
+            "appointment_date": "2026-09-30",
+            "appointment_time": "10:00:00",
+            "reason": "Follow-up consultation"
+        })
+
     ivy_resp = client.post("/api/v1/hospital-portal/auth/login", json={
         "identifier": "ivy_hsp",
         "password": "ivy@hsp2026"

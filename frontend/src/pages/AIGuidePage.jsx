@@ -1,14 +1,58 @@
-import React, { useState } from 'react';
-import { Sparkles, Search, MessageSquare, AlertTriangle, Send, CheckCircle, ShieldAlert, ShieldCheck, Check } from 'lucide-react';
-import { aiSearch, aiSymptomIntake, aiChat } from '../api';
+import React, { useState, useEffect } from 'react';
+import {
+  Sparkles,
+  Search,
+  MessageSquare,
+  AlertTriangle,
+  Send,
+  CheckCircle,
+  ShieldAlert,
+  ShieldCheck,
+  Check,
+  Building2,
+  MapPin,
+  Bed,
+  CreditCard,
+  Star,
+  Navigation,
+  Stethoscope,
+  Info,
+  Landmark
+} from 'lucide-react';
+import { aiSearch, aiSymptomIntake, aiChat, fetchHospitals } from '../api';
 
-export default function AIGuidePage({ onSelectDoctor, onNavigateToRoute }) {
+export default function AIGuidePage({
+  onSelectDoctor,
+  onNavigateToRoute,
+  onSelectHospitalForRoute,
+  onSelectHospitalForDoctors,
+  onOpenHospitalDetail,
+  patientLocation
+}) {
   const [activeTab, setActiveTab] = useState('search'); // 'search' | 'symptoms' | 'chat'
 
   // Natural Language Search State
   const [searchQuery, setSearchQuery] = useState('Find a hospital for heart care');
   const [searchResult, setSearchResult] = useState(null);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [allHospitals, setAllHospitals] = useState([]);
+
+  // Load all regional network hospitals on mount
+  useEffect(() => {
+    fetchHospitals({
+      user_lat: patientLocation?.lat || 31.5312,
+      user_lon: patientLocation?.lon || 75.9184
+    }).then(res => {
+      if (res.success && res.data) {
+        setAllHospitals(res.data);
+      }
+    }).catch(err => console.error('Failed to load regional hospitals:', err));
+  }, [patientLocation]);
+
+  // Initial auto-search on mount
+  useEffect(() => {
+    handleAISearch();
+  }, []);
 
   // Symptom Intake State
   const [symptomText, setSymptomText] = useState('');
@@ -28,11 +72,15 @@ export default function AIGuidePage({ onSelectDoctor, onNavigateToRoute }) {
   const [chatLoading, setChatLoading] = useState(false);
 
   const handleAISearch = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     if (!searchQuery.trim()) return;
     setSearchLoading(true);
     try {
-      const res = await aiSearch(searchQuery);
+      const res = await aiSearch(
+        searchQuery,
+        patientLocation?.lat || 31.5312,
+        patientLocation?.lon || 75.9184
+      );
       if (res.success && res.data) {
         setSearchResult(res.data);
       }
@@ -85,6 +133,174 @@ export default function AIGuidePage({ onSelectDoctor, onNavigateToRoute }) {
     } finally {
       setChatLoading(false);
     }
+  };
+
+  const matchedHospitalIds = new Set((searchResult?.hospitals || []).map(h => String(h.id)));
+  const otherRecommendedHospitals = allHospitals.filter(h => !matchedHospitalIds.has(String(h.id)));
+
+  const getHospitalBannerTheme = (hospital, index) => {
+    const themes = ['banner-theme-blue', 'banner-theme-emerald', 'banner-theme-purple', 'banner-theme-teal'];
+    if (hospital.type === 'Super-Specialty' || hospital.type === 'Tertiary Care') return 'banner-theme-blue';
+    if (hospital.type === 'Trauma & Orthopedic') return 'banner-theme-purple';
+    if (hospital.type === 'Maternity & Surgical') return 'banner-theme-teal';
+    return themes[index % themes.length];
+  };
+
+  const renderHospitalCard = (h, index, badgeLabel) => {
+    return (
+      <div key={h.id || index} className="classroom-card" style={{ borderRadius: '3px' }}>
+        {/* Thematic Banner Cover */}
+        <div
+          className={`classroom-card-banner ${getHospitalBannerTheme(h, index)}`}
+          onClick={() => onOpenHospitalDetail && onOpenHospitalDetail(h.id, 'overview')}
+          title="Click to view full hospital dossier"
+          style={{ borderRadius: '3px 3px 0 0' }}
+        >
+          <div className="banner-top-row">
+            <span className="banner-badge" style={{ borderRadius: '3px' }}>{h.type}</span>
+            <div className="banner-rating-pill" style={{ borderRadius: '3px' }}>
+              <Star size={13} fill="#ffffff" color="#ffffff" />
+              <span>{h.rating || 4.7}</span>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="banner-title">{h.name}</h3>
+            <div className="banner-subtitle">
+              {badgeLabel || h.bestBadge || 'Verified Facility'}
+            </div>
+          </div>
+
+          {/* Overlapping Facility Avatar */}
+          <div className="classroom-card-avatar" style={{ borderRadius: '3px' }}>
+            <Building2 size={22} color="var(--primary-blue)" />
+          </div>
+        </div>
+
+        {/* Card Body */}
+        <div className="classroom-card-body">
+          {/* Location & Distance */}
+          <div className="classroom-meta-row">
+            <MapPin size={16} color="var(--primary-blue)" />
+            <span style={{ fontWeight: 500, fontSize: '13px' }}>
+              {h.address?.split(',')[0]} • <strong>{h.distance_km ? `${h.distance_km} km` : '1.8 km'}</strong> away
+            </span>
+          </div>
+
+          {/* ICU Bed Capacity & Emergency Service */}
+          <div className="classroom-meta-row">
+            <Bed size={16} color="#188038" />
+            <span style={{ color: '#137333', fontWeight: 600, fontSize: '13px' }}>
+              {h.available_icu_beds ?? h.icu_beds ?? 0} ICU Beds Available
+            </span>
+            {h.emergency_available && (
+              <span className="classroom-chip red" style={{ marginLeft: 'auto', borderRadius: '3px' }}>
+                <ShieldAlert size={12} /> 24/7 Emergency
+              </span>
+            )}
+          </div>
+
+          {/* Consultation Fee */}
+          <div className="classroom-meta-row">
+            <CreditCard size={16} color="var(--primary-blue)" />
+            <span style={{ fontSize: '13px' }}>
+              Consultation Fee: <strong style={{ color: 'var(--primary-blue)', fontSize: '14px' }}>₹{h.consultation_fee || 50}</strong>
+              <span style={{ color: 'var(--text-muted)', fontSize: '11px', marginLeft: '6px' }}>({h.fee_tier || 'OPD'})</span>
+            </span>
+          </div>
+
+          {/* Clinical Specialties */}
+          {h.diseases_treated?.length > 0 && (
+            <div className="classroom-chip-container">
+              {h.diseases_treated.slice(0, 3).map((d, idx) => (
+                <span key={idx} className="classroom-chip" style={{ borderRadius: '3px' }}>
+                  {d}
+                </span>
+              ))}
+              {h.diseases_treated.length > 3 && (
+                <span className="classroom-chip" style={{ color: 'var(--text-muted)', borderRadius: '3px' }}>
+                  +{h.diseases_treated.length - 3} more
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Empanelled Government Schemes */}
+          {h.government_schemes?.length > 0 && (
+            <div style={{ marginTop: '4px', paddingTop: '8px', borderTop: '1px dashed #e2e8f0' }}>
+              <div style={{ fontSize: '11px', fontWeight: 800, color: '#065f46', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '5px' }}>
+                <Landmark size={12} color="#059669" />
+                <span>Empanelled Govt Schemes:</span>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                {h.government_schemes.slice(0, 2).map((sch, sIdx) => (
+                  <span
+                    key={sIdx}
+                    style={{
+                      fontSize: '10.5px',
+                      fontWeight: 700,
+                      background: '#ecfdf5',
+                      color: '#065f46',
+                      border: '1px solid #a7f3d0',
+                      padding: '2px 7px',
+                      borderRadius: '3px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '3px'
+                    }}
+                  >
+                    🏛️ {sch}
+                  </span>
+                ))}
+                {h.government_schemes.length > 2 && (
+                  <span style={{ fontSize: '10.5px', color: '#047857', fontWeight: 700, background: '#f0fdf4', padding: '2px 6px', borderRadius: '3px' }}>
+                    +{h.government_schemes.length - 2} more
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Card Action Footer */}
+        <div className="classroom-card-footer" style={{ borderRadius: '0 0 3px 3px' }}>
+          <button
+            type="button"
+            className="btn-google-primary"
+            onClick={() => onSelectHospitalForDoctors && onSelectHospitalForDoctors(h)}
+            style={{ flex: 1.2, borderRadius: '3px' }}
+          >
+            <Stethoscope size={15} /> View Doctors
+          </button>
+
+          <button
+            type="button"
+            className="btn-google-outline"
+            onClick={() => {
+              if (onSelectHospitalForRoute) {
+                onSelectHospitalForRoute(h, patientLocation);
+              } else if (onNavigateToRoute) {
+                onNavigateToRoute(h.name);
+              }
+            }}
+            title="Route & Directions"
+            style={{ flex: 1, borderRadius: '3px' }}
+          >
+            <Navigation size={15} /> Directions
+          </button>
+
+          <button
+            type="button"
+            className="btn-google-outline"
+            onClick={() => onOpenHospitalDetail && onOpenHospitalDetail(h.id, 'overview')}
+            title="Full Dossier"
+            style={{ padding: '8px 12px', borderRadius: '3px' }}
+          >
+            <Info size={15} />
+          </button>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -357,30 +573,34 @@ export default function AIGuidePage({ onSelectDoctor, onNavigateToRoute }) {
                 </div>
               )}
 
-              {/* Matched Hospitals */}
+              {/* 1. Verified Matching Hospitals */}
               <div>
-                <h4 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px', color: 'var(--text-main)' }}>Verified Matching Hospitals</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
-                  {searchResult.hospitals?.map((h) => (
-                    <div key={h.id} style={{ border: '1px solid var(--border-subtle)', borderRadius: '3px', padding: '16px 18px', background: '#ffffff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                      <div>
-                        <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-main)' }}>{h.name}</div>
-                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>{h.city} • {h.type}</div>
-                        {h.fee_tier && (
-                          <div style={{ fontSize: '12px', color: '#0d904f', fontWeight: 600, marginTop: '2px' }}>
-                            OPD Fee: ₹{h.consultation_fee || 50}
-                          </div>
-                        )}
-                      </div>
-                      <button className="link-btn" style={{ marginTop: '12px', fontSize: '13px', fontWeight: 600, color: 'var(--primary-blue)', display: 'inline-flex', alignItems: 'center', gap: '4px' }} onClick={() => onNavigateToRoute(h.name)}>
-                        Get Route & ETA &rsaquo;
-                      </button>
-                    </div>
-                  ))}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                  <div>
+                    <h4 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <CheckCircle size={18} color="#188038" /> Verified Matching Hospitals
+                    </h4>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                      Directly matching clinical condition, departments, and procedural requirements
+                    </p>
+                  </div>
+                  <span style={{ fontSize: '12px', color: '#137333', fontWeight: 700, background: '#e6f4ea', border: '1px solid #a7f3d0', padding: '4px 10px', borderRadius: '3px' }}>
+                    {searchResult.hospitals?.length || 0} Direct Matches
+                  </span>
                 </div>
+
+                {searchResult.hospitals?.length > 0 ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px' }}>
+                    {searchResult.hospitals.map((h, idx) => renderHospitalCard(h, idx, 'AI Verified Match'))}
+                  </div>
+                ) : (
+                  <div style={{ padding: '20px', background: '#f8fafc', borderRadius: '3px', border: '1px solid #e2e8f0', fontSize: '13px', color: 'var(--text-muted)' }}>
+                    No specific hospital matched your exact search query. Showing recommended facilities below.
+                  </div>
+                )}
               </div>
 
-              {/* Matched Doctors */}
+              {/* 2. Matched Doctors */}
               {searchResult.doctors?.length > 0 && (
                 <div>
                   <h4 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px', color: 'var(--text-main)' }}>Recommended Specialists</h4>
@@ -400,6 +620,49 @@ export default function AIGuidePage({ onSelectDoctor, onNavigateToRoute }) {
                   </div>
                 </div>
               )}
+
+              {/* 3. Other Recommended Hospitals in Regional Network */}
+              {otherRecommendedHospitals.length > 0 && (
+                <div style={{ marginTop: '10px', paddingTop: '18px', borderTop: '1px solid #e2e8f0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                    <div>
+                      <h4 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Building2 size={18} color="var(--primary-blue)" /> Other Recommended Hospitals in Regional Network
+                      </h4>
+                      <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                        Alternative accredited hospitals, emergency trauma centres, and multi-specialty facilities in Hoshiarpur
+                      </p>
+                    </div>
+                    <span style={{ fontSize: '12px', color: 'var(--primary-blue)', fontWeight: 700, background: '#eff6ff', border: '1px solid #bfdbfe', padding: '4px 10px', borderRadius: '3px' }}>
+                      {otherRecommendedHospitals.length} Available Facilities
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px' }}>
+                    {otherRecommendedHospitals.map((h, idx) => renderHospitalCard(h, idx + 10, 'Regional Facility'))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Fallback when search has not run yet */}
+          {!searchResult && allHospitals.length > 0 && (
+            <div style={{ marginTop: '26px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                <div>
+                  <h4 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Building2 size={18} color="var(--primary-blue)" /> Recommended Regional Hospitals & Healthcare Network
+                  </h4>
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    Browse accredited hospitals, multi-specialty centers, and emergency units across Hoshiarpur
+                  </p>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px' }}>
+                {allHospitals.map((h, idx) => renderHospitalCard(h, idx, 'Regional Facility'))}
+              </div>
             </div>
           )}
         </div>

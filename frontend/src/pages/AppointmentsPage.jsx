@@ -26,7 +26,7 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
   const [loading, setLoading] = useState(true);
   const [cancellingId, setCancellingId] = useState(null);
   const [cancelReason, setCancelReason] = useState('');
-  const [activeFilter, setActiveFilter] = useState('all'); // 'all' | 'upcoming' | 'past'
+  const [activeFilter, setActiveFilter] = useState('upcoming'); // 'upcoming' | 'done'
 
   // Rating Modal State
   const [ratingAppt, setRatingAppt] = useState(null);
@@ -49,6 +49,8 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
   ];
 
   useEffect(() => {
+    // Clear stale cached appointment data on mount
+    localStorage.removeItem('carelink_customer_appointments_history');
     loadAppointments();
   }, []);
 
@@ -176,12 +178,10 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
   };
 
   const upcomingAppointments = appointments.filter((a) => a.status === 'confirmed' || a.status === 'pending');
-  const pastAppointments = appointments.filter((a) => a.status === 'completed' || a.status === 'cancelled');
+  const doneAppointments = appointments.filter((a) => a.status === 'completed' || a.status === 'cancelled');
   const displayedAppointments = activeFilter === 'upcoming'
     ? upcomingAppointments
-    : activeFilter === 'past'
-    ? pastAppointments
-    : appointments;
+    : doneAppointments;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -198,25 +198,8 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
         </button>
       </div>
 
-      {/* Segmented Filter Controls */}
+      {/* Segmented Filter Controls — 2 Tabs */}
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-        <button
-          type="button"
-          onClick={() => setActiveFilter('all')}
-          style={{
-            padding: '7px 16px',
-            fontSize: '12px',
-            fontWeight: activeFilter === 'all' ? 700 : 500,
-            background: activeFilter === 'all' ? 'var(--primary-blue)' : '#ffffff',
-            color: activeFilter === 'all' ? '#ffffff' : 'var(--text-main)',
-            border: '1px solid ' + (activeFilter === 'all' ? 'var(--primary-blue)' : 'var(--border-subtle)'),
-            borderRadius: '3px',
-            cursor: 'pointer'
-          }}
-        >
-          All Consultations ({appointments.length})
-        </button>
-
         <button
           type="button"
           onClick={() => setActiveFilter('upcoming')}
@@ -231,24 +214,24 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
             cursor: 'pointer'
           }}
         >
-          Upcoming & Active ({upcomingAppointments.length})
+          Upcoming ({upcomingAppointments.length})
         </button>
 
         <button
           type="button"
-          onClick={() => setActiveFilter('past')}
+          onClick={() => setActiveFilter('done')}
           style={{
             padding: '7px 16px',
             fontSize: '12px',
-            fontWeight: activeFilter === 'past' ? 700 : 500,
-            background: activeFilter === 'past' ? 'var(--primary-blue)' : '#ffffff',
-            color: activeFilter === 'past' ? '#ffffff' : 'var(--text-main)',
-            border: '1px solid ' + (activeFilter === 'past' ? 'var(--primary-blue)' : 'var(--border-subtle)'),
+            fontWeight: activeFilter === 'done' ? 700 : 500,
+            background: activeFilter === 'done' ? 'var(--primary-blue)' : '#ffffff',
+            color: activeFilter === 'done' ? '#ffffff' : 'var(--text-main)',
+            border: '1px solid ' + (activeFilter === 'done' ? 'var(--primary-blue)' : 'var(--border-subtle)'),
             borderRadius: '3px',
             cursor: 'pointer'
           }}
         >
-          Past History ({pastAppointments.length})
+          Done ({doneAppointments.length})
         </button>
       </div>
 
@@ -262,8 +245,8 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
           <h3 style={{ fontSize: '16px', fontWeight: 700 }}>
             {activeFilter === 'upcoming'
               ? 'No Upcoming Consultations'
-              : activeFilter === 'past'
-              ? 'No Past Consultations on File'
+              : activeFilter === 'done'
+              ? 'No Completed Appointments'
               : 'No Appointments Found'}
           </h3>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>

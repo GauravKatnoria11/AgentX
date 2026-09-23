@@ -235,5 +235,22 @@ class AppointmentService:
 
         return res
 
+    def clear_patient_appointments(self, patient_id: str, patient_email: Optional[str] = None) -> int:
+        initial_len = len(MOCK_DATA["appointments"])
+        MOCK_DATA["appointments"] = [
+            a for a in MOCK_DATA["appointments"]
+            if not (
+                str(a.get("patient_id")) == str(patient_id)
+                or (patient_email and a.get("patient_email") == patient_email)
+                or str(patient_id) in ["11111111-1111-1111-1111-111111111111", "guest", "default"]
+            )
+        ]
+        return initial_len - len(MOCK_DATA["appointments"])
+
+    def delete_appointment(self, appointment_id: str, current_user: Dict[str, Any]) -> None:
+        idx = next((i for i, a in enumerate(MOCK_DATA["appointments"]) if str(a.get("id")) == str(appointment_id)), None)
+        if idx is not None:
+            MOCK_DATA["appointments"].pop(idx)
+
 
 appointment_service = AppointmentService()

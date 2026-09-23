@@ -295,11 +295,14 @@ export const fetchETA = async (origin, destination, mode = 'driving') => {
 };
 
 // AI Services
-export const aiSearch = async (query) => {
+export const aiSearch = async (query, userLatitude, userLongitude) => {
+  const payload = { query };
+  if (userLatitude !== undefined && userLatitude !== null) payload.user_latitude = userLatitude;
+  if (userLongitude !== undefined && userLongitude !== null) payload.user_longitude = userLongitude;
   const res = await fetch(`${API_BASE}/ai/search`, {
     method: 'POST',
     headers: headers(),
-    body: JSON.stringify({ query })
+    body: JSON.stringify(payload)
   });
   return res.json();
 };

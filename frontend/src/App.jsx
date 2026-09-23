@@ -47,8 +47,8 @@ function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
-  // Default to Hospitals searching page first (Dashboard removed from patient user side)
-  const [currentPage, setCurrentPage] = useState('hospitals');
+  // Default to AI Search as main page
+  const [currentPage, setCurrentPage] = useState('ai-guide');
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [selectedHospitalDetailId, setSelectedHospitalDetailId] = useState('hosp-1');
   const [hospitalDetailTab, setHospitalDetailTab] = useState('overview');
@@ -107,7 +107,7 @@ function App() {
     // Alt+H: Isolated Hospital Authority Portal
     const handleKeyDown = (e) => {
       if (e.altKey && (e.key === 'h' || e.key === 'H')) {
-        setCurrentPage((prev) => (prev === 'hospital-portal' ? 'hospitals' : 'hospital-portal'));
+        setCurrentPage((prev) => (prev === 'hospital-portal' ? 'ai-guide' : 'hospital-portal'));
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -149,44 +149,45 @@ function App() {
     }
   };
 
-  // Nav Items visible to regular patient (ZERO emojis, professional SVG icons)
+  // Nav Items relocated strictly to requested sequence without any loss:
+  // AI Search (main page) -> Emergency -> Hospital Search -> Doctors -> Appointments -> Medical Records -> Pharmacy & Rx -> Follow-ups -> Diagnostics Labs -> Hospital Routes
   const navItems = [
-    { id: 'hospitals', label: 'Hospitals Search', icon: Building2 },
-    { id: 'emergency', label: 'Emergency Care', icon: ShieldAlert, isEmergency: true },
-    { id: 'labs', label: 'Diagnostic Labs', icon: FlaskConical },
+    { id: 'ai-guide', label: 'AI Search', icon: Sparkles },
+    { id: 'emergency', label: 'Emergency', icon: ShieldAlert, isEmergency: true },
+    { id: 'hospitals', label: 'Hospital Search', icon: Building2 },
     { id: 'doctors', label: 'Doctors', icon: Stethoscope },
     { id: 'appointments', label: 'Appointments', icon: Calendar },
     { id: 'records', label: 'Medical Records', icon: FileText },
     { id: 'pharmacy', label: 'Pharmacy & Rx', icon: Pill },
     { id: 'followups', label: 'Follow-ups', icon: Activity },
-    { id: 'ai-guide', label: 'AI Health Guide', icon: Sparkles },
-    { id: 'maps', label: 'Hospital Route', icon: Navigation }
+    { id: 'labs', label: 'Diagnostics Labs', icon: FlaskConical },
+    { id: 'maps', label: 'Hospital Routes', icon: Navigation }
   ];
 
   const getPageMeta = () => {
     switch (currentPage) {
+      case 'ai-guide':
+        return { title: 'AI Search & Clinical Triage', subtitle: 'Instant symptom analysis, disease triage, and cost prediction' };
+      case 'emergency':
+        return { title: 'Emergency Care', subtitle: '24/7 direct ambulance dispatch, casualty units, and emergency triage' };
       case 'hospitals':
-        return { title: 'Hospitals & Clinics', subtitle: 'Find verified hospitals and healthcare facilities nearby' };
+        return { title: 'Hospital Search', subtitle: 'Browse verified hospitals, live ICU beds, and empanelled government schemes' };
       case 'hospital-detail':
         return { title: 'Hospital Overview', subtitle: 'Specialists, clinical services, and route guidance' };
-      case 'emergency':
-        return { title: 'Emergency SOS & Triage', subtitle: '24/7 ambulance dispatch and emergency triage' };
-      case 'labs':
-        return { title: 'Diagnostic Labs', subtitle: 'Book pathology tests, imaging, and home sample collection' };
       case 'doctors':
-        return { title: 'Doctors & Specialists', subtitle: 'Book appointments with verified specialists' };
+        return { title: 'Doctors & Specialists', subtitle: 'Book appointments with verified specialists and consultants' };
       case 'appointments':
-        return { title: 'Appointments', subtitle: 'Manage upcoming consultations and visits' };
+        return { title: 'Appointments & History', subtitle: 'Manage upcoming consultations, queue tokens, and past records' };
       case 'records':
-        return { title: 'Medical Records', subtitle: 'Prescriptions, schedules, and clinical summaries' };
+        return { title: 'Medical Records', subtitle: 'Prescriptions, schedules, diet plans, and clinical summaries' };
       case 'pharmacy':
-        return { title: 'Prescriptions & Pharmacy', subtitle: 'Medication schedules and pharmacy stock' };
+        return { title: 'Pharmacy & Rx', subtitle: 'Select partner pharmacy and search live medicine stock availability' };
       case 'followups':
-        return { title: 'Recovery Follow-ups', subtitle: 'Post-treatment check-ins and recovery progress' };
-      case 'ai-guide':
-        return { title: 'AI Health Guide', subtitle: 'Instant answers and clinical triage assistance' };
+        return { title: 'Follow-ups', subtitle: 'Post-treatment recovery check-ins, questionnaires, and clinical scores' };
+      case 'labs':
+        return { title: 'Diagnostics Labs', subtitle: 'Book pathology tests, imaging, and home sample collection' };
       case 'maps':
-        return { title: 'Hospital Route & ETA', subtitle: 'Turn-by-turn navigation and estimated travel times' };
+        return { title: 'Hospital Routes & GPS', subtitle: 'Turn-by-turn navigation and estimated road travel times' };
       default:
         return { title: 'Carelink', subtitle: 'Healthcare Discovery & Management Platform' };
     }
@@ -194,7 +195,7 @@ function App() {
 
   // If in Hospital Authority Portal Mode, render the isolated facility console completely
   if (currentPage === 'hospital-portal' || currentPage === 'hospital-secure') {
-    return <HospitalSecurePortal onExitPortal={() => setCurrentPage('hospitals')} />;
+    return <HospitalSecurePortal onExitPortal={() => setCurrentPage('ai-guide')} />;
   }
 
   const meta = getPageMeta();
@@ -207,7 +208,7 @@ function App() {
         <div
           className="brand-header"
           style={{ cursor: 'pointer' }}
-          onClick={() => handleNavigate('hospitals')}
+          onClick={() => handleNavigate('ai-guide')}
           title="Carelink"
         >
           <div className="brand-icon">
@@ -246,27 +247,15 @@ function App() {
         <header className="top-header">
           <div className="header-left">
             <h1 className="page-title">{meta.title}</h1>
-            <span className="page-subtitle">{meta.subtitle}</span>
           </div>
 
           <div className="header-right">
-            {/* Global Search Bar */}
-            <div className="search-bar">
-              <Search size={16} color="var(--text-light)" />
-              <input
-                type="text"
-                placeholder="Search symptoms, hospitals, tests, doctors..."
-                value={headerSearch}
-                onChange={(e) => setHeaderSearch(e.target.value)}
-                onKeyDown={handleHeaderSearch}
-              />
-            </div>
 
             {/* Emergency SOS Quick Button in Top Bar */}
             <button
               onClick={() => handleNavigate('emergency')}
               className="btn-google-danger"
-              style={{ padding: '6px 14px', borderRadius: '10px', fontSize: '12px' }}
+              style={{ padding: '6px 14px', borderRadius: '3px', fontSize: '12px' }}
             >
               <ShieldAlert size={15} /> Emergency SOS
             </button>
@@ -288,10 +277,10 @@ function App() {
                     <img
                       src={currentUser.avatar_url}
                       alt={currentUser.full_name}
-                      style={{ width: '32px', height: '32px', borderRadius: '10px', objectFit: 'cover' }}
+                      style={{ width: '32px', height: '32px', borderRadius: '3px', objectFit: 'cover' }}
                     />
                   ) : (
-                    <div className="user-avatar-circle" style={{ width: '32px', height: '32px', fontSize: '12px' }}>
+                    <div className="user-avatar-circle" style={{ width: '32px', height: '32px', fontSize: '12px', borderRadius: '3px' }}>
                       {currentUser.full_name
                         ? currentUser.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
                         : 'US'}
@@ -315,7 +304,7 @@ function App() {
                       width: '240px',
                       background: '#0f172a',
                       border: '1px solid #334155',
-                      borderRadius: '10px',
+                      borderRadius: '3px',
                       padding: '12px',
                       boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)',
                       zIndex: 1000,
@@ -329,7 +318,7 @@ function App() {
                       <div style={{ fontSize: '11px', color: '#94a3b8', wordBreak: 'break-all', marginTop: '2px' }}>
                         {currentUser.email}
                       </div>
-                      <div style={{ display: 'inline-block', marginTop: '6px', fontSize: '10px', background: '#1e293b', border: '1px solid #334155', padding: '2px 8px', borderRadius: '10px', color: '#38bdf8', fontWeight: 700 }}>
+                      <div style={{ display: 'inline-block', marginTop: '6px', fontSize: '10px', background: '#1e293b', border: '1px solid #334155', padding: '2px 8px', borderRadius: '3px', color: '#38bdf8', fontWeight: 700 }}>
                         {currentUser.role === 'patient' ? 'Verified Account' : (currentUser.role || 'Verified Account')}
                       </div>
                     </div>
@@ -337,7 +326,7 @@ function App() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '8px 0' }}>
                       <button
                         onClick={() => { handleNavigate('records'); setIsProfileMenuOpen(false); }}
-                        style={{ textAlign: 'left', background: 'none', border: 'none', color: '#cbd5e1', padding: '8px 10px', borderRadius: '10px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                        style={{ textAlign: 'left', background: 'none', border: 'none', color: '#cbd5e1', padding: '8px 10px', borderRadius: '3px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
                       >
                         <FileText size={14} color="#60a5fa" /> Personal Health Records
                       </button>
@@ -364,7 +353,7 @@ function App() {
                           setCurrentUser(null);
                           setIsProfileMenuOpen(false);
                         }}
-                        style={{ width: '100%', textAlign: 'left', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#f87171', padding: '8px 10px', borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                        style={{ width: '100%', textAlign: 'left', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#f87171', padding: '8px 10px', borderRadius: '3px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
                       >
                         <LogOut size={14} /> Sign Out
                       </button>
@@ -376,7 +365,7 @@ function App() {
               <button
                 onClick={() => setIsAuthModalOpen(true)}
                 className="btn-google-primary"
-                style={{ padding: '8px 18px', borderRadius: '10px', fontSize: '13px' }}
+                style={{ padding: '8px 18px', borderRadius: '3px', fontSize: '13px' }}
               >
                 <LogIn size={15} /> Sign In
               </button>
@@ -458,6 +447,10 @@ function App() {
                 setRoutePresetDestination(hospName);
                 setCurrentPage('maps');
               }}
+              onSelectHospitalForRoute={handleSelectHospitalForRoute}
+              onSelectHospitalForDoctors={handleSelectHospitalForDoctors}
+              onOpenHospitalDetail={handleOpenHospitalDetail}
+              patientLocation={patientLocation}
             />
           )}
 

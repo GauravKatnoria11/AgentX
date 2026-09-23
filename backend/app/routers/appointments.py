@@ -102,6 +102,31 @@ async def complete_appointment(
     )
 
 
+@router.delete("/clear-all", response_model=ApiResponse[Dict[str, Any]])
+async def clear_all_appointments(current_user: dict = Depends(get_current_user)):
+    patient_id = str(current_user["id"])
+    patient_email = current_user.get("email")
+    deleted_count = appointment_service.clear_patient_appointments(patient_id, patient_email)
+    return ApiResponse(
+        success=True,
+        message=f"Cleared {deleted_count} appointments successfully",
+        data={"deleted_count": deleted_count}
+    )
+
+
+@router.delete("/{appointment_id}", response_model=ApiResponse[Dict[str, Any]])
+async def delete_single_appointment(
+    appointment_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    appointment_service.delete_appointment(appointment_id, current_user)
+    return ApiResponse(
+        success=True,
+        message="Appointment deleted successfully",
+        data={"id": appointment_id}
+    )
+
+
 @router.post("/{appointment_id}/send-reminder", response_model=ApiResponse[Dict[str, Any]])
 async def send_appointment_reminder_email(
     appointment_id: str,

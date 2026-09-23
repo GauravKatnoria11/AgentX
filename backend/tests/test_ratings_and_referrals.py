@@ -44,7 +44,17 @@ def test_doctor_rating_succeeds_even_without_prior_booking():
     assert data["doctor"]["rating"] >= 4.0
 
 def test_doctor_rating_succeeds_when_appointment_is_completed(patient_token):
-    # John Doe has app-completed-1 with doc-hsp-1 where status == 'completed'
+    # Ensure completed appointment exists for this test
+    if not any(a.get("id") == "app-completed-1" for a in MOCK_DATA["appointments"]):
+        MOCK_DATA["appointments"].append({
+            "id": "app-completed-1",
+            "patient_id": "11111111-1111-1111-1111-111111111111",
+            "doctor_id": "doc-hsp-1",
+            "hospital_id": "hosp-hoshiarpur-2",
+            "status": "completed",
+            "appointment_date": "2026-09-18",
+            "appointment_time": "10:30:00"
+        })
     headers = {"Authorization": f"Bearer {patient_token}"}
     resp = client.post(
         "/api/v1/doctors/doc-hsp-1/ratings",
@@ -70,6 +80,21 @@ def test_doctor_rating_succeeds_when_appointment_is_completed(patient_token):
     assert rev_data["total_reviews"] >= 1
 
 def test_admin_refer_overbooked_doctor_patient(admin_token):
+    # Seed fixture appointment since mock data was cleared
+    if not any(a.get("id") == "app-hsp-1" for a in MOCK_DATA["appointments"]):
+        MOCK_DATA["appointments"].append({
+            "id": "app-hsp-1",
+            "hospital_id": "hosp-hoshiarpur-2",
+            "doctor_id": "doc-hsp-1",
+            "patient_id": "11111111-1111-1111-1111-111111111111",
+            "patient_name": "Test Patient",
+            "patient_phone": "+91-99999-99999",
+            "status": "confirmed",
+            "appointment_date": "2026-09-30",
+            "appointment_time": "10:00:00",
+            "reason": "Follow-up consultation"
+        })
+
     headers = {"Authorization": f"Bearer {admin_token}"}
     # Refer app-hsp-1 from doc-hsp-1 to doc-hsp-2
     resp = client.post(
@@ -88,6 +113,21 @@ def test_admin_refer_overbooked_doctor_patient(admin_token):
     assert "referred_to" in data
 
 def test_appointment_resend_reminder_email(patient_token):
+    # Seed fixture appointment since mock data was cleared
+    if not any(a.get("id") == "app-today-remind" for a in MOCK_DATA["appointments"]):
+        MOCK_DATA["appointments"].append({
+            "id": "app-today-remind",
+            "hospital_id": "hosp-hoshiarpur-2",
+            "doctor_id": "doc-hsp-1",
+            "patient_id": "11111111-1111-1111-1111-111111111111",
+            "patient_name": "John Doe",
+            "patient_phone": "+91-99999-99999",
+            "status": "confirmed",
+            "appointment_date": "2026-09-24",
+            "appointment_time": "09:00:00",
+            "reason": "Routine checkup"
+        })
+
     headers = {"Authorization": f"Bearer {patient_token}"}
     resp = client.post(
         "/api/v1/appointments/app-today-remind/send-reminder",

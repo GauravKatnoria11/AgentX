@@ -551,12 +551,13 @@ export default function HospitalsPage({
           </div>
 
           {/* Active Patient Location Status Ribbon */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #e2e8f0', fontSize: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginTop: '10px', padding: '10px 14px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '3px', fontSize: '13px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Calculating distances from:</span>
-              <strong style={{ color: 'var(--text-main)' }}>{activeLocation.name}</strong>
+              <MapPin size={15} color="#2563eb" />
+              <span style={{ color: '#1e40af', fontWeight: 600 }}>Calculating distances from:</span>
+              <strong style={{ color: '#1e3a5f', fontSize: '14px' }}>{activeLocation.name}</strong>
             </div>
-            <span style={{ color: '#059669', fontWeight: 600, fontSize: '11px' }}>
+            <span style={{ color: '#059669', fontWeight: 700, fontSize: '12px', background: '#ecfdf5', padding: '3px 10px', borderRadius: '3px', border: '1px solid #a7f3d0' }}>
               ✓ Road distances calibrated
             </span>
           </div>
