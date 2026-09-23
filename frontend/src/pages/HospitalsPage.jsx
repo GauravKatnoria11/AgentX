@@ -30,6 +30,7 @@ import {
   Map as MapIcon
 } from 'lucide-react';
 import { fetchHospitals, searchHospitals, searchLocation } from '../api';
+import { getAccurateGPSLocation } from '../utils/geolocation';
 
 const DEFAULT_HOSHIARPUR_LOCALITIES = [
   { name: 'Model Town', formatted_address: 'Model Town, Hoshiarpur, Punjab 146001', lat: 31.5312, lon: 75.9184 },
@@ -171,37 +172,21 @@ export default function HospitalsPage({
     }
   };
 
-  // HTML5 Browser Geolocation
-  const handleUseCurrentGPS = () => {
-    if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser.');
-      return;
-    }
+  // High-Precision Hardware/Network Geolocation
+  const handleUseCurrentGPS = async () => {
     setIsSearchingLocation(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setIsSearchingLocation(false);
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-        const newLoc = {
-          name: 'My Current GPS Location',
-          formatted_address: `Hoshiarpur GPS Pin (${lat.toFixed(4)}, ${lon.toFixed(4)})`,
-          lat: lat,
-          lon: lon,
-          locality: 'GPS Position'
-        };
-        setActiveLocation(newLoc);
-        if (onPatientLocationChange) {
-          onPatientLocationChange(newLoc);
-        }
-      },
-      (err) => {
-        setIsSearchingLocation(false);
-        console.warn('Geolocation error, defaulting to Model Town Hoshiarpur:', err);
-        alert('Could not access device location. Using default Hoshiarpur center.');
-      },
-      { timeout: 8000 }
-    );
+    try {
+      const loc = await getAccurateGPSLocation();
+      setActiveLocation(loc);
+      if (onPatientLocationChange) {
+        onPatientLocationChange(loc);
+      }
+    } catch (err) {
+      console.warn('Geolocation error:', err);
+      alert(err.message || 'Could not access device GPS.');
+    } finally {
+      setIsSearchingLocation(false);
+    }
   };
 
   const loadHospitals = async () => {

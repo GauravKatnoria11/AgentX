@@ -47,3 +47,12 @@ class LocationSearchResult(BaseModel):
     longitude: float
     locality: Optional[str] = None
 
+
+class ReverseGeocodeResult(BaseModel):
+    name: str
+    formatted_address: str
+    latitude: float
+    longitude: float
+    locality: Optional[str] = None
+    distance_to_center_km: Optional[float] = None
+

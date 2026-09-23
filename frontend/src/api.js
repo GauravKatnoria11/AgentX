@@ -288,6 +288,13 @@ export const submitFollowupResponse = async (id, responses, severityScore) => {
 };
 
 // Maps & Navigation
+export const reverseGeocode = async (lat, lon) => {
+  const res = await fetch(`${API_BASE}/maps/reverse-geocode?lat=${lat}&lon=${lon}`, {
+    headers: headers()
+  });
+  return res.json();
+};
+
 export const searchLocation = async (query = '') => {
   const res = await fetch(`${API_BASE}/maps/search-location?query=${encodeURIComponent(query)}`, {
     headers: headers()

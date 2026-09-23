@@ -1,4 +1,5 @@
 import math
+import re
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Any, List, Optional
@@ -59,11 +60,15 @@ def haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
 def find_coords(text: str) -> Optional[tuple[float, float]]:
     if not text:
         return None
-    # Check if text contains lat,lon format
-    parts = text.split(",")
-    if len(parts) == 2:
+
+    # 1. Regex match for lat,lon pair in any string (e.g. "31.5284, 75.9184" or "My GPS Location (31.5284, 75.9184)")
+    coord_match = re.search(r'(-?\d{1,3}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)', text)
+    if coord_match:
         try:
-            return float(parts[0].strip()), float(parts[1].strip())
+            lat = float(coord_match.group(1))
+            lon = float(coord_match.group(2))
+            if -90 <= lat <= 90 and -180 <= lon <= 180:
+                return lat, lon
         except ValueError:
             pass
 
@@ -275,5 +280,78 @@ class MapService:
             "traffic_condition": "Normal flowing traffic"
         }
 
+    async def reverse_geocode(self, lat: float, lon: float) -> Dict[str, Any]:
+        """
+        Reverse geocodes GPS coordinates into real-world address, locality and landmark.
+        Combines local high-precision landmark mapping + Nominatim OpenStreetMap fallback.
+        """
+        # 1. First check closest curated Hoshiarpur landmark within 400m
+        closest_place = None
+        min_dist = float('inf')
+        for place in HOSHIARPUR_PLACES:
+            d = haversine(lat, lon, place["latitude"], place["longitude"])
+            if d < min_dist:
+                min_dist = d
+                closest_place = place
+
+        if closest_place and min_dist <= 0.4:  # within 400 meters
+            return {
+                "name": closest_place["name"],
+                "formatted_address": closest_place["formatted_address"],
+                "latitude": lat,
+                "longitude": lon,
+                "locality": closest_place.get("locality", "Hoshiarpur"),
+                "distance_to_center_km": round(min_dist, 2)
+            }
+
+        # 2. Dynamic reverse geocode using Nominatim / OpenStreetMap
+        try:
+            async with httpx.AsyncClient(timeout=4.0) as client:
+                url = f"https://nominatim.openstreetmap.org/reverse?lat={lat}&lon={lon}&format=json&zoom=18&addressdetails=1"
+                resp = await client.get(url, headers={"User-Agent": "CarelinkHealthcareApp/2.0"})
+                if resp.status_code == 200:
+                    data = resp.json()
+                    addr = data.get("address", {})
+                    road = addr.get("road") or addr.get("suburb") or addr.get("neighbourhood") or addr.get("residential")
+                    city = addr.get("city") or addr.get("town") or addr.get("village") or addr.get("county") or "Hoshiarpur"
+                    state = addr.get("state", "Punjab")
+                    postcode = addr.get("postcode", "146001")
+
+                    locality_name = road or city or "Current Location"
+                    parts = [p for p in [road, addr.get("suburb"), city, state, postcode] if p]
+                    formatted = ", ".join(parts) if parts else data.get("display_name", f"{lat:.4f}, {lon:.4f}")
+
+                    return {
+                        "name": locality_name,
+                        "formatted_address": formatted,
+                        "latitude": lat,
+                        "longitude": lon,
+                        "locality": city,
+                        "distance_to_center_km": round(min_dist, 2) if min_dist != float('inf') else 0.0
+                    }
+        except Exception as e:
+            logger.debug(f"Reverse geocode failed: {e}")
+
+        # 3. Fallback: closest landmark
+        if closest_place:
+            return {
+                "name": f"Near {closest_place['name']}",
+                "formatted_address": f"Near {closest_place['name']}, Hoshiarpur, Punjab ({lat:.4f}, {lon:.4f})",
+                "latitude": lat,
+                "longitude": lon,
+                "locality": closest_place.get("locality", "Hoshiarpur"),
+                "distance_to_center_km": round(min_dist, 2)
+            }
+
+        return {
+            "name": f"GPS Pin ({lat:.4f}, {lon:.4f})",
+            "formatted_address": f"GPS Coordinates ({lat:.4f}, {lon:.4f}), Punjab",
+            "latitude": lat,
+            "longitude": lon,
+            "locality": "Hoshiarpur Area",
+            "distance_to_center_km": 0.0
+        }
+
 
 map_service = MapService()
+

@@ -18,11 +18,13 @@ import {
   ChevronDown,
   User,
   ShieldCheck,
+  Crosshair,
   X
 } from 'lucide-react';
 import './App.css';
 import { initGuestAuth, fetchCurrentUser, logoutUser, getStoredUser } from './api';
 import { initOAuthRedirectListener } from './supabase';
+import { getAccurateGPSLocation } from './utils/geolocation';
 
 import HospitalsPage from './pages/HospitalsPage';
 import HospitalDetailPage from './pages/HospitalDetailPage';
@@ -65,6 +67,35 @@ function App() {
     lon: 75.9184,
     locality: 'Model Town'
   });
+  const [isLocatingHeader, setIsLocatingHeader] = useState(false);
+
+  const handleHeaderGPSLocate = async () => {
+    setIsLocatingHeader(true);
+    try {
+      const loc = await getAccurateGPSLocation();
+      setPatientLocation(loc);
+    } catch (err) {
+      console.warn('GPS locate error:', err);
+      alert(err.message || 'Could not acquire device GPS.');
+    } finally {
+      setIsLocatingHeader(false);
+    }
+  };
+
+  useEffect(() => {
+    // If navigator.permissions permits geolocation, quietly lock exact GPS on startup
+    if (navigator.permissions && navigator.permissions.query) {
+      navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+        if (result.state === 'granted') {
+          getAccurateGPSLocation()
+            .then((loc) => {
+              if (loc) setPatientLocation(loc);
+            })
+            .catch(() => {});
+        }
+      }).catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     const isOAuthRedirect =
@@ -283,6 +314,34 @@ function App() {
           </div>
 
           <div className="header-right">
+            {/* Live GPS Quick Button */}
+            <button
+              onClick={handleHeaderGPSLocate}
+              disabled={isLocatingHeader}
+              title={patientLocation.formatted_address || "Locate with GPS"}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                padding: '6px 10px',
+                borderRadius: '3px',
+                border: '1px solid var(--border-subtle)',
+                background: patientLocation?.isExactGPS ? '#f0fdf4' : '#ffffff',
+                color: patientLocation?.isExactGPS ? '#166534' : 'var(--text-body)',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: isLocatingHeader ? 'wait' : 'pointer',
+                maxWidth: '180px',
+                overflow: 'hidden',
+                whiteSpace: 'nowrap',
+                textOverflow: 'ellipsis'
+              }}
+            >
+              <Crosshair size={13} color={patientLocation?.isExactGPS ? '#16a34a' : 'var(--primary-blue)'} />
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {isLocatingHeader ? 'Acquiring GPS...' : (patientLocation.name || 'GPS Locate')}
+              </span>
+            </button>
 
             {/* Emergency SOS Quick Button in Top Bar */}
             <button
@@ -442,6 +501,7 @@ function App() {
 
           {currentPage === 'emergency' && (
             <EmergencyPage
+              patientLocation={patientLocation}
               onNavigateToRoute={(hospName) => {
                 setRoutePresetDestination(hospName);
                 setCurrentPage('maps');

@@ -17,6 +17,7 @@ import {
   Search
 } from 'lucide-react';
 import { fetchRoute, fetchETA, searchLocation } from '../api';
+import { getAccurateGPSLocation } from '../utils/geolocation';
 
 const HOSHIARPUR_ORIGINS = [
   'Model Town, Hoshiarpur, Punjab',
@@ -49,6 +50,14 @@ export default function MapsPage({
 }) {
   const [origin, setOrigin] = useState(
     originPreset || patientLocation?.formatted_address || patientLocation?.name || 'Model Town, Hoshiarpur, Punjab'
+  );
+  const [originCoords, setOriginCoords] = useState(
+    patientLocation?.lat && patientLocation?.lon ? { lat: patientLocation.lat, lon: patientLocation.lon } : null
+  );
+  const [gpsLoading, setGpsLoading] = useState(false);
+  const [gpsStatusMsg, setGpsStatusMsg] = useState('');
+  const [gpsAccuracyInfo, setGpsAccuracyInfo] = useState(
+    patientLocation?.isExactGPS ? `±${patientLocation.accuracy || 8}m (${patientLocation.accuracy_label || 'GPS Lock'})` : null
   );
   const [destination, setDestination] = useState(
     destinationPreset || 'Civil Hospital Hoshiarpur (General Hospital)'
@@ -136,6 +145,8 @@ export default function MapsPage({
 
   const handleSelectOrigin = (item) => {
     setOrigin(item.formatted_address || item.name);
+    setOriginCoords({ lat: item.latitude, lon: item.longitude });
+    setGpsAccuracyInfo(null);
     setShowOriginDropdown(false);
     if (onSelectPatientLocation) {
       onSelectPatientLocation({
@@ -148,32 +159,24 @@ export default function MapsPage({
     }
   };
 
-  const handleUseGPS = () => {
-    if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser.');
-      return;
+  const handleUseGPS = async () => {
+    setGpsLoading(true);
+    setGpsStatusMsg('Acquiring high-accuracy GPS fix...');
+    try {
+      const loc = await getAccurateGPSLocation((msg) => setGpsStatusMsg(msg));
+      setOrigin(loc.formatted_address || loc.name);
+      setOriginCoords({ lat: loc.lat, lon: loc.lon });
+      setGpsAccuracyInfo(`±${loc.accuracy}m (${loc.accuracy_label})`);
+      if (onSelectPatientLocation) {
+        onSelectPatientLocation(loc);
+      }
+    } catch (err) {
+      console.warn('Geolocation error:', err);
+      alert(err.message || 'Could not access device GPS.');
+    } finally {
+      setGpsLoading(false);
+      setGpsStatusMsg('');
     }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-        const gpsStr = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
-        setOrigin(`My GPS Location (${gpsStr})`);
-        if (onSelectPatientLocation) {
-          onSelectPatientLocation({
-            name: 'My GPS Location',
-            formatted_address: `GPS Pin (${gpsStr})`,
-            lat: lat,
-            lon: lon
-          });
-        }
-      },
-      (err) => {
-        console.warn('Geolocation error:', err);
-        alert('Could not access device location. Using default Hoshiarpur center.');
-      },
-      { timeout: 8000 }
-    );
   };
 
   const handleSearch = (e) => {
@@ -181,15 +184,18 @@ export default function MapsPage({
     calculateNavigation();
   };
 
+  // When exact GPS coordinates are available, pass `${lat},${lon}` to Google Maps for exact meter-level pinning!
+  const originParam = originCoords ? `${originCoords.lat},${originCoords.lon}` : origin;
+
   // REAL WORKING GOOGLE MAPS EMBED DIRECTIONS URL
   // Uses Google Maps embed directions with zero billing/quota restrictions!
   const googleMapsEmbedUrl = `https://maps.google.com/maps?saddr=${encodeURIComponent(
-    origin
+    originParam
   )}&daddr=${encodeURIComponent(destination)}&output=embed`;
 
   // Direct link to launch Google Maps Turn-by-Turn GPS App
   const googleMapsExternalUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(
-    origin
+    originParam
   )}&destination=${encodeURIComponent(destination)}&travelmode=${mode}`;
 
   const cleanInstruction = (htmlStr) => {
@@ -232,19 +238,20 @@ export default function MapsPage({
                 <button
                   type="button"
                   onClick={handleUseGPS}
+                  disabled={gpsLoading}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: '4px',
                     border: 'none',
                     background: 'transparent',
-                    color: 'var(--primary-blue)',
+                    color: gpsLoading ? 'var(--text-muted)' : 'var(--primary-blue)',
                     fontSize: '11px',
                     fontWeight: 700,
-                    cursor: 'pointer'
+                    cursor: gpsLoading ? 'wait' : 'pointer'
                   }}
                 >
-                  <Crosshair size={12} /> My Live GPS
+                  <Crosshair size={12} /> {gpsLoading ? 'Locking GPS...' : 'My Live GPS'}
                 </button>
               </div>
 
@@ -276,6 +283,18 @@ export default function MapsPage({
                   </span>
                 )}
               </div>
+
+              {gpsStatusMsg && (
+                <div style={{ marginTop: '4px', fontSize: '11px', color: 'var(--primary-blue)', fontWeight: 600 }}>
+                  🛰️ {gpsStatusMsg}
+                </div>
+              )}
+
+              {gpsAccuracyInfo && !gpsStatusMsg && (
+                <div style={{ marginTop: '4px', fontSize: '11px', color: '#16a34a', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <CheckCircle2 size={12} color="#16a34a" /> Live GPS Accurate to {gpsAccuracyInfo}
+                </div>
+              )}
 
               {/* Suggestions Dropdown */}
               {showOriginDropdown && originSuggestions.length > 0 && (

@@ -1,10 +1,29 @@
 from typing import Optional, List
 from fastapi import APIRouter, Query
-from app.schemas.map import RouteResponse, DistanceMatrixResponse, ETAResponse, LocationSearchResult
+from app.schemas.map import (
+    RouteResponse,
+    DistanceMatrixResponse,
+    ETAResponse,
+    LocationSearchResult,
+    ReverseGeocodeResult
+)
 from app.schemas.common import ApiResponse
 from app.services.map_service import map_service
 
 router = APIRouter(prefix="/api/v1/maps", tags=["Google Maps & Navigation"])
+
+
+@router.get("/reverse-geocode", response_model=ApiResponse[ReverseGeocodeResult])
+async def reverse_geocode(
+    lat: float = Query(..., description="GPS Latitude"),
+    lon: float = Query(..., description="GPS Longitude")
+):
+    result = await map_service.reverse_geocode(lat=lat, lon=lon)
+    return ApiResponse(
+        success=True,
+        message="Location reverse-geocoded successfully",
+        data=ReverseGeocodeResult(**result)
+    )
 
 
 @router.get("/search-location", response_model=ApiResponse[List[LocationSearchResult]])

@@ -17,9 +17,11 @@ import {
   Car,
   Wind,
   Building2,
-  Phone
+  Phone,
+  Crosshair
 } from 'lucide-react';
 import { triggerEmergencySOS } from '../api';
+import { getAccurateGPSLocation } from '../utils/geolocation';
 
 const HOSHIARPUR_LOCATIONS = [
   { name: 'Model Town, Hoshiarpur', lat: 31.5312, lon: 75.9184 },
@@ -75,15 +77,44 @@ const EMERGENCY_CONDITIONS = [
   }
 ];
 
-export default function EmergencyPage({ onNavigateToRoute }) {
+export default function EmergencyPage({ onNavigateToRoute, patientLocation }) {
   const [selectedCondition, setSelectedCondition] = useState(EMERGENCY_CONDITIONS[0]);
-  const [selectedLocation, setSelectedLocation] = useState(HOSHIARPUR_LOCATIONS[0]);
+  const [selectedLocation, setSelectedLocation] = useState(
+    patientLocation || HOSHIARPUR_LOCATIONS[0]
+  );
+  const [isDetectingGPS, setIsDetectingGPS] = useState(false);
+  const [gpsAccuracyInfo, setGpsAccuracyInfo] = useState(
+    patientLocation?.isExactGPS ? `±${patientLocation.accuracy || 8}m` : null
+  );
   const [patientName, setPatientName] = useState('John Doe');
   const [patientPhone, setPatientPhone] = useState('+91-98765-43210');
   const [customNotes, setCustomNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sosResult, setSosResult] = useState(null);
   const [countdownTimer, setCountdownTimer] = useState(null);
+
+  useEffect(() => {
+    if (patientLocation) {
+      setSelectedLocation(patientLocation);
+      if (patientLocation.isExactGPS) {
+        setGpsAccuracyInfo(`±${patientLocation.accuracy || 8}m`);
+      }
+    }
+  }, [patientLocation]);
+
+  const handleAutoDetectGPS = async () => {
+    setIsDetectingGPS(true);
+    try {
+      const loc = await getAccurateGPSLocation();
+      setSelectedLocation(loc);
+      setGpsAccuracyInfo(`±${loc.accuracy}m (${loc.accuracy_label})`);
+    } catch (err) {
+      console.warn('GPS detection error:', err);
+      alert(err.message || 'Could not detect device GPS.');
+    } finally {
+      setIsDetectingGPS(false);
+    }
+  };
 
   useEffect(() => {
     let interval;
@@ -463,14 +494,46 @@ export default function EmergencyPage({ onNavigateToRoute }) {
 
             {/* Location selector */}
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
-                HOSHIARPUR LOCALITY / LANDMARK
-              </label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap', gap: '6px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)' }}>
+                  PATIENT LOCATION
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAutoDetectGPS}
+                  disabled={isDetectingGPS}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    border: 'none',
+                    background: '#fef2f2',
+                    color: isDetectingGPS ? 'var(--text-muted)' : '#dc2626',
+                    padding: '4px 10px',
+                    borderRadius: '10px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    cursor: isDetectingGPS ? 'wait' : 'pointer'
+                  }}
+                >
+                  <Crosshair size={12} /> {isDetectingGPS ? 'Locking Satellite GPS...' : '📍 Auto-Detect My Live GPS'}
+                </button>
+              </div>
+
+              {gpsAccuracyInfo && (
+                <div style={{ marginBottom: '8px', padding: '8px 12px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', fontSize: '11.5px', color: '#166534', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <CheckCircle2 size={14} color="#16a34a" /> Live GPS Accurate ({gpsAccuracyInfo}): <strong>{selectedLocation.formatted_address || selectedLocation.name}</strong>
+                </div>
+              )}
+
               <select
                 value={selectedLocation.name}
                 onChange={(e) => {
                   const loc = HOSHIARPUR_LOCATIONS.find((l) => l.name === e.target.value);
-                  if (loc) setSelectedLocation(loc);
+                  if (loc) {
+                    setSelectedLocation(loc);
+                    setGpsAccuracyInfo(null);
+                  }
                 }}
                 style={{
                   width: '100%',
@@ -483,6 +546,11 @@ export default function EmergencyPage({ onNavigateToRoute }) {
                   color: 'var(--text-main)'
                 }}
               >
+                {selectedLocation && !HOSHIARPUR_LOCATIONS.some(l => l.name === selectedLocation.name) && (
+                  <option value={selectedLocation.name}>
+                    📍 {selectedLocation.name} (Live GPS)
+                  </option>
+                )}
                 {HOSHIARPUR_LOCATIONS.map((loc) => (
                   <option key={loc.name} value={loc.name}>
                     {loc.name}
