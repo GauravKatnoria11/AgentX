@@ -14,7 +14,9 @@ import {
   Bed,
   CheckCircle2,
   Calendar,
-  ExternalLink
+  ExternalLink,
+  Ambulance,
+  Car
 } from 'lucide-react';
 import { fetchHospitalById } from '../api';
 
@@ -25,6 +27,8 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(initialTab || 'overview');
 
+  const effectiveHospitalId = hospitalId || 'hosp-1';
+
   useEffect(() => {
     if (initialTab) {
       setActiveTab(initialTab);
@@ -32,15 +36,13 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
   }, [initialTab]);
 
   useEffect(() => {
-    if (hospitalId) {
-      loadDetails();
-    }
-  }, [hospitalId]);
+    loadDetails(effectiveHospitalId);
+  }, [effectiveHospitalId]);
 
-  const loadDetails = async () => {
+  const loadDetails = async (id) => {
     setLoading(true);
     try {
-      const res = await fetchHospitalById(hospitalId);
+      const res = await fetchHospitalById(id || 'hosp-1');
       if (res.success && res.data) {
         setHospital(res.data);
       }
@@ -130,7 +132,7 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
         style={{
           padding: '28px',
           background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)',
-          borderRadius: '16px',
+          borderRadius: '10px',
           border: '1px solid var(--border-subtle)'
         }}
       >
@@ -168,7 +170,7 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
             style={{
               background: '#ffffff',
               border: '1px solid var(--border-subtle)',
-              borderRadius: '14px',
+              borderRadius: '10px',
               padding: '20px 24px',
               minWidth: '220px',
               boxShadow: '0 4px 12px rgba(0,0,0,0.04)'
@@ -188,13 +190,13 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
               Total Bed Capacity: <strong>{hospital.total_beds} beds</strong>
             </div>
-            <div style={{ marginTop: '12px', height: '6px', background: '#e2e8f0', borderRadius: '9999px', overflow: 'hidden' }}>
+            <div style={{ marginTop: '12px', height: '6px', background: '#e2e8f0', borderRadius: '10px', overflow: 'hidden' }}>
               <div
                 style={{
                   width: `${Math.min(100, (hospital.available_icu_beds / 20) * 100)}%`,
                   height: '100%',
                   background: '#059669',
-                  borderRadius: '9999px'
+                  borderRadius: '10px'
                 }}
               />
             </div>
@@ -207,7 +209,7 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
             { id: 'overview', label: 'Overview & Diseases Treated' },
             { id: 'departments', label: `Departments (${hospital.departments?.length || 0})` },
             { id: 'doctors', label: `Specialists on Staff (${hospital.doctors?.length || 0})` },
-            { id: 'transport', label: '🚑 Transportation & Ambulances' },
+            { id: 'transport', label: 'Transportation & Ambulances' },
             { id: 'map', label: 'Live Google Maps Location' }
           ].map((tab) => (
             <button
@@ -236,8 +238,8 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* Diseases Treated Section */}
           <div className="card" style={{ padding: '24px' }}>
-            <h3 style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-main)', marginBottom: '6px' }}>
-              🩺 Specialized Disease & Condition Coverage
+            <h3 style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-main)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Stethoscope size={16} color="var(--primary-blue)" /> Specialized Disease & Condition Coverage
             </h3>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 16px 0' }}>
               This facility has dedicated clinical protocols and specialist teams for the following medical conditions:
@@ -267,8 +269,8 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
 
           {/* Clinical Services & Facilities */}
           <div className="card" style={{ padding: '24px' }}>
-            <h3 style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-main)', marginBottom: '6px' }}>
-              🏥 Clinical Services & Facilities
+            <h3 style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-main)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Building2 size={16} color="var(--primary-blue)" /> Clinical Services & Facilities
             </h3>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '14px' }}>
               {hospital.services?.map((svc, i) => (
@@ -278,7 +280,7 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
                     background: '#f1f5f9',
                     color: '#334155',
                     padding: '8px 14px',
-                    borderRadius: '8px',
+                    borderRadius: '10px',
                     fontSize: '13px',
                     fontWeight: 600
                   }}
@@ -377,7 +379,7 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
           <div
             style={{
               background: 'linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%)',
-              borderRadius: '16px',
+              borderRadius: '10px',
               padding: '24px',
               color: '#ffffff',
               display: 'flex',
@@ -389,8 +391,8 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
             }}
           >
             <div>
-              <span style={{ background: 'rgba(255, 255, 255, 0.2)', padding: '4px 12px', borderRadius: '9999px', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase' }}>
-                🚨 24/7 Rapid Medical Dispatch
+              <span style={{ background: 'rgba(255, 255, 255, 0.2)', padding: '4px 12px', borderRadius: '10px', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <ShieldAlert size={13} /> 24/7 Rapid Medical Dispatch
               </span>
               <h3 style={{ fontSize: '20px', fontWeight: 800, margin: '8px 0 4px 0' }}>
                 Emergency Ambulance & Critical Patient Transport
@@ -442,8 +444,8 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
             {/* Fleet & Capabilities */}
             <div className="card" style={{ padding: '24px' }}>
-              <h4 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-main)', margin: '0 0 12px 0' }}>
-                🚑 On-Campus Ambulance Fleet
+              <h4 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-main)', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Ambulance size={18} color="#dc2626" /> On-Campus Ambulance Fleet
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {(hospital.transportation_facilities?.ambulance_fleet || [
@@ -478,14 +480,14 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
 
             {/* Free Shuttle Schedule */}
             <div className="card" style={{ padding: '24px' }}>
-              <h4 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-main)', margin: '0 0 12px 0' }}>
-                🚐 Free Patient Shuttle Bus Service
+              <h4 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-main)', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Car size={18} color="var(--primary-blue)" /> Free Patient Shuttle Bus Service
               </h4>
               <div style={{ padding: '14px', background: '#f0fdf4', borderRadius: '10px', border: '1px solid #bbf7d0', fontSize: '13px', color: '#166534', lineHeight: 1.5 }}>
                 <strong>Route & Timetable:</strong>
                 <div style={{ marginTop: '4px' }}>
                   {hospital.transportation_facilities?.shuttle_schedule ||
-                    'Scheduled patient shuttle runs every 30 minutes from Hoshiarpur Railway Station ➔ Central Bus Stand ➔ Hospital Campus.'}
+                    'Scheduled patient shuttle runs every 30 minutes from Hoshiarpur Railway Station -> Central Bus Stand -> Hospital Campus.'}
                 </div>
               </div>
 
@@ -499,7 +501,7 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
             {/* Parking & Drop-off Facility */}
             <div className="card" style={{ padding: '24px' }}>
               <h4 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-main)', margin: '0 0 12px 0' }}>
-                🅿️ Parking, EV Charging & Accessibility
+                Parking: Parking, EV Charging & Accessibility
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px', color: 'var(--text-main)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -517,7 +519,7 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
               </div>
 
               <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)', fontSize: '12px', color: 'var(--text-muted)' }}>
-                📍 Transit Landmark: {hospital.transportation_facilities?.transit_notes || 'Easily accessible from main Hoshiarpur arterial roads.'}
+                 Transit Landmark: {hospital.transportation_facilities?.transit_notes || 'Easily accessible from main Hoshiarpur arterial roads.'}
               </div>
             </div>
           </div>
@@ -530,8 +532,8 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px', flexWrap: 'wrap', gap: '16px' }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                <span className="pill-badge blue">📍 Verified Google Maps Location</span>
-                <span style={{ fontSize: '12px', background: '#f1f5f9', padding: '3px 8px', borderRadius: '6px', fontWeight: 700, color: '#334155' }}>
+                <span className="pill-badge blue"> Verified Google Maps Location</span>
+                <span style={{ fontSize: '12px', background: '#f1f5f9', padding: '3px 8px', borderRadius: '10px', fontWeight: 700, color: '#334155' }}>
                   GPS: {hospital.latitude}° N, {hospital.longitude}° E
                 </span>
               </div>
@@ -573,7 +575,7 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
           </div>
 
           {/* Interactive Google Map Frame */}
-          <div style={{ width: '100%', height: '460px', borderRadius: '14px', overflow: 'hidden', border: '1px solid var(--border-subtle)', position: 'relative' }}>
+          <div style={{ width: '100%', height: '460px', borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--border-subtle)', position: 'relative' }}>
             <iframe
               title={hospital.name}
               width="100%"

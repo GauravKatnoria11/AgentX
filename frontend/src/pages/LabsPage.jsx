@@ -13,17 +13,19 @@ import {
   AlertCircle,
   X,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  Star,
+  AlertTriangle
 } from 'lucide-react';
 import { fetchLabs, fetchLabTests, bookLabTest } from '../api';
 
 const TEST_CATEGORIES = [
   { id: 'all', label: 'All Diagnostic Tests' },
-  { id: 'pathology', label: '🩸 Blood & Pathology', query: 'Pathology' },
-  { id: 'cardiology', label: '🫀 Cardiac Biomarkers', query: 'Cardiology' },
-  { id: 'radiology', label: '🧠 MRI & CT Scans', query: 'Radiology' },
-  { id: 'ultrasound', label: '🤰 4D Ultrasound & Echo', query: 'Ultrasound' },
-  { id: 'package', label: '🧪 Full Body Packages', query: 'Package' }
+  { id: 'pathology', label: 'Blood & Pathology', query: 'Pathology' },
+  { id: 'cardiology', label: 'Cardiac Biomarkers', query: 'Cardiology' },
+  { id: 'radiology', label: 'MRI & CT Scans', query: 'Radiology' },
+  { id: 'ultrasound', label: 'Ultrasound & Echo', query: 'Ultrasound' },
+  { id: 'package', label: 'Full Body Packages', query: 'Package' }
 ];
 
 export default function LabsPage() {
@@ -127,7 +129,7 @@ export default function LabsPage() {
               style={{
                 border: 'none',
                 padding: '8px 16px',
-                borderRadius: '8px',
+                borderRadius: '10px',
                 fontSize: '13px',
                 fontWeight: 700,
                 cursor: 'pointer',
@@ -143,7 +145,7 @@ export default function LabsPage() {
               style={{
                 border: 'none',
                 padding: '8px 16px',
-                borderRadius: '8px',
+                borderRadius: '10px',
                 fontSize: '13px',
                 fontWeight: 700,
                 cursor: 'pointer',
@@ -169,7 +171,7 @@ export default function LabsPage() {
                 style={{
                   width: '100%',
                   padding: '12px 18px',
-                  borderRadius: '9999px',
+                  borderRadius: '10px',
                   border: '1px solid var(--border-subtle)',
                   fontSize: '13px',
                   background: '#f8fafc'
@@ -194,7 +196,7 @@ export default function LabsPage() {
                     color: isSelected ? '#ffffff' : 'var(--text-main)',
                     border: 'none',
                     padding: '6px 14px',
-                    borderRadius: '9999px',
+                    borderRadius: '10px',
                     fontSize: '12px',
                     fontWeight: 700,
                     cursor: 'pointer',
@@ -253,32 +255,36 @@ export default function LabsPage() {
 
                     {/* Test Info Badges */}
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' }}>
-                      <span style={{ fontSize: '11px', background: '#f8fafc', padding: '4px 8px', borderRadius: '6px', color: '#475569', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ fontSize: '11px', background: '#f8fafc', padding: '4px 8px', borderRadius: '10px', color: '#475569', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <Clock size={13} /> {t.turnaround_hours}h Report TAT
                       </span>
-                      <span style={{ fontSize: '11px', background: t.fasting_required ? '#fef2f2' : '#f0fdf4', color: t.fasting_required ? '#dc2626' : '#16a34a', padding: '4px 8px', borderRadius: '6px', fontWeight: 700 }}>
-                        {t.fasting_required ? '⚠️ 10-12h Fasting' : '✓ No Fasting Needed'}
+                      <span style={{ fontSize: '11px', background: t.fasting_required ? '#fef2f2' : '#f0fdf4', color: t.fasting_required ? '#dc2626' : '#16a34a', padding: '4px 8px', borderRadius: '10px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        {t.fasting_required ? <AlertTriangle size={12} /> : <CheckCircle2 size={12} />}
+                        {t.fasting_required ? '10-12h Fasting' : 'No Fasting Needed'}
                       </span>
                       {t.home_collection && (
-                        <span style={{ fontSize: '11px', background: '#eff6ff', color: '#2563eb', padding: '4px 8px', borderRadius: '6px', fontWeight: 700 }}>
-                          🏠 Home Collection Free
+                        <span style={{ fontSize: '11px', background: '#eff6ff', color: '#1a73e8', padding: '4px 8px', borderRadius: '10px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          <Home size={12} /> Home Collection Free
                         </span>
                       )}
                     </div>
 
                     {/* Lab Facility */}
                     <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)', fontSize: '12px', color: 'var(--text-muted)' }}>
-                      🔬 Laboratory: <strong style={{ color: 'var(--text-main)' }}>{t.lab_name}</strong>
-                      <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
-                        📍 {t.lab_address}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <FlaskConical size={13} color="var(--primary-blue)" />
+                        Laboratory: <strong style={{ color: 'var(--text-main)' }}>{t.lab_name}</strong>
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <MapPin size={11} /> {t.lab_address}
                       </div>
                     </div>
                   </div>
 
                   <div style={{ marginTop: '18px' }}>
                     <button
-                      className="btn-primary"
-                      style={{ width: '100%', justifyContent: 'center', fontWeight: 700 }}
+                      className="btn-google-primary"
+                      style={{ width: '100%', justifyContent: 'center' }}
                       onClick={() => handleOpenBookModal(t)}
                     >
                       Book Test / Schedule Collection
@@ -306,8 +312,8 @@ export default function LabsPage() {
                       {lab.name}
                     </h3>
                   </div>
-                  <span style={{ fontSize: '12px', fontWeight: 800, color: '#eab308' }}>
-                    ★ {lab.rating || 4.8}
+                  <span style={{ fontSize: '12px', fontWeight: 800, color: '#b45309', background: '#fef3c7', padding: '2px 8px', borderRadius: '10px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <Star size={12} fill="#d97706" color="#d97706" /> {lab.rating || 4.8}
                   </span>
                 </div>
 
@@ -326,7 +332,7 @@ export default function LabsPage() {
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                     {(lab.test_types || []).map((type, i) => (
-                      <span key={i} style={{ fontSize: '11px', background: '#f1f5f9', color: '#334155', padding: '4px 8px', borderRadius: '6px', fontWeight: 600 }}>
+                      <span key={i} style={{ fontSize: '11px', background: '#f1f5f9', color: '#334155', padding: '4px 8px', borderRadius: '10px', fontWeight: 600 }}>
                         {type}
                       </span>
                     ))}
@@ -335,11 +341,12 @@ export default function LabsPage() {
               </div>
 
               <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: lab.home_collection ? '#059669' : '#64748b' }}>
-                  {lab.home_collection ? '✓ Home Sample Pickup Available' : '• Centre Walk-in Only'}
+                <span style={{ fontSize: '12px', fontWeight: 700, color: lab.home_collection ? '#059669' : '#64748b', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                  {lab.home_collection ? <CheckCircle2 size={13} color="#059669" /> : null}
+                  {lab.home_collection ? 'Home Sample Pickup Available' : 'Centre Walk-in Only'}
                 </span>
                 <button
-                  className="btn-primary"
+                  className="btn-google-outline"
                   style={{ fontSize: '12px', padding: '8px 16px' }}
                   onClick={() => {
                     setViewMode('tests');
@@ -357,7 +364,7 @@ export default function LabsPage() {
       {/* BOOKING MODAL */}
       {selectedTestToBook && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
-          <div style={{ background: '#ffffff', borderRadius: '16px', width: '100%', maxWidth: '540px', padding: '28px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', maxHeight: '90vh', overflowY: 'auto' }}>
+          <div style={{ background: '#ffffff', borderRadius: '10px', width: '100%', maxWidth: '540px', padding: '28px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <div>
                 <span className="pill-badge blue">Hoshiarpur Diagnostic Desk</span>
@@ -375,7 +382,7 @@ export default function LabsPage() {
 
             {bookingResult ? (
               <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#dcfce7', color: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto' }}>
+                <div style={{ width: '56px', height: '56px', borderRadius: '10px', background: '#dcfce7', color: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto' }}>
                   <CheckCircle2 size={32} />
                 </div>
                 <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#166534', margin: 0 }}>
@@ -385,7 +392,7 @@ export default function LabsPage() {
                   Your Diagnostic Token Number: <strong style={{ color: 'var(--primary-blue)', fontSize: '16px' }}>{bookingResult.token_number}</strong>
                 </div>
 
-                <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-subtle)', marginTop: '20px', textAlign: 'left', fontSize: '13px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '10px', border: '1px solid var(--border-subtle)', marginTop: '20px', textAlign: 'left', fontSize: '13px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div><strong>Test:</strong> {bookingResult.test_name}</div>
                   <div><strong>Laboratory:</strong> {bookingResult.lab_name}</div>
                   <div><strong>Schedule:</strong> {bookingResult.scheduled_at}</div>
@@ -405,7 +412,7 @@ export default function LabsPage() {
                 </div>
 
                 <button
-                  className="btn-primary"
+                  className="btn-google-primary"
                   style={{ width: '100%', marginTop: '24px', justifyContent: 'center' }}
                   onClick={() => setSelectedTestToBook(null)}
                 >
@@ -477,7 +484,7 @@ export default function LabsPage() {
                       value={patientName}
                       onChange={(e) => setPatientName(e.target.value)}
                       required
-                      style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-subtle)', fontSize: '13px' }}
+                      style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--border-subtle)', fontSize: '13px' }}
                     />
                   </div>
                   <div>
@@ -489,7 +496,7 @@ export default function LabsPage() {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       required
-                      style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-subtle)', fontSize: '13px' }}
+                      style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--border-subtle)', fontSize: '13px' }}
                     />
                   </div>
                 </div>
@@ -505,7 +512,7 @@ export default function LabsPage() {
                       value={preferredDate}
                       onChange={(e) => setPreferredDate(e.target.value)}
                       required
-                      style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-subtle)', fontSize: '13px' }}
+                      style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--border-subtle)', fontSize: '13px' }}
                     />
                   </div>
                   <div>
@@ -515,7 +522,7 @@ export default function LabsPage() {
                     <select
                       value={preferredTime}
                       onChange={(e) => setPreferredTime(e.target.value)}
-                      style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-subtle)', fontSize: '13px' }}
+                      style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--border-subtle)', fontSize: '13px' }}
                     >
                       <option value="06:30 AM">06:30 AM (Fasting Slot)</option>
                       <option value="07:30 AM">07:30 AM (Fasting Slot)</option>
@@ -539,7 +546,7 @@ export default function LabsPage() {
                       onChange={(e) => setHomeAddress(e.target.value)}
                       required
                       placeholder="House/Plot no., Street, Locality, Hoshiarpur"
-                      style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-subtle)', fontSize: '13px' }}
+                      style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--border-subtle)', fontSize: '13px' }}
                     />
                   </div>
                 )}
@@ -548,14 +555,15 @@ export default function LabsPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedTestToBook(null)}
-                    style={{ flex: 1, padding: '12px', borderRadius: '8px', background: '#f1f5f9', border: 'none', color: '#475569', fontWeight: 700, cursor: 'pointer' }}
+                    className="btn-google-outline"
+                    style={{ flex: 1, padding: '12px', justifyContent: 'center' }}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="btn-primary"
+                    className="btn-google-primary"
                     style={{ flex: 2, padding: '12px', justifyContent: 'center' }}
                   >
                     {isSubmitting ? 'Confirming...' : 'Confirm Test Booking'}

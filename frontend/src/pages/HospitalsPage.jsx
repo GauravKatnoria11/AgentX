@@ -9,16 +9,23 @@ import {
   ShieldAlert,
   CheckCircle2,
   HeartPulse,
+  Activity,
+  Bone,
+  Baby,
+  Eye,
   Bed,
   Sparkles,
   Info,
-  DollarSign,
+  CreditCard,
   Car,
   SlidersHorizontal,
   Compass,
   Crosshair,
   Search,
   ExternalLink,
+  Stethoscope,
+  DollarSign,
+  ArrowUpDown,
   Map as MapIcon
 } from 'lucide-react';
 import { fetchHospitals, searchHospitals, searchLocation } from '../api';
@@ -36,15 +43,28 @@ const DEFAULT_HOSHIARPUR_LOCALITIES = [
 ];
 
 const DISEASE_FILTERS = [
-  { id: 'all', label: 'All Specialties & Diseases' },
-  { id: 'heart', label: '🫀 Heart Attack & Cardiology', query: 'heart' },
-  { id: 'stroke', label: '🧠 Brain Stroke & Spine', query: 'stroke' },
-  { id: 'trauma', label: '🦴 Trauma & Fractures', query: 'trauma' },
-  { id: 'maternity', label: '👶 Maternity & NICU', query: 'maternity' },
-  { id: 'kidney', label: '🧪 Kidney & Dialysis', query: 'dialysis' },
-  { id: 'eye', label: '👁️ Eye & Cataract', query: 'eye' },
-  { id: 'poison', label: '🩹 Poisoning & Emergency', query: 'emergency' }
+  { id: 'all', label: 'All Specialties' },
+  { id: 'heart', label: 'Cardiology', query: 'heart', icon: HeartPulse },
+  { id: 'stroke', label: 'Neurology', query: 'stroke', icon: Activity },
+  { id: 'trauma', label: 'Orthopedics', query: 'trauma', icon: Bone },
+  { id: 'maternity', label: 'Maternity', query: 'maternity', icon: Baby },
+  { id: 'kidney', label: 'Dialysis', query: 'dialysis', icon: Activity },
+  { id: 'eye', label: 'Eye Care', query: 'eye', icon: Eye },
+  { id: 'poison', label: 'Emergency', query: 'emergency', icon: ShieldAlert }
 ];
+
+const getHospitalBannerTheme = (hospital, index) => {
+  const type = (hospital.type || '').toLowerCase();
+  const name = (hospital.name || '').toLowerCase();
+  if (type.includes('super') || name.includes('ivy')) return 'banner-theme-blue';
+  if (type.includes('district') || name.includes('civil')) return 'banner-theme-teal';
+  if (type.includes('eye') || name.includes('grover')) return 'banner-theme-emerald';
+  if (name.includes('vasal') || type.includes('maternity')) return 'banner-theme-purple';
+  if (name.includes('trauma') || name.includes('saini')) return 'banner-theme-amber';
+  if (name.includes('lifeline') || name.includes('heart')) return 'banner-theme-red';
+  const themes = ['banner-theme-blue', 'banner-theme-teal', 'banner-theme-emerald', 'banner-theme-purple'];
+  return themes[index % themes.length];
+};
 
 export default function HospitalsPage({
   onSelectHospitalForRoute,
@@ -296,7 +316,7 @@ export default function HospitalsPage({
               color: emergencyOnly ? '#b91c1c' : 'var(--text-main)',
               background: emergencyOnly ? '#fef2f2' : '#f8fafc',
               padding: '8px 16px',
-              borderRadius: '9999px',
+              borderRadius: '10px',
               border: `1px solid ${emergencyOnly ? '#fecaca' : 'var(--border-subtle)'}`
             }}
           >
@@ -306,7 +326,8 @@ export default function HospitalsPage({
               onChange={(e) => setEmergencyOnly(e.target.checked)}
               style={{ width: '16px', height: '16px', accentColor: '#dc2626' }}
             />
-            🚨 24/7 Emergency Care Only
+            <ShieldAlert size={15} color={emergencyOnly ? '#b91c1c' : '#5f6368'} />
+            <span>24/7 Emergency Care Only</span>
           </label>
         </div>
 
@@ -320,7 +341,7 @@ export default function HospitalsPage({
             style={{
               flex: 1,
               padding: '12px 18px',
-              borderRadius: '9999px',
+              borderRadius: '10px',
               border: '1px solid var(--border-subtle)',
               fontSize: '13px',
               background: '#f8fafc'
@@ -332,10 +353,10 @@ export default function HospitalsPage({
         </form>
 
         {/* GOOGLE MAPS PATIENT LOCATION SEARCH SECTION */}
-        <div style={{ marginTop: '20px', padding: '18px', background: '#f8fafc', borderRadius: '14px', border: '1px solid var(--border-subtle)' }}>
+        <div style={{ marginTop: '20px', padding: '18px', background: '#f8fafc', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '10px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <MapPin size={16} color="var(--primary-blue)" />
               </div>
               <div>
@@ -359,7 +380,7 @@ export default function HospitalsPage({
                   background: '#ffffff',
                   border: '1px solid var(--border-subtle)',
                   padding: '6px 12px',
-                  borderRadius: '8px',
+                  borderRadius: '10px',
                   fontSize: '12px',
                   fontWeight: 700,
                   cursor: 'pointer',
@@ -379,7 +400,7 @@ export default function HospitalsPage({
                   background: showMapPreview ? '#eff6ff' : '#ffffff',
                   border: '1px solid var(--border-subtle)',
                   padding: '6px 12px',
-                  borderRadius: '8px',
+                  borderRadius: '10px',
                   fontSize: '12px',
                   fontWeight: 700,
                   cursor: 'pointer',
@@ -499,7 +520,7 @@ export default function HospitalsPage({
                   fontSize: '11px',
                   fontWeight: 700,
                   padding: '4px 10px',
-                  borderRadius: '9999px',
+                  borderRadius: '10px',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease'
                 }}
@@ -517,7 +538,7 @@ export default function HospitalsPage({
               <span style={{ color: 'var(--text-muted)' }}>({activeLocation.lat.toFixed(4)}, {activeLocation.lon.toFixed(4)})</span>
             </div>
             <span style={{ color: '#059669', fontWeight: 700, fontSize: '11px' }}>
-              ✓ All 7 hospital driving distances dynamically calibrated
+               All 7 hospital driving distances dynamically calibrated
             </span>
           </div>
 
@@ -540,8 +561,8 @@ export default function HospitalsPage({
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginTop: '18px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
           {/* Fee Affordability Filter */}
           <div>
-            <label style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
-              💰 Consultation Fee Budget
+            <label style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '6px' }}>
+              <DollarSign size={13} color="var(--primary-blue)" /> Consultation Fee Budget
             </label>
             <select
               value={feeFilter}
@@ -567,8 +588,8 @@ export default function HospitalsPage({
 
           {/* Smart Sorter */}
           <div>
-            <label style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
-              ⭐ Rank & Sort Results By
+            <label style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '6px' }}>
+              <ArrowUpDown size={13} color="var(--primary-blue)" /> Rank & Sort Results By
             </label>
             <select
               value={sortBy}
@@ -585,38 +606,43 @@ export default function HospitalsPage({
                 cursor: 'pointer'
               }}
             >
-              <option value="best">⭐ Best Match (Disease + Distance + Fee)</option>
-              <option value="distance">📍 Closest to {activeLocation.name.split(',')[0]} First</option>
-              <option value="fee_asc">💰 Lowest Consultation Fee First</option>
-              <option value="rating">★ Highest Patient Rating</option>
+              <option value="best">Best Match (Specialty, Proximity & Fee)</option>
+              <option value="distance">Closest by Distance First</option>
+              <option value="fee_asc">Lowest Consultation Fee First</option>
+              <option value="rating">Highest Patient Rating First</option>
             </select>
           </div>
         </div>
 
         {/* Disease / Specialty Quick Filter Chips */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
-          <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', marginRight: '6px' }}>
-            Disease Filter:
+          <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', marginRight: '6px' }}>
+            Specialty Filter:
           </span>
           {DISEASE_FILTERS.map((f) => {
             const isSelected = selectedDisease === f.id;
+            const FilterIcon = f.icon;
             return (
               <button
                 key={f.id}
                 onClick={() => setSelectedDisease(f.id)}
                 style={{
-                  background: isSelected ? 'var(--primary-blue)' : '#f1f5f9',
+                  background: isSelected ? 'var(--primary-blue)' : '#f1f3f4',
                   color: isSelected ? '#ffffff' : 'var(--text-main)',
-                  border: 'none',
+                  border: isSelected ? '1px solid var(--primary-blue)' : '1px solid transparent',
                   padding: '6px 14px',
-                  borderRadius: '9999px',
+                  borderRadius: '10px',
                   fontSize: '12px',
-                  fontWeight: 700,
+                  fontWeight: 600,
                   cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
                   transition: 'all 0.15s ease'
                 }}
               >
-                {f.label}
+                {FilterIcon && <FilterIcon size={13} />}
+                <span>{f.label}</span>
               </button>
             );
           })}
@@ -633,265 +659,117 @@ export default function HospitalsPage({
           No facilities found matching your fee and disease criteria. Try adjusting the budget filter.
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '22px' }}>
           {hospitals.map((h, index) => (
-            <div
-              key={h.id}
-              className="card"
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                padding: '24px',
-                border: index === 0 && sortBy === 'best' ? '2px solid #3b82f6' : '1px solid var(--border-subtle)',
-                position: 'relative'
-              }}
-            >
-              <div>
-                {/* Ranking / Best Badge */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span className="pill-badge blue">
-                      {h.type}
-                    </span>
-                    {h.bestBadge && (
-                      <span style={{ fontSize: '11px', background: '#dbeafe', color: '#1d4ed8', padding: '3px 8px', borderRadius: '6px', fontWeight: 800 }}>
-                        ★ {h.bestBadge}
-                      </span>
-                    )}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: 800, color: '#eab308' }}>
-                    <Star size={15} fill="#eab308" /> {h.rating || 4.7}
+            <div key={h.id} className="classroom-card">
+              {/* Google Classroom Style Thematic Banner Cover */}
+              <div
+                className={`classroom-card-banner ${getHospitalBannerTheme(h, index)}`}
+                onClick={() => onOpenHospitalDetail && onOpenHospitalDetail(h.id, 'overview')}
+                title="Click to view hospital dossier"
+              >
+                <div className="banner-top-row">
+                  <span className="banner-badge">{h.type}</span>
+                  <div className="banner-rating-pill">
+                    <Star size={13} fill="#ffffff" color="#ffffff" />
+                    <span>{h.rating || 4.7}</span>
                   </div>
                 </div>
 
-                {/* Title */}
-                <h3
-                  style={{
-                    fontSize: '18px',
-                    fontWeight: 800,
-                    color: 'var(--text-main)',
-                    margin: '6px 0 4px 0',
-                    cursor: 'pointer'
-                  }}
-                  onClick={() => onOpenHospitalDetail && onOpenHospitalDetail(h.id, 'overview')}
-                  title="Click to view full dossier"
-                >
-                  {h.name}
-                </h3>
-
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '6px', flexWrap: 'wrap', gap: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>
-                    <MapPin size={15} color="var(--primary-blue)" /> {h.address}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setActiveMapHospitalId(activeMapHospitalId === h.id ? null : h.id)}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      background: activeMapHospitalId === h.id ? '#eff6ff' : '#f8fafc',
-                      border: activeMapHospitalId === h.id ? '1px solid var(--primary-blue)' : '1px solid #cbd5e1',
-                      color: activeMapHospitalId === h.id ? 'var(--primary-blue)' : '#334155',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      padding: '4px 9px',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease'
-                    }}
-                    title="Toggle Live Google Maps Pin"
-                  >
-                    <Compass size={13} /> {activeMapHospitalId === h.id ? 'Hide Live Map' : '📍 Live Google Maps Location'}
-                  </button>
-                </div>
-
-                {/* Inline Live Google Map Pin Viewer */}
-                {activeMapHospitalId === h.id && (
-                  <div style={{ marginTop: '12px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #bfdbfe' }}>
-                    <div style={{ padding: '8px 12px', background: '#eff6ff', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 800, color: '#1e40af', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <Compass size={13} /> Live Google Maps Pin • {h.latitude.toFixed(4)}° N, {h.longitude.toFixed(4)}° E
-                      </span>
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        <a
-                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(h.name + ', ' + h.address + ', Hoshiarpur, Punjab')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            fontSize: '11px',
-                            fontWeight: 700,
-                            color: 'var(--primary-blue)',
-                            textDecoration: 'none',
-                            background: '#ffffff',
-                            padding: '3px 8px',
-                            borderRadius: '6px',
-                            border: '1px solid #bfdbfe'
-                          }}
-                        >
-                          Google Maps App <ExternalLink size={11} />
-                        </a>
-                        <button
-                          type="button"
-                          onClick={() => onOpenHospitalDetail && onOpenHospitalDetail(h.id, 'map')}
-                          style={{
-                            border: 'none',
-                            background: '#dbeafe',
-                            color: '#1d4ed8',
-                            fontSize: '11px',
-                            fontWeight: 700,
-                            padding: '3px 8px',
-                            borderRadius: '6px',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          Full Screen Map
-                        </button>
-                      </div>
-                    </div>
-                    <div style={{ width: '100%', height: '240px', background: '#e2e8f0' }}>
-                      <iframe
-                        title={`${h.name} Google Map Pin`}
-                        width="100%"
-                        height="100%"
-                        style={{ border: 0, display: 'block' }}
-                        loading="lazy"
-                        allowFullScreen
-                        src={`https://maps.google.com/maps?q=${encodeURIComponent(h.name + ', ' + h.address + ', Hoshiarpur, Punjab')}&t=&z=16&ie=UTF8&iwloc=&output=embed`}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Fee & Distance Metric Box */}
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: '10px',
-                    background: '#f8fafc',
-                    padding: '12px',
-                    borderRadius: '10px',
-                    marginTop: '14px',
-                    border: '1px solid #f1f5f9'
-                  }}
-                >
-                  <div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>
-                      Consultation Fee
-                    </div>
-                    <div style={{ fontSize: '18px', fontWeight: 900, color: 'var(--primary-blue)', marginTop: '2px' }}>
-                      ₹{h.consultation_fee || 100}
-                    </div>
-                    <div style={{ fontSize: '10px', color: '#64748b' }}>
-                      {h.fee_tier || 'Standard OPD Visit'}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>
-                      Distance from You
-                    </div>
-                    <div style={{ fontSize: '18px', fontWeight: 900, color: '#16a34a', marginTop: '2px' }}>
-                      {h.distance_km ? `${h.distance_km} km` : '1.8 km'}
-                    </div>
-                    <div style={{ fontSize: '10px', color: '#64748b' }}>
-                      from {activeLocation.name.split(',')[0]}
-                    </div>
+                <div>
+                  <h3 className="banner-title">{h.name}</h3>
+                  <div className="banner-subtitle">
+                    {h.bestBadge ? `Specialist Focus: ${h.bestBadge}` : 'Verified Healthcare Facility'}
                   </div>
                 </div>
 
-                {/* ICU Beds & Emergency Info */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', fontSize: '12px', fontWeight: 700 }}>
-                  <span style={{ color: '#059669', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Bed size={15} /> {h.available_icu_beds} ICU Beds Available
+                {/* Overlapping Circular Facility Avatar */}
+                <div className="classroom-card-avatar">
+                  <Building2 size={22} color="var(--primary-blue)" />
+                </div>
+              </div>
+
+              {/* Clean Scannable Card Body */}
+              <div className="classroom-card-body">
+                {/* Proximity & Real GPS Distance */}
+                <div className="classroom-meta-row">
+                  <MapPin size={16} color="var(--primary-blue)" />
+                  <span style={{ fontWeight: 500, fontSize: '13px' }}>
+                    {h.address.split(',')[0]} • <strong>{h.distance_km ? `${h.distance_km} km` : '1.8 km'}</strong> from {activeLocation.name.split(',')[0]}
+                  </span>
+                </div>
+
+                {/* ICU Bed Capacity & Emergency Service */}
+                <div className="classroom-meta-row">
+                  <Bed size={16} color="#188038" />
+                  <span style={{ color: '#137333', fontWeight: 600, fontSize: '13px' }}>
+                    {h.available_icu_beds} ICU Beds Available
                   </span>
                   {h.emergency_available && (
-                    <span style={{ color: '#dc2626' }}>
-                      ● 24/7 Emergency
+                    <span className="classroom-chip red" style={{ marginLeft: 'auto' }}>
+                      <ShieldAlert size={12} /> 24/7 Emergency
                     </span>
                   )}
                 </div>
 
-                {/* Transportation Facility Preview */}
-                <div style={{ marginTop: '12px', padding: '8px 10px', background: '#eff6ff', borderRadius: '8px', fontSize: '11px', color: '#1e40af', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Car size={14} />
-                  <span>
-                    <strong>Transit:</strong> {h.transportation_facilities?.shuttle_bus_available ? 'Free Patient Shuttle & 24/7 Ambulance' : 'Emergency Ambulance Fleet & Accessible Ramp'}
+                {/* Consultation Fee */}
+                <div className="classroom-meta-row">
+                  <CreditCard size={16} color="var(--primary-blue)" />
+                  <span style={{ fontSize: '13px' }}>
+                    Consultation Fee: <strong style={{ color: 'var(--primary-blue)', fontSize: '14px' }}>₹{h.consultation_fee || 50}</strong>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '11px', marginLeft: '6px' }}>({h.fee_tier || 'OPD'})</span>
                   </span>
                 </div>
 
-                {/* Diseases Treated Preview */}
+                {/* Scannable Clinical Specialty Chips */}
                 {h.diseases_treated?.length > 0 && (
-                  <div style={{ marginTop: '12px' }}>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
-                      {h.diseases_treated.slice(0, 3).map((d, idx) => (
-                        <span
-                          key={idx}
-                          style={{
-                            fontSize: '11px',
-                            background: '#f1f5f9',
-                            color: '#334155',
-                            padding: '3px 8px',
-                            borderRadius: '6px',
-                            fontWeight: 600
-                          }}
-                        >
-                          {d}
-                        </span>
-                      ))}
-                      {h.diseases_treated.length > 3 && (
-                        <span style={{ fontSize: '11px', color: 'var(--text-muted)', padding: '3px 4px' }}>
-                          +{h.diseases_treated.length - 3} more
-                        </span>
-                      )}
-                    </div>
+                  <div className="classroom-chip-container">
+                    {h.diseases_treated.slice(0, 3).map((d, idx) => (
+                      <span key={idx} className="classroom-chip">
+                        {d}
+                      </span>
+                    ))}
+                    {h.diseases_treated.length > 3 && (
+                      <span className="classroom-chip" style={{ color: 'var(--text-muted)' }}>
+                        +{h.diseases_treated.length - 3} more
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
 
-              {/* Actions Footer */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button
-                    className="btn-primary"
-                    style={{ flex: 1, justifyContent: 'center', fontWeight: 700, fontSize: '13px' }}
-                    onClick={() => onOpenHospitalDetail && onOpenHospitalDetail(h.id, 'map')}
-                  >
-                    <Compass size={14} /> Live Google Maps Location
-                  </button>
-                  <button
-                    className="btn-secondary"
-                    style={{ flex: 1, justifyContent: 'center', fontWeight: 700, fontSize: '13px' }}
-                    onClick={() => onSelectHospitalForRoute(h, activeLocation)}
-                  >
-                    <Navigation size={14} /> Route & ETA
-                  </button>
-                </div>
+              {/* High-Visibility Google Classroom Action Footer */}
+              <div className="classroom-card-footer">
+                <button
+                  type="button"
+                  className="btn-google-primary"
+                  onClick={() => onSelectHospitalForDoctors && onSelectHospitalForDoctors(h)}
+                  style={{ flex: 1.2 }}
+                >
+                  <Stethoscope size={15} /> View Doctors
+                </button>
 
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button
-                    className="btn-secondary"
-                    style={{ flex: 1, justifyContent: 'center', fontSize: '12px' }}
-                    onClick={() => onOpenHospitalDetail && onOpenHospitalDetail(h.id, 'overview')}
-                  >
-                    <Info size={14} /> Full Clinical Dossier & Transport
-                  </button>
-                  <button
-                    className="btn-secondary"
-                    style={{ flex: 0.6, justifyContent: 'center', fontSize: '12px' }}
-                    onClick={() => onSelectHospitalForDoctors(h)}
-                  >
-                    Doctors
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  className="btn-google-outline"
+                  onClick={() => onSelectHospitalForRoute && onSelectHospitalForRoute(h, activeLocation)}
+                  title="Route & Directions"
+                  style={{ flex: 1 }}
+                >
+                  <Navigation size={15} /> Directions
+                </button>
+
+                <button
+                  type="button"
+                  className="btn-google-outline"
+                  onClick={() => onOpenHospitalDetail && onOpenHospitalDetail(h.id, 'overview')}
+                  title="Full Dossier"
+                  style={{ padding: '8px 12px' }}
+                >
+                  <Info size={15} />
+                </button>
               </div>
             </div>
-
           ))}
         </div>
       )}

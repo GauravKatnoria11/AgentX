@@ -10,9 +10,8 @@ import {
   Navigation,
   Search,
   Bell,
-  Settings,
+  Menu,
   ShieldAlert,
-  Flame,
   FlaskConical,
   LogIn,
   LogOut,
@@ -51,11 +50,12 @@ function App() {
   // Default to Hospitals searching page first (Dashboard removed from patient user side)
   const [currentPage, setCurrentPage] = useState('hospitals');
   const [selectedDoctor, setSelectedDoctor] = useState(null);
-  const [selectedHospitalDetailId, setSelectedHospitalDetailId] = useState(null);
+  const [selectedHospitalDetailId, setSelectedHospitalDetailId] = useState('hosp-1');
   const [hospitalDetailTab, setHospitalDetailTab] = useState('overview');
   const [routePresetDestination, setRoutePresetDestination] = useState('');
   const [preselectedHospital, setPreselectedHospital] = useState(null);
   const [headerSearch, setHeaderSearch] = useState('');
+  const [doctorToBook, setDoctorToBook] = useState(null);
   const [patientLocation, setPatientLocation] = useState({
     name: 'Model Town',
     formatted_address: 'Model Town, Hoshiarpur, Punjab 146001',
@@ -108,6 +108,9 @@ function App() {
   }, []);
 
   const handleNavigate = (page) => {
+    if (page !== 'doctors') {
+      setDoctorToBook(null);
+    }
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -139,10 +142,10 @@ function App() {
     }
   };
 
-  // Nav Items visible to regular patient (ZERO trace of admin, Dashboard removed)
+  // Nav Items visible to regular patient (ZERO emojis, professional SVG icons)
   const navItems = [
     { id: 'hospitals', label: 'Hospitals Search', icon: Building2 },
-    { id: 'emergency', label: '🚨 Emergency SOS', icon: Flame, isEmergency: true },
+    { id: 'emergency', label: 'Emergency Care', icon: ShieldAlert, isEmergency: true },
     { id: 'labs', label: 'Diagnostic Labs', icon: FlaskConical },
     { id: 'doctors', label: 'Doctors', icon: Stethoscope },
     { id: 'appointments', label: 'Appointments', icon: Calendar },
@@ -216,9 +219,9 @@ function App() {
                 key={item.id}
                 className={`nav-item ${isActive ? 'active' : ''} ${item.isEmergency ? 'emergency-nav-item' : ''}`}
                 style={item.isEmergency ? {
-                  color: isActive ? '#ffffff' : '#dc2626',
-                  background: isActive ? '#dc2626' : 'rgba(239, 68, 68, 0.08)',
-                  fontWeight: 800
+                  color: isActive ? '#ffffff' : '#d93025',
+                  background: isActive ? '#d93025' : 'var(--google-red-light)',
+                  fontWeight: 700
                 } : {}}
                 onClick={() => handleNavigate(item.id)}
               >
@@ -229,11 +232,28 @@ function App() {
           })}
         </nav>
 
-        {/* Sidebar Footer */}
-        <div className="sidebar-footer">
-          <button className="nav-item" onClick={() => handleNavigate('records')}>
-            <Settings size={18} />
-            <span>Settings</span>
+        {/* Hospital Authority & Facility Portal Button */}
+        <div style={{ padding: '12px 14px', borderTop: '1px solid var(--border-subtle)', marginTop: 'auto' }}>
+          <button
+            className={`nav-item ${currentPage === 'hospital-portal' ? 'active' : ''}`}
+            style={{
+              padding: '10px 14px',
+              borderRadius: '10px',
+              border: '1px solid #bfdbfe',
+              background: '#eff6ff',
+              color: 'var(--primary-blue)',
+              fontWeight: 700,
+              fontSize: '12px',
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px'
+            }}
+            onClick={() => handleNavigate('hospital-portal')}
+            title="Hospital Authority & Bed Management Console"
+          >
+            <ShieldCheck size={16} color="var(--primary-blue)" />
+            <span>Hospital Portal</span>
           </button>
         </div>
       </aside>
@@ -263,21 +283,10 @@ function App() {
             {/* Emergency SOS Quick Button in Top Bar */}
             <button
               onClick={() => handleNavigate('emergency')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: '#fee2e2',
-                border: '1px solid #fecaca',
-                color: '#b91c1c',
-                padding: '8px 14px',
-                borderRadius: '9999px',
-                fontSize: '12px',
-                fontWeight: 800,
-                cursor: 'pointer'
-              }}
+              className="btn-google-danger"
+              style={{ padding: '6px 14px', borderRadius: '10px', fontSize: '12px' }}
             >
-              <Flame size={15} color="#dc2626" /> Emergency SOS
+              <ShieldAlert size={15} /> Emergency SOS
             </button>
 
             {/* Notification Bell */}
@@ -297,19 +306,18 @@ function App() {
                     <img
                       src={currentUser.avatar_url}
                       alt={currentUser.full_name}
-                      style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }}
+                      style={{ width: '32px', height: '32px', borderRadius: '10px', objectFit: 'cover' }}
                     />
                   ) : (
-                    <div className="user-avatar">
+                    <div className="user-avatar-circle" style={{ width: '32px', height: '32px', fontSize: '12px' }}>
                       {currentUser.full_name
                         ? currentUser.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
                         : 'US'}
                     </div>
                   )}
-                  <div className="user-info">
-                    <span className="user-name">{currentUser.full_name || 'Patient'}</span>
-                    <span className="user-role" style={{ textTransform: 'capitalize' }}>
-                      {currentUser.role || 'Patient'}
+                  <div className="user-info" style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
+                    <span className="user-name" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)' }}>
+                      {currentUser.full_name || 'My Account'}
                     </span>
                   </div>
                   <ChevronDown size={14} color="var(--text-light)" />
@@ -325,7 +333,7 @@ function App() {
                       width: '240px',
                       background: '#0f172a',
                       border: '1px solid #334155',
-                      borderRadius: '14px',
+                      borderRadius: '10px',
                       padding: '12px',
                       boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)',
                       zIndex: 1000,
@@ -339,29 +347,36 @@ function App() {
                       <div style={{ fontSize: '11px', color: '#94a3b8', wordBreak: 'break-all', marginTop: '2px' }}>
                         {currentUser.email}
                       </div>
-                      <div style={{ display: 'inline-block', marginTop: '6px', fontSize: '10px', background: '#1e293b', border: '1px solid #334155', padding: '2px 8px', borderRadius: '4px', color: '#38bdf8', fontWeight: 700 }}>
-                        {currentUser.role === 'patient' ? 'Verified Patient' : currentUser.role}
+                      <div style={{ display: 'inline-block', marginTop: '6px', fontSize: '10px', background: '#1e293b', border: '1px solid #334155', padding: '2px 8px', borderRadius: '10px', color: '#38bdf8', fontWeight: 700 }}>
+                        {currentUser.role === 'patient' ? 'Verified Account' : (currentUser.role || 'Verified Account')}
                       </div>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '8px 0' }}>
                       <button
                         onClick={() => { handleNavigate('records'); setIsProfileMenuOpen(false); }}
-                        style={{ textAlign: 'left', background: 'none', border: 'none', color: '#cbd5e1', padding: '8px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                        style={{ textAlign: 'left', background: 'none', border: 'none', color: '#cbd5e1', padding: '8px 10px', borderRadius: '10px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
                       >
                         <FileText size={14} color="#60a5fa" /> Personal Health Records
                       </button>
 
                       <button
                         onClick={() => { handleNavigate('appointments'); setIsProfileMenuOpen(false); }}
-                        style={{ textAlign: 'left', background: 'none', border: 'none', color: '#cbd5e1', padding: '8px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                        style={{ textAlign: 'left', background: 'none', border: 'none', color: '#cbd5e1', padding: '8px 10px', borderRadius: '10px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
                       >
                         <Calendar size={14} color="#34d399" /> My Appointments
                       </button>
 
                       <button
+                        onClick={() => { handleNavigate('hospital-portal'); setIsProfileMenuOpen(false); }}
+                        style={{ textAlign: 'left', background: 'none', border: 'none', color: '#cbd5e1', padding: '8px 10px', borderRadius: '10px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                      >
+                        <ShieldCheck size={14} color="#38bdf8" /> Hospital Management Portal
+                      </button>
+
+                      <button
                         onClick={() => { setIsAuthModalOpen(true); setIsProfileMenuOpen(false); }}
-                        style={{ textAlign: 'left', background: 'none', border: 'none', color: '#cbd5e1', padding: '8px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                        style={{ textAlign: 'left', background: 'none', border: 'none', color: '#cbd5e1', padding: '8px 10px', borderRadius: '10px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
                       >
                         <Sparkles size={14} color="#f59e0b" /> Switch / Add Account
                       </button>
@@ -374,7 +389,7 @@ function App() {
                           setCurrentUser(null);
                           setIsProfileMenuOpen(false);
                         }}
-                        style={{ width: '100%', textAlign: 'left', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#f87171', padding: '8px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                        style={{ width: '100%', textAlign: 'left', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#f87171', padding: '8px 10px', borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
                       >
                         <LogOut size={14} /> Sign Out
                       </button>
@@ -385,22 +400,10 @@ function App() {
             ) : (
               <button
                 onClick={() => setIsAuthModalOpen(true)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-                  color: '#ffffff',
-                  border: 'none',
-                  padding: '9px 18px',
-                  borderRadius: '9999px',
-                  fontSize: '13px',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 10px rgba(37, 99, 235, 0.3)'
-                }}
+                className="btn-google-primary"
+                style={{ padding: '8px 18px', borderRadius: '10px', fontSize: '13px' }}
               >
-                <LogIn size={15} /> Sign In / Register
+                <LogIn size={15} /> Sign In
               </button>
             )}
           </div>
@@ -424,7 +427,10 @@ function App() {
               hospitalId={selectedHospitalDetailId}
               initialTab={hospitalDetailTab}
               onBack={() => setCurrentPage('hospitals')}
-              onSelectDoctor={(doc) => setSelectedDoctor(doc)}
+              onSelectDoctor={(doc) => {
+                setDoctorToBook(doc);
+                setCurrentPage('doctors');
+              }}
               onNavigateToRoute={(hospName) => {
                 setRoutePresetDestination(hospName);
                 setCurrentPage('maps');
@@ -449,6 +455,9 @@ function App() {
               currentUser={currentUser}
               onSelectDoctor={(doc) => setSelectedDoctor(doc)}
               preselectedHospital={preselectedHospital}
+              initialDoctorToBook={doctorToBook}
+              onClearDoctorToBook={() => setDoctorToBook(null)}
+              onNavigateToAppointments={() => handleNavigate('appointments')}
             />
           )}
 
@@ -494,6 +503,7 @@ function App() {
         onClose={() => setSelectedDoctor(null)}
         onBookClick={(doc) => {
           setSelectedDoctor(null);
+          setDoctorToBook(doc);
           setCurrentPage('doctors');
         }}
         onChatClick={(doc) => {

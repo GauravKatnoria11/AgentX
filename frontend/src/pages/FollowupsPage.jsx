@@ -49,7 +49,7 @@ export default function FollowupsPage() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div className="section-header">
         <div>
           <h2 className="section-title">Follow-up Care Engine</h2>
@@ -60,40 +60,40 @@ export default function FollowupsPage() {
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+        <div style={{ textAlign: 'center', padding: '56px 24px', color: 'var(--text-muted)' }}>
           Loading recovery check-in plans...
         </div>
       ) : followups.length === 0 ? (
-        <div className="card" style={{ textAlign: 'center', padding: '40px' }}>
-          <CheckCircle2 size={40} color="#16a34a" style={{ margin: '0 auto 12px' }} />
-          <h3 style={{ fontSize: '16px', fontWeight: 700 }}>All Recoveries on Track</h3>
-          <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
+        <div className="card" style={{ textAlign: 'center', padding: '56px 24px', borderRadius: '10px' }}>
+          <CheckCircle2 size={44} color="#16a34a" style={{ margin: '0 auto 16px' }} />
+          <h3 style={{ fontSize: '17px', fontWeight: 700 }}>All Recoveries on Track</h3>
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '6px' }}>
             No pending post-consultation check-ins at this moment.
           </p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
           {followups.map((f) => (
-            <div key={f.id} className="card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+            <div key={f.id} className="card" style={{ padding: '24px 28px', borderRadius: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="pill-badge blue">Interval: {f.interval_type.toUpperCase()}</span>
-                    <span className={`pill-badge ${f.status === 'completed' ? 'green' : f.status === 'flagged' ? 'red' : 'amber'}`}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span className="pill-badge blue" style={{ padding: '5px 12px', borderRadius: '10px', fontSize: '11px', fontWeight: 600 }}>Interval: {f.interval_type.toUpperCase()}</span>
+                    <span className={`pill-badge ${f.status === 'completed' ? 'green' : f.status === 'flagged' ? 'red' : 'amber'}`} style={{ padding: '5px 12px', borderRadius: '10px', fontSize: '11px', fontWeight: 600 }}>
                       ● {f.status.toUpperCase()}
                     </span>
                   </div>
-                  <h3 style={{ fontSize: '16px', fontWeight: 700, marginTop: '8px' }}>
+                  <h3 style={{ fontSize: '17px', fontWeight: 700, marginTop: '10px' }}>
                     Post-Consultation Health Check
                   </h3>
-                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                    Scheduled for: {f.scheduled_at?.slice(0, 10)}
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                    Scheduled for: <strong>{f.scheduled_at?.slice(0, 10)}</strong>
                   </div>
                 </div>
 
                 <button
                   className="btn-primary"
-                  style={{ fontSize: '13px', padding: '8px 18px' }}
+                  style={{ fontSize: '13px', padding: '9px 20px', borderRadius: '10px' }}
                   onClick={() => handleOpenCheckin(f)}
                 >
                   {f.status === 'completed' ? 'View Responses' : 'Start Check-in'}
@@ -101,11 +101,11 @@ export default function FollowupsPage() {
               </div>
 
               {/* Questions preview */}
-              <div style={{ marginTop: '14px', background: '#f8fafc', padding: '12px 16px', borderRadius: '12px' }}>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-main)', marginBottom: '6px' }}>
+              <div style={{ marginTop: '18px', background: '#f8fafc', padding: '16px 20px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-main)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   Check-in Questionnaire:
                 </div>
-                <ul style={{ paddingLeft: '18px', fontSize: '13px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <ul style={{ paddingLeft: '20px', fontSize: '13px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {f.questions?.map((q, idx) => (
                     <li key={idx}>{q.text}</li>
                   ))}
@@ -113,8 +113,8 @@ export default function FollowupsPage() {
               </div>
 
               {f.flagged_for_review && (
-                <div style={{ marginTop: '12px', padding: '10px 14px', background: '#fee2e2', color: '#b91c1c', borderRadius: '10px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <AlertTriangle size={16} /> Clinical Flag: Responses were automatically submitted for attending physician review.
+                <div style={{ marginTop: '16px', padding: '12px 18px', background: '#fee2e2', color: '#b91c1c', borderRadius: '10px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <AlertTriangle size={18} /> <span><strong>Clinical Flag:</strong> Responses were automatically submitted for attending physician review.</span>
                 </div>
               )}
             </div>
@@ -125,32 +125,33 @@ export default function FollowupsPage() {
       {/* Check-in Modal */}
       {activeFollowup && (
         <div className="doctor-drawer-overlay" onClick={() => setActiveFollowup(null)}>
-          <div className="card" style={{ width: '500px', maxWidth: '90%', margin: 'auto', maxHeight: '90vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ fontSize: '17px', fontWeight: 700, marginBottom: '6px' }}>
+          <div className="card" style={{ width: '540px', maxWidth: '92%', margin: 'auto', maxHeight: '90vh', overflowY: 'auto', padding: '28px 32px', borderRadius: '10px' }} onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '6px' }}>
               Patient Recovery Check-in
             </h3>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '18px' }}>
+            <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '20px' }}>
               Please answer accurately so your care team can ensure safe recovery.
             </div>
 
             {submitResult ? (
-              <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                <CheckCircle2 size={44} color="#16a34a" style={{ margin: '0 auto 10px' }} />
-                <h4 style={{ fontSize: '16px', fontWeight: 700, color: '#16a34a' }}>Check-in Logged!</h4>
+              <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                <CheckCircle2 size={48} color="#16a34a" style={{ margin: '0 auto 12px' }} />
+                <h4 style={{ fontSize: '17px', fontWeight: 700, color: '#16a34a' }}>Check-in Logged!</h4>
                 <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '6px' }}>
                   Your answers have been recorded in your clinical timeline.
                 </p>
                 {submitResult.flagged_for_review && (
-                  <div style={{ marginTop: '14px', background: '#fffbeb', border: '1px solid #fef3c7', padding: '12px', borderRadius: '10px', fontSize: '12px', color: '#b45309' }}>
-                    ⚠️ Note: Because of your reported severity or symptoms, this report has been flagged for prioritized physician review.
+                  <div style={{ marginTop: '16px', background: '#fffbeb', border: '1px solid #fef3c7', padding: '14px 18px', borderRadius: '10px', fontSize: '12px', color: '#b45309', display: 'flex', alignItems: 'center', gap: '10px', textAlign: 'left' }}>
+                    <AlertTriangle size={18} color="#b45309" style={{ flexShrink: 0 }} />
+                    <span><strong>Note:</strong> Because of your reported severity or symptoms, this report has been flagged for prioritized physician review.</span>
                   </div>
                 )}
-                <button className="btn-primary" style={{ width: '100%', justifyContent: 'center', marginTop: '18px' }} onClick={() => setActiveFollowup(null)}>
+                <button className="btn-google-primary" style={{ width: '100%', justifyContent: 'center', marginTop: '22px', padding: '11px 22px', borderRadius: '10px' }} onClick={() => setActiveFollowup(null)}>
                   Close
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
                 {activeFollowup.questions?.map((q, idx) => (
                   <div key={idx}>
                     <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)' }}>
@@ -164,22 +165,23 @@ export default function FollowupsPage() {
                       required
                       style={{
                         width: '100%',
-                        padding: '10px 14px',
+                        padding: '11px 16px',
                         borderRadius: '10px',
                         border: '1px solid var(--border-subtle)',
-                        marginTop: '6px',
-                        fontSize: '13px'
+                        marginTop: '8px',
+                        fontSize: '13px',
+                        background: '#f8fafc'
                       }}
                     />
                   </div>
                 ))}
 
-                <div>
+                <div style={{ background: '#f8fafc', padding: '16px 18px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)' }}>
                       Discomfort / Symptom Severity (1 to 10)
                     </label>
-                    <span className="pill-badge amber" style={{ fontSize: '12px' }}>
+                    <span className="pill-badge amber" style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '10px', fontWeight: 700 }}>
                       Score: {severityScore}/10
                     </span>
                   </div>
@@ -189,20 +191,20 @@ export default function FollowupsPage() {
                     max="10"
                     value={severityScore}
                     onChange={(e) => setSeverityScore(parseInt(e.target.value))}
-                    style={{ width: '100%', marginTop: '8px', accentColor: 'var(--primary-blue)' }}
+                    style={{ width: '100%', marginTop: '12px', accentColor: 'var(--primary-blue)' }}
                   />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-light)', marginTop: '2px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-light)', marginTop: '4px' }}>
                     <span>1 (Mild / Minimal)</span>
                     <span>5 (Moderate)</span>
                     <span>10 (Severe Acute)</span>
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                  <button type="button" className="btn-secondary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setActiveFollowup(null)}>
+                <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
+                  <button type="button" className="btn-secondary" style={{ flex: 1, justifyContent: 'center', padding: '11px 20px', borderRadius: '10px' }} onClick={() => setActiveFollowup(null)}>
                     Cancel
                   </button>
-                  <button type="submit" className="btn-primary" style={{ flex: 1, justifyContent: 'center' }}>
+                  <button type="submit" className="btn-primary" style={{ flex: 1, justifyContent: 'center', padding: '11px 20px', borderRadius: '10px' }}>
                     <Send size={15} /> Submit Response
                   </button>
                 </div>

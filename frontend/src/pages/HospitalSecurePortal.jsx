@@ -90,7 +90,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
       name: 'Telmisartan 40mg',
       dosage: '1 Tablet',
       timing: { morning: true, afternoon: false, evening: false, night: false },
-      timing_label: 'Morning (🌅)',
+      timing_label: 'Morning (Morning)',
       meal_relation: 'After Breakfast',
       duration: '30 Days',
       instructions: 'Take with warm water at fixed morning time'
@@ -99,7 +99,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
       name: 'Atorvastatin 20mg',
       dosage: '1 Tablet',
       timing: { morning: false, afternoon: false, evening: false, night: true },
-      timing_label: 'Night (🌙)',
+      timing_label: 'Night (Night)',
       meal_relation: 'After Dinner',
       duration: '30 Days',
       instructions: 'Take right before bedtime'
@@ -293,7 +293,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
       const res = await sendHospitalAppointmentReminder(app.id, hospitalToken, targetEmail);
       if (res.success) {
         const dest = res.data?.resend_result?.recipient || targetEmail || 'patient email';
-        setActionNotice(`🔔 Resend reminder email successfully dispatched to ${dest}!`);
+        setActionNotice(` Resend reminder email successfully dispatched to ${dest}!`);
         loadDashboard(hospitalToken);
         setTimeout(() => setActionNotice(''), 4500);
       } else {
@@ -340,7 +340,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
         name: 'Telmisartan 40mg',
         dosage: '1 Tablet',
         timing: { morning: true, afternoon: false, evening: false, night: false },
-        timing_label: 'Morning (🌅)',
+        timing_label: 'Morning (Morning)',
         meal_relation: 'After Breakfast',
         duration: '30 Days',
         instructions: 'Take with warm water at fixed morning time'
@@ -349,7 +349,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
         name: 'Atorvastatin 20mg',
         dosage: '1 Tablet',
         timing: { morning: false, afternoon: false, evening: false, night: true },
-        timing_label: 'Night (🌙)',
+        timing_label: 'Night (Night)',
         meal_relation: 'After Dinner',
         duration: '30 Days',
         instructions: 'Take right before bedtime'
@@ -365,7 +365,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
           name: 'Glucosamine Sulfate 500mg',
           dosage: '1 Capsule',
           timing: { morning: true, afternoon: false, evening: true, night: false },
-          timing_label: 'Morning & Evening (🌅 🌆)',
+          timing_label: 'Morning & Evening (Morning Evening)',
           meal_relation: 'After Food',
           duration: '60 Days',
           instructions: 'Joint cartilage protection'
@@ -380,7 +380,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
           name: 'Metformin 500mg SR',
           dosage: '1 Tablet',
           timing: { morning: true, afternoon: false, evening: true, night: false },
-          timing_label: 'Morning & Evening (🌅 🌆)',
+          timing_label: 'Morning & Evening (Morning Evening)',
           meal_relation: 'With Meals',
           duration: '90 Days',
           instructions: 'Take halfway through meals'
@@ -418,7 +418,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
         name: '',
         dosage: '1 Tablet',
         timing: { morning: true, afternoon: false, evening: true, night: false },
-        timing_label: 'Morning & Evening (🌅 🌆)',
+        timing_label: 'Morning & Evening (Morning Evening)',
         meal_relation: 'After Food',
         duration: '30 Days',
         instructions: ''
@@ -526,10 +526,10 @@ export default function HospitalSecurePortal({ onExitPortal }) {
   if (!isAuthenticated) {
     return (
       <div style={{ minHeight: '100vh', background: '#080e1e', color: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: 'Inter, system-ui, sans-serif' }}>
-        <div style={{ width: '100%', maxWidth: '480px', background: '#0f172a', border: '1px solid #1e293b', borderRadius: '20px', padding: '36px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+        <div style={{ width: '100%', maxWidth: '480px', background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', padding: '36px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-            <div style={{ background: '#059669', padding: '10px', borderRadius: '12px' }}>
+            <div style={{ background: '#059669', padding: '10px', borderRadius: '10px' }}>
               <Building2 size={26} color="#ffffff" />
             </div>
             <div>
@@ -543,11 +543,11 @@ export default function HospitalSecurePortal({ onExitPortal }) {
           </div>
 
           <div style={{ background: '#1e293b', padding: '12px 14px', borderRadius: '10px', fontSize: '12px', color: '#94a3b8', marginBottom: '20px', lineHeight: 1.5 }}>
-            🔒 <strong>Confidential Access:</strong> This endpoint is exclusively distributed to verified hospital administrations to triage, manage, and prescribe for their patients.
+             <strong>Confidential Access:</strong> This endpoint is exclusively distributed to verified hospital administrations to triage, manage, and prescribe for their patients.
           </div>
 
           {loginError && (
-            <div style={{ background: '#7f1d1d', border: '1px solid #991b1b', color: '#fca5a5', padding: '10px 14px', borderRadius: '8px', fontSize: '13px', marginBottom: '16px' }}>
+            <div style={{ background: '#7f1d1d', border: '1px solid #991b1b', color: '#fca5a5', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', marginBottom: '16px' }}>
               {loginError}
             </div>
           )}
@@ -615,7 +615,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                     onClick={() => handleSelectPresetAccount(item.id, item.pwd)}
                     style={{
                       padding: '4px 10px',
-                      borderRadius: '6px',
+                      borderRadius: '10px',
                       background: loginIdentifier === item.id ? '#059669' : '#1e293b',
                       color: '#ffffff',
                       border: 'none',
@@ -688,7 +688,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
       {/* Top Bar with Hospital Branding */}
       <header style={{ background: '#0b1329', borderBottom: '1px solid #1e293b', padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div style={{ background: '#059669', padding: '10px', borderRadius: '12px' }}>
+          <div style={{ background: '#059669', padding: '10px', borderRadius: '10px' }}>
             <Building2 size={24} color="#ffffff" />
           </div>
           <div>
@@ -696,12 +696,12 @@ export default function HospitalSecurePortal({ onExitPortal }) {
               <h2 style={{ fontSize: '19px', fontWeight: 800, margin: 0, color: '#ffffff' }}>
                 {hospital.name || 'Hospital Authority Console'}
               </h2>
-              <span style={{ background: '#1e293b', border: '1px solid #059669', color: '#34d399', fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px' }}>
+              <span style={{ background: '#1e293b', border: '1px solid #059669', color: '#34d399', fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '10px' }}>
                 ID: {hospital.id}
               </span>
             </div>
             <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
-              📍 {hospital.address || 'Hoshiarpur, Punjab'} • Hotline: <strong>{hospital.emergency_hotline || '108'}</strong>
+               {hospital.address || 'Hoshiarpur, Punjab'} • Hotline: <strong>{hospital.emergency_hotline || '108'}</strong>
             </div>
           </div>
         </div>
@@ -717,7 +717,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
               color: '#cbd5e1',
               border: '1px solid #334155',
               padding: '8px 14px',
-              borderRadius: '8px',
+              borderRadius: '10px',
               fontSize: '12px',
               fontWeight: 600,
               cursor: 'pointer'
@@ -730,7 +730,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
             onClick={handleLogout}
             style={{
               padding: '8px 16px',
-              borderRadius: '8px',
+              borderRadius: '10px',
               background: '#7f1d1d',
               color: '#fecaca',
               border: '1px solid #991b1b',
@@ -749,7 +749,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
         {/* Metric Cards Banner */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
           {/* Card 1: Total Patients */}
-          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '14px', padding: '18px' }}>
+          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', padding: '18px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#94a3b8', fontSize: '12px', fontWeight: 700 }}>
               <span>REGISTERED PATIENTS</span>
               <Users size={18} color="#3b82f6" />
@@ -763,7 +763,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
           </div>
 
           {/* Card 2: Pending Appointments */}
-          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '14px', padding: '18px' }}>
+          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', padding: '18px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#94a3b8', fontSize: '12px', fontWeight: 700 }}>
               <span>PENDING CONFIRMATIONS</span>
               <Clock size={18} color="#f59e0b" />
@@ -777,7 +777,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
           </div>
 
           {/* Card 3: ICU Bed Controller */}
-          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '14px', padding: '18px' }}>
+          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', padding: '18px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#94a3b8', fontSize: '12px', fontWeight: 700 }}>
               <span>AVAILABLE ICU BEDS</span>
               <Bed size={18} color="#10b981" />
@@ -789,13 +789,13 @@ export default function HospitalSecurePortal({ onExitPortal }) {
               <div style={{ display: 'flex', gap: '6px' }}>
                 <button
                   onClick={() => handleBedAdjust(-1)}
-                  style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#1e293b', border: '1px solid #334155', color: '#ffffff', cursor: 'pointer', fontWeight: 700 }}
+                  style={{ width: '28px', height: '28px', borderRadius: '10px', background: '#1e293b', border: '1px solid #334155', color: '#ffffff', cursor: 'pointer', fontWeight: 700 }}
                 >
                   -
                 </button>
                 <button
                   onClick={() => handleBedAdjust(1)}
-                  style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#059669', border: 'none', color: '#ffffff', cursor: 'pointer', fontWeight: 700 }}
+                  style={{ width: '28px', height: '28px', borderRadius: '10px', background: '#059669', border: 'none', color: '#ffffff', cursor: 'pointer', fontWeight: 700 }}
                 >
                   +
                 </button>
@@ -807,7 +807,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
           </div>
 
           {/* Card 4: Emergency Alerts */}
-          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '14px', padding: '18px' }}>
+          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', padding: '18px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#94a3b8', fontSize: '12px', fontWeight: 700 }}>
               <span>ACTIVE 108 DISPATCHES</span>
               <Flame size={18} color="#ef4444" />
@@ -867,7 +867,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                     onClick={() => setStatusFilter(f)}
                     style={{
                       padding: '6px 12px',
-                      borderRadius: '20px',
+                      borderRadius: '10px',
                       border: 'none',
                       background: statusFilter === f ? '#3b82f6' : '#1e293b',
                       color: '#ffffff',
@@ -893,7 +893,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                   style={{
                     width: '100%',
                     padding: '7px 10px 7px 30px',
-                    borderRadius: '20px',
+                    borderRadius: '10px',
                     border: '1px solid #334155',
                     background: '#080e1e',
                     color: '#ffffff',
@@ -915,7 +915,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                 <CheckCircle2 size={16} /> {actionNotice}
               </div>
             )}
-            <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', overflow: 'hidden' }}>
+            <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', overflow: 'hidden' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
                 <thead>
                   <tr style={{ background: '#090e1c', borderBottom: '1px solid #1e293b', color: '#94a3b8', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -946,11 +946,11 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                               {app.patient_name || 'Patient'}
                             </div>
                             <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
-                              ☎ {app.patient_phone || '+91-98765-XXXXX'} • Blood: <span style={{ color: '#f87171', fontWeight: 700 }}>{app.blood_group || app.patient_blood_group || 'O+'}</span>
+                              Tel: {app.patient_phone || '+91-98765-XXXXX'} • Blood: <span style={{ color: '#f87171', fontWeight: 700 }}>{app.blood_group || app.patient_blood_group || 'O+'}</span>
                             </div>
                             {app.patient_email && (
                               <div style={{ fontSize: '11px', color: '#38bdf8', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                ✉ {app.patient_email}
+                                Email: {app.patient_email}
                               </div>
                             )}
                           </td>
@@ -961,17 +961,17 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                             </div>
                             {app.notes && (
                               <div style={{ fontSize: '11px', color: '#60a5fa', marginTop: '2px' }}>
-                                📝 {app.notes}
+                                Note: {app.notes}
                               </div>
                             )}
                           </td>
 
                           <td style={{ padding: '14px 20px' }}>
                             <div style={{ color: '#ffffff', fontWeight: 600 }}>
-                              📅 {app.appointment_date}
+                              Date: {app.appointment_date}
                             </div>
                             <div style={{ fontSize: '12px', color: '#38bdf8' }}>
-                              ⏰ {app.appointment_time ? app.appointment_time.slice(0, 5) : 'Awaiting Slot'}
+                              Time: {app.appointment_time ? app.appointment_time.slice(0, 5) : 'Awaiting Slot'}
                             </div>
                           </td>
 
@@ -985,7 +985,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                               <span
                                 style={{
                                   padding: '3px 10px',
-                                  borderRadius: '9999px',
+                                  borderRadius: '10px',
                                   fontSize: '11px',
                                   fontWeight: 700,
                                   background: isCancelled
@@ -1013,10 +1013,10 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                                   }`
                                 }}
                               >
-                                {isCancelled ? '✕ Cancelled' : isPending ? '● Pending Slot' : isCompleted ? '✓ Completed' : '● Confirmed'}
+                                {isCancelled ? 'x Cancelled' : isPending ? '● Pending Slot' : isCompleted ? ' Completed' : '● Confirmed'}
                               </span>
                               {app.queue_number && (
-                                <span style={{ fontSize: '11px', background: '#080e1e', padding: '2px 8px', borderRadius: '6px', color: '#34d399', fontWeight: 700 }}>
+                                <span style={{ fontSize: '11px', background: '#080e1e', padding: '2px 8px', borderRadius: '10px', color: '#34d399', fontWeight: 700 }}>
                                   Token #{app.queue_number}
                                 </span>
                               )}
@@ -1031,7 +1031,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                                   onClick={() => handleOpenAllotModal(app)}
                                   style={{
                                     padding: '6px 10px',
-                                    borderRadius: '8px',
+                                    borderRadius: '10px',
                                     border: 'none',
                                     background: isPending ? '#2563eb' : '#1e293b',
                                     color: '#ffffff',
@@ -1051,7 +1051,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                                   onClick={() => handleCompleteAppointment(app.id)}
                                   style={{
                                     padding: '6px 10px',
-                                    borderRadius: '8px',
+                                    borderRadius: '10px',
                                     border: '1px solid #10b981',
                                     background: 'rgba(16, 185, 129, 0.15)',
                                     color: '#34d399',
@@ -1074,7 +1074,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                                   onClick={() => handleOpenPrescribeModal(app)}
                                   style={{
                                     padding: '6px 10px',
-                                    borderRadius: '8px',
+                                    borderRadius: '10px',
                                     border: '1px solid #059669',
                                     background: 'rgba(5, 150, 105, 0.15)',
                                     color: '#34d399',
@@ -1096,7 +1096,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                                   onClick={() => handleOpenReferModal(app)}
                                   style={{
                                     padding: '6px 10px',
-                                    borderRadius: '8px',
+                                    borderRadius: '10px',
                                     border: '1px solid #6366f1',
                                     background: 'rgba(99, 102, 241, 0.15)',
                                     color: '#a5b4fc',
@@ -1106,7 +1106,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                                   }}
                                   title="Refer patient to another specialist due to high caseload"
                                 >
-                                  👨‍⚕️ Refer
+                                   Refer
                                 </button>
                               )}
 
@@ -1117,7 +1117,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                                   disabled={sendingReminderId === app.id}
                                   style={{
                                     padding: '6px 10px',
-                                    borderRadius: '8px',
+                                    borderRadius: '10px',
                                     border: '1px solid #38bdf8',
                                     background: 'rgba(56, 189, 248, 0.15)',
                                     color: '#7dd3fc',
@@ -1140,7 +1140,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                                   onClick={() => handleCancelAppointment(app.id)}
                                   style={{
                                     padding: '6px 10px',
-                                    borderRadius: '8px',
+                                    borderRadius: '10px',
                                     border: '1px solid #ef4444',
                                     background: 'rgba(239, 68, 68, 0.1)',
                                     color: '#f87171',
@@ -1169,7 +1169,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
         {/* TAB 2: BED & ICU CAPACITY CONTROLLER */}
         {/* ==================================================== */}
         {activeTab === 'beds' && (
-          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '28px', maxWidth: '640px' }}>
+          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', padding: '28px', maxWidth: '640px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
               <Bed size={24} color="#10b981" />
               <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0 }}>
@@ -1182,7 +1182,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {/* ICU Bed Counter */}
-              <div style={{ background: '#080e1e', padding: '20px', borderRadius: '12px', border: '1px solid #1e293b', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ background: '#080e1e', padding: '20px', borderRadius: '10px', border: '1px solid #1e293b', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontSize: '14px', fontWeight: 800, color: '#34d399' }}>Available ICU Beds</div>
                   <div style={{ fontSize: '12px', color: '#64748b' }}>Equipped with mechanical ventilators & ACLS monitors</div>
@@ -1190,7 +1190,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                   <button
                     onClick={() => handleBedAdjust(-1)}
-                    style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#1e293b', border: '1px solid #334155', color: '#ffffff', fontSize: '18px', fontWeight: 700, cursor: 'pointer' }}
+                    style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#1e293b', border: '1px solid #334155', color: '#ffffff', fontSize: '18px', fontWeight: 700, cursor: 'pointer' }}
                   >
                     -
                   </button>
@@ -1199,7 +1199,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                   </span>
                   <button
                     onClick={() => handleBedAdjust(1)}
-                    style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#059669', border: 'none', color: '#ffffff', fontSize: '18px', fontWeight: 700, cursor: 'pointer' }}
+                    style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#059669', border: 'none', color: '#ffffff', fontSize: '18px', fontWeight: 700, cursor: 'pointer' }}
                   >
                     +
                   </button>
@@ -1207,7 +1207,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
               </div>
 
               {/* Total Beds */}
-              <div style={{ background: '#080e1e', padding: '20px', borderRadius: '12px', border: '1px solid #1e293b', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ background: '#080e1e', padding: '20px', borderRadius: '10px', border: '1px solid #1e293b', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontSize: '14px', fontWeight: 800, color: '#ffffff' }}>Total Inpatient Capacity</div>
                   <div style={{ fontSize: '12px', color: '#64748b' }}>General wards, private rooms, and HDU beds</div>
@@ -1225,7 +1225,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
         {/* ==================================================== */}
         {activeTab === 'emergency' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ background: '#7f1d1d', border: '1px solid #991b1b', borderRadius: '12px', padding: '16px 20px', color: '#ffffff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ background: '#7f1d1d', border: '1px solid #991b1b', borderRadius: '10px', padding: '16px 20px', color: '#ffffff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <Flame size={22} color="#fca5a5" />
                 <div>
@@ -1237,17 +1237,17 @@ export default function HospitalSecurePortal({ onExitPortal }) {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '16px' }}>
               {(dashboardData?.emergency_alerts || []).map((alert) => (
-                <div key={alert.id} style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '14px', padding: '20px' }}>
+                <div key={alert.id} style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', padding: '20px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
-                      <span style={{ background: '#dc2626', color: '#ffffff', fontSize: '10px', fontWeight: 800, padding: '3px 8px', borderRadius: '9999px', textTransform: 'uppercase' }}>
-                        🚨 CODE RED INBOUND
+                      <span style={{ background: '#dc2626', color: '#ffffff', fontSize: '10px', fontWeight: 800, padding: '3px 8px', borderRadius: '10px', textTransform: 'uppercase' }}>
+                        ALERT: CODE RED INBOUND
                       </span>
                       <h4 style={{ fontSize: '16px', fontWeight: 800, color: '#ffffff', margin: '8px 0 2px' }}>
                         {alert.emergency_type}
                       </h4>
                       <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-                        Patient: <strong>{alert.patient_name}</strong> • ☎ {alert.phone}
+                        Patient: <strong>{alert.patient_name}</strong> • Tel: {alert.phone}
                       </div>
                     </div>
                     <span style={{ fontSize: '13px', color: '#38bdf8', fontWeight: 800 }}>
@@ -1255,8 +1255,8 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                     </span>
                   </div>
 
-                  <div style={{ background: '#080e1e', borderRadius: '8px', padding: '10px 12px', marginTop: '12px', fontSize: '12px', color: '#cbd5e1' }}>
-                    📍 Pick-up: <strong>{alert.current_location}</strong>
+                  <div style={{ background: '#080e1e', borderRadius: '10px', padding: '10px 12px', marginTop: '12px', fontSize: '12px', color: '#cbd5e1' }}>
+                     Pick-up: <strong>{alert.current_location}</strong>
                   </div>
 
                   <div style={{ marginTop: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1268,7 +1268,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                         background: '#1e293b',
                         color: '#ffffff',
                         border: '1px solid #334155',
-                        borderRadius: '6px',
+                        borderRadius: '10px',
                         padding: '6px 10px',
                         fontSize: '12px'
                       }}
@@ -1291,7 +1291,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
       {/* ==================================================== */}
       {selectedAppForAllot && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }}>
-          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '28px', width: '100%', maxWidth: '520px', color: '#ffffff' }}>
+          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', padding: '28px', width: '100%', maxWidth: '520px', color: '#ffffff' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <h3 style={{ fontSize: '17px', fontWeight: 800, margin: 0 }}>
                 Allot Appointment Slot & Issue Token
@@ -1316,7 +1316,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                     type="text"
                     disabled
                     value={`${selectedAppForAllot.patient_name || 'Patient'} (${selectedAppForAllot.patient_phone || ''})`}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #334155', background: '#080e1e', color: '#94a3b8', fontSize: '13px' }}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #334155', background: '#080e1e', color: '#94a3b8', fontSize: '13px' }}
                   />
                 </div>
 
@@ -1330,7 +1330,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                       value={allotDate}
                       onChange={(e) => setAllotDate(e.target.value)}
                       required
-                      style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #334155', background: '#080e1e', color: '#ffffff', fontSize: '13px' }}
+                      style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #334155', background: '#080e1e', color: '#ffffff', fontSize: '13px' }}
                     />
                   </div>
 
@@ -1343,7 +1343,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                       value={allotTime}
                       onChange={(e) => setAllotTime(e.target.value)}
                       required
-                      style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #334155', background: '#080e1e', color: '#ffffff', fontSize: '13px' }}
+                      style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #334155', background: '#080e1e', color: '#ffffff', fontSize: '13px' }}
                     />
                   </div>
                 </div>
@@ -1356,7 +1356,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                     <select
                       value={allotDoctorId}
                       onChange={(e) => setAllotDoctorId(e.target.value)}
-                      style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #334155', background: '#080e1e', color: '#ffffff', fontSize: '13px' }}
+                      style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #334155', background: '#080e1e', color: '#ffffff', fontSize: '13px' }}
                     >
                       {(dashboardData?.doctors || []).map((d) => (
                         <option key={d.id} value={d.id}>
@@ -1375,7 +1375,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                       min={1}
                       value={allotQueueNumber}
                       onChange={(e) => setAllotQueueNumber(e.target.value)}
-                      style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #334155', background: '#080e1e', color: '#ffffff', fontSize: '13px' }}
+                      style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #334155', background: '#080e1e', color: '#ffffff', fontSize: '13px' }}
                     />
                   </div>
                 </div>
@@ -1389,7 +1389,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                     value={allotNotes}
                     onChange={(e) => setAllotNotes(e.target.value)}
                     placeholder="Instructions for patient (e.g. report 10 mins prior)..."
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #334155', background: '#080e1e', color: '#ffffff', fontSize: '13px', resize: 'none' }}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #334155', background: '#080e1e', color: '#ffffff', fontSize: '13px', resize: 'none' }}
                   />
                 </div>
 
@@ -1397,14 +1397,14 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                   <button
                     type="button"
                     onClick={() => setSelectedAppForAllot(null)}
-                    style={{ flex: 1, padding: '10px', borderRadius: '8px', background: '#1e293b', border: 'none', color: '#ffffff', fontWeight: 700, cursor: 'pointer' }}
+                    style={{ flex: 1, padding: '10px', borderRadius: '10px', background: '#1e293b', border: 'none', color: '#ffffff', fontWeight: 700, cursor: 'pointer' }}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmittingAllot}
-                    style={{ flex: 2, padding: '10px', borderRadius: '8px', background: '#059669', border: 'none', color: '#ffffff', fontWeight: 800, cursor: 'pointer' }}
+                    style={{ flex: 2, padding: '10px', borderRadius: '10px', background: '#059669', border: 'none', color: '#ffffff', fontWeight: 800, cursor: 'pointer' }}
                   >
                     {isSubmittingAllot ? 'Confirming...' : 'Confirm Slot & Issue Token'}
                   </button>
@@ -1420,7 +1420,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
       {/* ==================================================== */}
       {selectedAppForPrescribe && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }}>
-          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '28px', width: '100%', maxWidth: '760px', color: '#ffffff', maxHeight: '90vh', overflowY: 'auto' }}>
+          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', padding: '28px', width: '100%', maxWidth: '760px', color: '#ffffff', maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px', borderBottom: '1px solid #1e293b', paddingBottom: '14px' }}>
               <div>
                 <h3 style={{ fontSize: '17px', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1453,7 +1453,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                       <select
                         value={prescDiseaseCategory}
                         onChange={(e) => setPrescDiseaseCategory(e.target.value)}
-                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #334155', background: '#0f172a', color: '#ffffff', fontSize: '12px' }}
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '10px', border: '1px solid #334155', background: '#0f172a', color: '#ffffff', fontSize: '12px' }}
                       >
                         <option value="Cardiovascular & Hypertension">Cardiovascular & Hypertension</option>
                         <option value="Orthopedics & Joint Trauma">Orthopedics & Joint Trauma</option>
@@ -1472,7 +1472,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                         value={prescDiagnosis}
                         onChange={(e) => setPrescDiagnosis(e.target.value)}
                         required
-                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #334155', background: '#0f172a', color: '#ffffff', fontSize: '12px' }}
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '10px', border: '1px solid #334155', background: '#0f172a', color: '#ffffff', fontSize: '12px' }}
                       />
                     </div>
                   </div>
@@ -1487,14 +1487,14 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                     <button
                       type="button"
                       onClick={handleAddMedicine}
-                      style={{ padding: '4px 10px', borderRadius: '6px', background: '#1e293b', border: '1px solid #059669', color: '#34d399', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
+                      style={{ padding: '4px 10px', borderRadius: '10px', background: '#1e293b', border: '1px solid #059669', color: '#34d399', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
                     >
                       + Add Medicine
                     </button>
                   </div>
 
                   {prescMedicines.map((med, idx) => (
-                    <div key={idx} style={{ background: '#0f172a', padding: '12px', borderRadius: '8px', border: '1px solid #1e293b', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div key={idx} style={{ background: '#0f172a', padding: '12px', borderRadius: '10px', border: '1px solid #1e293b', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                         <input
                           type="text"
@@ -1502,19 +1502,19 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                           value={med.name}
                           onChange={(e) => handleMedicineChange(idx, 'name', e.target.value)}
                           required
-                          style={{ flex: 2, padding: '7px 10px', borderRadius: '6px', border: '1px solid #334155', background: '#080e1e', color: '#ffffff', fontSize: '12px' }}
+                          style={{ flex: 2, padding: '7px 10px', borderRadius: '10px', border: '1px solid #334155', background: '#080e1e', color: '#ffffff', fontSize: '12px' }}
                         />
                         <input
                           type="text"
                           placeholder="Dosage"
                           value={med.dosage}
                           onChange={(e) => handleMedicineChange(idx, 'dosage', e.target.value)}
-                          style={{ width: '90px', padding: '7px 10px', borderRadius: '6px', border: '1px solid #334155', background: '#080e1e', color: '#ffffff', fontSize: '12px' }}
+                          style={{ width: '90px', padding: '7px 10px', borderRadius: '10px', border: '1px solid #334155', background: '#080e1e', color: '#ffffff', fontSize: '12px' }}
                         />
                         <select
                           value={med.meal_relation}
                           onChange={(e) => handleMedicineChange(idx, 'meal_relation', e.target.value)}
-                          style={{ width: '120px', padding: '7px 10px', borderRadius: '6px', border: '1px solid #334155', background: '#080e1e', color: '#ffffff', fontSize: '11px' }}
+                          style={{ width: '120px', padding: '7px 10px', borderRadius: '10px', border: '1px solid #334155', background: '#080e1e', color: '#ffffff', fontSize: '11px' }}
                         >
                           <option value="After Food">After Food</option>
                           <option value="Before Food">Before Food</option>
@@ -1524,7 +1524,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                           <button
                             type="button"
                             onClick={() => handleRemoveMedicine(idx)}
-                            style={{ background: '#7f1d1d', border: 'none', color: '#fca5a5', padding: '6px 8px', borderRadius: '6px', cursor: 'pointer' }}
+                            style={{ background: '#7f1d1d', border: 'none', color: '#fca5a5', padding: '6px 8px', borderRadius: '10px', cursor: 'pointer' }}
                           >
                             <X size={13} />
                           </button>
@@ -1539,7 +1539,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                           onClick={() => handleTimingToggle(idx, 'morning')}
                           style={{
                             padding: '4px 8px',
-                            borderRadius: '4px',
+                            borderRadius: '10px',
                             border: med.timing?.morning ? '1px solid #f59e0b' : '1px solid #334155',
                             background: med.timing?.morning ? '#78350f' : '#1e293b',
                             color: med.timing?.morning ? '#fde68a' : '#94a3b8',
@@ -1548,14 +1548,14 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                             cursor: 'pointer'
                           }}
                         >
-                          🌅 Morning
+                          Morning Morning
                         </button>
                         <button
                           type="button"
                           onClick={() => handleTimingToggle(idx, 'afternoon')}
                           style={{
                             padding: '4px 8px',
-                            borderRadius: '4px',
+                            borderRadius: '10px',
                             border: med.timing?.afternoon ? '1px solid #ea580c' : '1px solid #334155',
                             background: med.timing?.afternoon ? '#7c2d12' : '#1e293b',
                             color: med.timing?.afternoon ? '#fed7aa' : '#94a3b8',
@@ -1564,14 +1564,14 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                             cursor: 'pointer'
                           }}
                         >
-                          ☀️ Afternoon
+                          Afternoon Afternoon
                         </button>
                         <button
                           type="button"
                           onClick={() => handleTimingToggle(idx, 'evening')}
                           style={{
                             padding: '4px 8px',
-                            borderRadius: '4px',
+                            borderRadius: '10px',
                             border: med.timing?.evening ? '1px solid #8b5cf6' : '1px solid #334155',
                             background: med.timing?.evening ? '#4c1d95' : '#1e293b',
                             color: med.timing?.evening ? '#ddd6fe' : '#94a3b8',
@@ -1580,14 +1580,14 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                             cursor: 'pointer'
                           }}
                         >
-                          🌆 Evening
+                          Evening Evening
                         </button>
                         <button
                           type="button"
                           onClick={() => handleTimingToggle(idx, 'night')}
                           style={{
                             padding: '4px 8px',
-                            borderRadius: '4px',
+                            borderRadius: '10px',
                             border: med.timing?.night ? '1px solid #3b82f6' : '1px solid #334155',
                             background: med.timing?.night ? '#1e3a8a' : '#1e293b',
                             color: med.timing?.night ? '#bfdbfe' : '#94a3b8',
@@ -1596,7 +1596,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                             cursor: 'pointer'
                           }}
                         >
-                          🌙 Night
+                          Night Night
                         </button>
                       </div>
                     </div>
@@ -1611,31 +1611,31 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                     <input
                       type="text"
-                      placeholder="🥣 Breakfast Plan..."
+                      placeholder=" Breakfast Plan..."
                       value={prescDietPlan.breakfast}
                       onChange={(e) => setPrescDietPlan(p => ({ ...p, breakfast: e.target.value }))}
-                      style={{ padding: '7px 10px', borderRadius: '6px', border: '1px solid #334155', background: '#0f172a', color: '#ffffff', fontSize: '11px' }}
+                      style={{ padding: '7px 10px', borderRadius: '10px', border: '1px solid #334155', background: '#0f172a', color: '#ffffff', fontSize: '11px' }}
                     />
                     <input
                       type="text"
-                      placeholder="🥗 Lunch Plan..."
+                      placeholder=" Lunch Plan..."
                       value={prescDietPlan.lunch}
                       onChange={(e) => setPrescDietPlan(p => ({ ...p, lunch: e.target.value }))}
-                      style={{ padding: '7px 10px', borderRadius: '6px', border: '1px solid #334155', background: '#0f172a', color: '#ffffff', fontSize: '11px' }}
+                      style={{ padding: '7px 10px', borderRadius: '10px', border: '1px solid #334155', background: '#0f172a', color: '#ffffff', fontSize: '11px' }}
                     />
                     <input
                       type="text"
-                      placeholder="🍵 Evening Snack..."
+                      placeholder=" Evening Snack..."
                       value={prescDietPlan.evening_snack}
                       onChange={(e) => setPrescDietPlan(p => ({ ...p, evening_snack: e.target.value }))}
-                      style={{ padding: '7px 10px', borderRadius: '6px', border: '1px solid #334155', background: '#0f172a', color: '#ffffff', fontSize: '11px' }}
+                      style={{ padding: '7px 10px', borderRadius: '10px', border: '1px solid #334155', background: '#0f172a', color: '#ffffff', fontSize: '11px' }}
                     />
                     <input
                       type="text"
-                      placeholder="🍲 Dinner Plan..."
+                      placeholder=" Dinner Plan..."
                       value={prescDietPlan.dinner}
                       onChange={(e) => setPrescDietPlan(p => ({ ...p, dinner: e.target.value }))}
-                      style={{ padding: '7px 10px', borderRadius: '6px', border: '1px solid #334155', background: '#0f172a', color: '#ffffff', fontSize: '11px' }}
+                      style={{ padding: '7px 10px', borderRadius: '10px', border: '1px solid #334155', background: '#0f172a', color: '#ffffff', fontSize: '11px' }}
                     />
                   </div>
                 </div>
@@ -1644,14 +1644,14 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                   <button
                     type="button"
                     onClick={() => setSelectedAppForPrescribe(null)}
-                    style={{ flex: 1, padding: '10px', borderRadius: '8px', background: '#1e293b', border: 'none', color: '#ffffff', fontWeight: 700, cursor: 'pointer' }}
+                    style={{ flex: 1, padding: '10px', borderRadius: '10px', background: '#1e293b', border: 'none', color: '#ffffff', fontWeight: 700, cursor: 'pointer' }}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmittingPrescribe}
-                    style={{ flex: 2, padding: '10px', borderRadius: '8px', background: '#059669', border: 'none', color: '#ffffff', fontWeight: 800, cursor: 'pointer' }}
+                    style={{ flex: 2, padding: '10px', borderRadius: '10px', background: '#059669', border: 'none', color: '#ffffff', fontWeight: 800, cursor: 'pointer' }}
                   >
                     {isSubmittingPrescribe ? 'Settling...' : 'Issue Prescription & Diet Plan'}
                   </button>
@@ -1681,7 +1681,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
           <div style={{
             background: '#0f172a',
             border: '1px solid #334155',
-            borderRadius: '16px',
+            borderRadius: '10px',
             width: '100%',
             maxWidth: '520px',
             padding: '24px',
@@ -1690,7 +1690,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div>
-                <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0 }}>👨‍⚕️ Doctor Referral & Reassignment</h3>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0 }}> Doctor Referral & Reassignment</h3>
                 <p style={{ fontSize: '12px', color: '#94a3b8', margin: '4px 0 0' }}>
                   Reassign patient <strong style={{ color: '#ffffff' }}>{selectedReferApp.patient_name}</strong> to balance clinical load
                 </p>
@@ -1699,18 +1699,18 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                 onClick={() => setSelectedReferApp(null)}
                 style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '18px', cursor: 'pointer' }}
               >
-                ✕
+                x
               </button>
             </div>
 
             {referralErrMsg && (
-              <div style={{ padding: '10px 14px', background: '#fee2e2', color: '#b91c1c', borderRadius: '8px', fontSize: '13px', marginBottom: '14px' }}>
+              <div style={{ padding: '10px 14px', background: '#fee2e2', color: '#b91c1c', borderRadius: '10px', fontSize: '13px', marginBottom: '14px' }}>
                 {referralErrMsg}
               </div>
             )}
 
             {referralSuccessMsg && (
-              <div style={{ padding: '10px 14px', background: '#ecfdf5', color: '#065f46', borderRadius: '8px', fontSize: '13px', marginBottom: '14px' }}>
+              <div style={{ padding: '10px 14px', background: '#ecfdf5', color: '#065f46', borderRadius: '10px', fontSize: '13px', marginBottom: '14px' }}>
                 {referralSuccessMsg}
               </div>
             )}
@@ -1723,7 +1723,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                 <select
                   value={referTargetDoctorId}
                   onChange={(e) => setReferTargetDoctorId(e.target.value)}
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #334155', background: '#1e293b', color: '#ffffff', fontSize: '13px' }}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid #334155', background: '#1e293b', color: '#ffffff', fontSize: '13px' }}
                 >
                   {(dashboardData?.doctors || []).map((doc) => {
                     const isSame = String(doc.id) === String(selectedReferApp.doctor_id);
@@ -1743,7 +1743,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                 <select
                   value={referReason}
                   onChange={(e) => setReferReason(e.target.value)}
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #334155', background: '#1e293b', color: '#ffffff', fontSize: '13px' }}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid #334155', background: '#1e293b', color: '#ffffff', fontSize: '13px' }}
                 >
                   <option value="High Patient Caseload / Doctor Overbooked">High Patient Caseload / Doctor Overbooked</option>
                   <option value="Specialist Referral & Advanced Diagnostic Review">Specialist Referral & Advanced Diagnostic Review</option>
@@ -1762,7 +1762,7 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                   placeholder="Notes for receiving specialist regarding symptoms, prior medications, or urgency..."
                   value={referNotes}
                   onChange={(e) => setReferNotes(e.target.value)}
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #334155', background: '#1e293b', color: '#ffffff', fontSize: '13px' }}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid #334155', background: '#1e293b', color: '#ffffff', fontSize: '13px' }}
                 />
               </div>
 
@@ -1770,14 +1770,14 @@ export default function HospitalSecurePortal({ onExitPortal }) {
                 <button
                   type="button"
                   onClick={() => setSelectedReferApp(null)}
-                  style={{ flex: 1, padding: '10px', borderRadius: '8px', background: '#1e293b', border: 'none', color: '#ffffff', fontWeight: 700, cursor: 'pointer' }}
+                  style={{ flex: 1, padding: '10px', borderRadius: '10px', background: '#1e293b', border: 'none', color: '#ffffff', fontWeight: 700, cursor: 'pointer' }}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingReferral}
-                  style={{ flex: 2, padding: '10px', borderRadius: '8px', background: '#6366f1', border: 'none', color: '#ffffff', fontWeight: 800, cursor: 'pointer' }}
+                  style={{ flex: 2, padding: '10px', borderRadius: '10px', background: '#6366f1', border: 'none', color: '#ffffff', fontWeight: 800, cursor: 'pointer' }}
                 >
                   {isSubmittingReferral ? 'Transferring...' : 'Confirm Referral & Transfer Patient'}
                 </button>

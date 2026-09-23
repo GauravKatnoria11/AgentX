@@ -12,7 +12,12 @@ import {
   Activity,
   Flame,
   User,
-  ArrowRight
+  ArrowRight,
+  Brain,
+  Car,
+  Wind,
+  Building2,
+  Phone
 } from 'lucide-react';
 import { triggerEmergencySOS } from '../api';
 
@@ -30,7 +35,7 @@ const EMERGENCY_CONDITIONS = [
   {
     id: 'heart_attack',
     label: 'Heart Attack / Acute Chest Pain',
-    icon: '💔',
+    iconType: 'heart',
     severity: 'CRITICAL - LEVEL 1',
     color: '#ef4444',
     desc: 'Severe chest tightness, pain radiating to left arm/jaw, shortness of breath, cold sweat'
@@ -38,7 +43,7 @@ const EMERGENCY_CONDITIONS = [
   {
     id: 'brain_stroke',
     label: 'Brain Stroke / Sudden Paralysis',
-    icon: '🧠',
+    iconType: 'brain',
     severity: 'CRITICAL - LEVEL 1',
     color: '#dc2626',
     desc: 'Facial drooping, arm weakness, slurred speech, sudden loss of balance (FAST)'
@@ -46,7 +51,7 @@ const EMERGENCY_CONDITIONS = [
   {
     id: 'trauma_accident',
     label: 'Road Accident / Polytrauma / Severe Bleeding',
-    icon: '🚗',
+    iconType: 'car',
     severity: 'TRAUMA - CODE RED',
     color: '#ea580c',
     desc: 'Deep lacerations, suspected bone fractures, blunt chest/head impact, profuse bleeding'
@@ -54,7 +59,7 @@ const EMERGENCY_CONDITIONS = [
   {
     id: 'breathing_failure',
     label: 'Severe Respiratory Distress / Choking',
-    icon: '🫁',
+    iconType: 'wind',
     severity: 'ACUTE - LEVEL 1',
     color: '#b91c1c',
     desc: 'Gasping for air, cyanosis (blue lips), acute asthma/COPD attack, choking'
@@ -62,7 +67,7 @@ const EMERGENCY_CONDITIONS = [
   {
     id: 'unconscious_poison',
     label: 'Unconscious / Seizures / Poisoning',
-    icon: '⚠️',
+    iconType: 'alert',
     severity: 'EMERGENCY - LEVEL 2',
     color: '#d97706',
     desc: 'Unresponsive patient, continuous convulsions, drug/pesticide ingestion, snake bite'
@@ -150,7 +155,7 @@ export default function EmergencyPage({ onNavigateToRoute }) {
       <div
         style={{
           background: 'linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%)',
-          borderRadius: '16px',
+          borderRadius: '10px',
           padding: '24px 28px',
           color: '#ffffff',
           boxShadow: '0 10px 25px -5px rgba(185, 28, 28, 0.4)',
@@ -167,14 +172,15 @@ export default function EmergencyPage({ onNavigateToRoute }) {
               style={{
                 background: 'rgba(255, 255, 255, 0.2)',
                 padding: '4px 12px',
-                borderRadius: '9999px',
+                borderRadius: '10px',
                 fontSize: '12px',
                 fontWeight: 700,
                 letterSpacing: '0.05em',
                 textTransform: 'uppercase'
               }}
             >
-              🚨 24/7 Rapid Emergency Response • Hoshiarpur District
+              <ShieldAlert size={14} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '6px' }} />
+              24/7 Rapid Emergency Response • Hoshiarpur District
             </span>
           </div>
           <h2 style={{ fontSize: '26px', fontWeight: 800, margin: '6px 0', letterSpacing: '-0.02em' }}>
@@ -196,7 +202,7 @@ export default function EmergencyPage({ onNavigateToRoute }) {
               background: '#ffffff',
               color: '#b91c1c',
               padding: '12px 20px',
-              borderRadius: '12px',
+              borderRadius: '10px',
               fontWeight: 800,
               fontSize: '15px',
               textDecoration: 'none',
@@ -215,7 +221,7 @@ export default function EmergencyPage({ onNavigateToRoute }) {
               border: '1px solid rgba(255, 255, 255, 0.4)',
               color: '#ffffff',
               padding: '12px 20px',
-              borderRadius: '12px',
+              borderRadius: '10px',
               fontWeight: 700,
               fontSize: '14px',
               textDecoration: 'none'
@@ -234,7 +240,7 @@ export default function EmergencyPage({ onNavigateToRoute }) {
             border: '2px solid #ef4444',
             background: '#fef2f2',
             padding: '24px',
-            borderRadius: '16px'
+            borderRadius: '10px'
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
@@ -244,7 +250,7 @@ export default function EmergencyPage({ onNavigateToRoute }) {
                   background: '#ef4444',
                   color: '#ffffff',
                   padding: '4px 12px',
-                  borderRadius: '9999px',
+                  borderRadius: '10px',
                   fontSize: '12px',
                   fontWeight: 800,
                   letterSpacing: '0.05em'
@@ -266,7 +272,7 @@ export default function EmergencyPage({ onNavigateToRoute }) {
                 background: '#ffffff',
                 border: '2px solid #fecaca',
                 padding: '14px 22px',
-                borderRadius: '14px',
+                borderRadius: '10px',
                 textAlign: 'center',
                 boxShadow: '0 4px 10px rgba(239, 68, 68, 0.1)'
               }}
@@ -290,27 +296,27 @@ export default function EmergencyPage({ onNavigateToRoute }) {
             }}
           >
             {/* Nearest Hospital Card */}
-            <div style={{ background: '#ffffff', padding: '18px', borderRadius: '12px', border: '1px solid #fecaca' }}>
-              <div style={{ fontSize: '12px', fontWeight: 700, color: '#991b1b', textTransform: 'uppercase', marginBottom: '6px' }}>
-                🏥 Assigned Receiving Facility
+            <div style={{ background: '#ffffff', padding: '18px', borderRadius: '10px', border: '1px solid #fecaca' }}>
+              <div style={{ fontSize: '12px', fontWeight: 700, color: '#991b1b', textTransform: 'uppercase', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Building2 size={14} /> Assigned Receiving Facility
               </div>
               <div style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-main)' }}>
                 {sosResult.nearest_hospital.name}
               </div>
-              <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                📍 {sosResult.nearest_hospital.address}
+              <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <MapPin size={13} /> {sosResult.nearest_hospital.address}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginTop: '12px', fontSize: '13px', fontWeight: 700 }}>
-                <span style={{ color: '#059669' }}>
-                  ✓ {sosResult.nearest_hospital.available_icu_beds} ICU Beds Available
+                <span style={{ color: '#059669', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <CheckCircle2 size={14} /> {sosResult.nearest_hospital.available_icu_beds} ICU Beds Available
                 </span>
-                <span style={{ color: '#dc2626' }}>
-                  ☎ {sosResult.nearest_hospital.phone}
+                <span style={{ color: '#dc2626', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <Phone size={14} /> {sosResult.nearest_hospital.phone}
                 </span>
               </div>
               <button
-                className="btn-primary"
-                style={{ width: '100%', marginTop: '14px', justifyContent: 'center', background: '#b91c1c' }}
+                className="btn-google-danger"
+                style={{ width: '100%', marginTop: '14px', justifyContent: 'center' }}
                 onClick={() => onNavigateToRoute && onNavigateToRoute(sosResult.nearest_hospital.name)}
               >
                 <Navigation size={16} /> Open Turn-by-Turn GPS Route
@@ -318,9 +324,9 @@ export default function EmergencyPage({ onNavigateToRoute }) {
             </div>
 
             {/* Critical First-Aid Guidance */}
-            <div style={{ background: '#ffffff', padding: '18px', borderRadius: '12px', border: '1px solid #fecaca' }}>
-              <div style={{ fontSize: '12px', fontWeight: 700, color: '#991b1b', textTransform: 'uppercase', marginBottom: '8px' }}>
-                🩺 Critical Actions While Help Is En-Route
+            <div style={{ background: '#ffffff', padding: '18px', borderRadius: '10px', border: '1px solid #fecaca' }}>
+              <div style={{ fontSize: '12px', fontWeight: 700, color: '#991b1b', textTransform: 'uppercase', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Activity size={14} /> Critical Actions While Help Is En-Route
               </div>
               <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '13px', color: '#334155', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {sosResult.first_aid_instructions?.map((inst, i) => (
@@ -343,7 +349,7 @@ export default function EmergencyPage({ onNavigateToRoute }) {
               style={{
                 width: '28px',
                 height: '28px',
-                borderRadius: '50%',
+                borderRadius: '10px',
                 background: '#fee2e2',
                 color: '#b91c1c',
                 display: 'flex',
@@ -369,7 +375,7 @@ export default function EmergencyPage({ onNavigateToRoute }) {
                   onClick={() => setSelectedCondition(cond)}
                   style={{
                     padding: '14px 16px',
-                    borderRadius: '12px',
+                    borderRadius: '10px',
                     border: `2px solid ${isSelected ? cond.color : 'var(--border-subtle)'}`,
                     background: isSelected ? '#fff5f5' : '#ffffff',
                     cursor: 'pointer',
@@ -377,8 +383,25 @@ export default function EmergencyPage({ onNavigateToRoute }) {
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{ fontSize: '22px' }}>{cond.icon}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div
+                        style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '10px',
+                          background: isSelected ? '#fee2e2' : '#f1f5f9',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0
+                        }}
+                      >
+                        {cond.iconType === 'heart' && <HeartPulse size={20} color={cond.color} />}
+                        {cond.iconType === 'brain' && <Brain size={20} color={cond.color} />}
+                        {cond.iconType === 'car' && <Car size={20} color={cond.color} />}
+                        {cond.iconType === 'wind' && <Wind size={20} color={cond.color} />}
+                        {cond.iconType === 'alert' && <AlertTriangle size={20} color={cond.color} />}
+                      </div>
                       <div>
                         <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-main)' }}>
                           {cond.label}
@@ -393,7 +416,7 @@ export default function EmergencyPage({ onNavigateToRoute }) {
                         fontSize: '10px',
                         fontWeight: 800,
                         padding: '3px 8px',
-                        borderRadius: '6px',
+                        borderRadius: '10px',
                         background: isSelected ? cond.color : '#f1f5f9',
                         color: isSelected ? '#ffffff' : '#475569'
                       }}
@@ -415,7 +438,7 @@ export default function EmergencyPage({ onNavigateToRoute }) {
                 style={{
                   width: '28px',
                   height: '28px',
-                  borderRadius: '50%',
+                  borderRadius: '10px',
                   background: '#fee2e2',
                   color: '#b91c1c',
                   display: 'flex',
@@ -456,7 +479,7 @@ export default function EmergencyPage({ onNavigateToRoute }) {
               >
                 {HOSHIARPUR_LOCATIONS.map((loc) => (
                   <option key={loc.name} value={loc.name}>
-                    📍 {loc.name}
+                    {loc.name}
                   </option>
                 ))}
               </select>
@@ -533,7 +556,7 @@ export default function EmergencyPage({ onNavigateToRoute }) {
               style={{
                 width: '100%',
                 padding: '18px',
-                borderRadius: '14px',
+                borderRadius: '10px',
                 background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
                 color: '#ffffff',
                 border: 'none',
@@ -550,7 +573,7 @@ export default function EmergencyPage({ onNavigateToRoute }) {
               }}
             >
               <Flame size={24} />
-              {isSubmitting ? 'DISPATCHING EMERGENCY TEAM...' : '🚨 TRIGGER EMERGENCY SOS NOW'}
+              {isSubmitting ? 'DISPATCHING EMERGENCY TEAM...' : 'TRIGGER EMERGENCY SOS NOW'}
             </button>
             <div style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>
               Directly contacts District Trauma Control & notifies on-call ER medical team

@@ -340,7 +340,7 @@ export default function MapsPage({
                       color: origin === loc ? 'var(--primary-blue)' : '#475569',
                       fontSize: '11px',
                       padding: '4px 8px',
-                      borderRadius: '6px',
+                      borderRadius: '10px',
                       cursor: 'pointer',
                       fontWeight: 600
                     }}
@@ -384,7 +384,7 @@ export default function MapsPage({
                 >
                   {HOSHIARPUR_HOSPITALS.map((hosp, idx) => (
                     <option key={idx} value={hosp.name}>
-                      🏥 {hosp.name}
+                       {hosp.name}
                     </option>
                   ))}
                 </select>
@@ -404,7 +404,7 @@ export default function MapsPage({
                       color: destination === h.name ? '#dc2626' : '#475569',
                       fontSize: '11px',
                       padding: '4px 8px',
-                      borderRadius: '6px',
+                      borderRadius: '10px',
                       cursor: 'pointer',
                       fontWeight: 600
                     }}
@@ -439,7 +439,7 @@ export default function MapsPage({
                       alignItems: 'center',
                       gap: '6px',
                       padding: '8px 14px',
-                      borderRadius: '9999px',
+                      borderRadius: '10px',
                       border: isSelected ? '1px solid var(--primary-blue)' : '1px solid var(--border-subtle)',
                       background: isSelected ? 'var(--primary-blue)' : '#ffffff',
                       color: isSelected ? '#ffffff' : 'var(--text-main)',
@@ -463,21 +463,21 @@ export default function MapsPage({
       </div>
 
       {/* REAL WORKING GOOGLE MAP CONTAINER */}
-      <div className="card" style={{ padding: '0', overflow: 'hidden', borderRadius: '16px', border: '1px solid var(--border-subtle)' }}>
+      <div className="card" style={{ padding: '0', overflow: 'hidden', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
         <div style={{ padding: '16px 22px', background: '#ffffff', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Compass size={18} color="var(--primary-blue)" />
             <strong style={{ fontSize: '15px', color: 'var(--text-main)' }}>
               Interactive Google Maps Navigation View
             </strong>
-            <span style={{ fontSize: '12px', background: '#f1f5f9', padding: '2px 8px', borderRadius: '6px', color: '#475569', fontWeight: 600 }}>
+            <span style={{ fontSize: '12px', background: '#f1f5f9', padding: '2px 8px', borderRadius: '10px', color: '#475569', fontWeight: 600 }}>
               Live Hoshiarpur Corridor
             </span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-              {origin.split(',')[0]} ➔ {destination.split('(')[0]}
+              {origin.split(',')[0]} to {destination.split('(')[0]}
             </span>
             <a
               href={googleMapsExternalUrl}
@@ -519,11 +519,11 @@ export default function MapsPage({
           {/* Left: Journey Metrics */}
           <div className="card" style={{ padding: '24px' }}>
             <h3 style={{ fontSize: '16px', fontWeight: 800, marginBottom: '16px', color: 'var(--text-main)' }}>
-              🚦 Journey Overview & Corridor Telemetry
+              Route Telemetry: Journey Overview & Corridor Telemetry
             </h3>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
-              <div style={{ padding: '16px', background: '#eff6ff', borderRadius: '12px', border: '1px solid #dbeafe' }}>
+              <div style={{ padding: '16px', background: '#eff6ff', borderRadius: '10px', border: '1px solid #dbeafe' }}>
                 <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--primary-blue)', textTransform: 'uppercase' }}>
                   Road Distance
                 </div>
@@ -535,7 +535,7 @@ export default function MapsPage({
                 </div>
               </div>
 
-              <div style={{ padding: '16px', background: '#f0fdf4', borderRadius: '12px', border: '1px solid #dcfce7' }}>
+              <div style={{ padding: '16px', background: '#f0fdf4', borderRadius: '10px', border: '1px solid #dcfce7' }}>
                 <div style={{ fontSize: '12px', fontWeight: 700, color: '#16a34a', textTransform: 'uppercase' }}>
                   Driving ETA
                 </div>
@@ -549,7 +549,7 @@ export default function MapsPage({
             </div>
 
             {etaData && (
-              <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
+              <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 700, color: 'var(--text-main)' }}>
                   <Clock size={16} color="var(--primary-blue)" /> Suggested Departure Window
                 </div>
@@ -566,7 +566,7 @@ export default function MapsPage({
           {/* Right: Step-by-Step Directions */}
           <div className="card" style={{ padding: '24px' }}>
             <h3 style={{ fontSize: '16px', fontWeight: 800, marginBottom: '16px', color: 'var(--text-main)' }}>
-              🧭 Step-by-Step Navigation Instructions
+              Navigation Steps: Step-by-Step Navigation Instructions
             </h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '320px', overflowY: 'auto' }}>
@@ -587,7 +587,7 @@ export default function MapsPage({
                     style={{
                       width: '24px',
                       height: '24px',
-                      borderRadius: '50%',
+                      borderRadius: '10px',
                       background: 'var(--primary-blue)',
                       color: '#ffffff',
                       display: 'flex',

@@ -11,7 +11,8 @@ import {
   Lock,
   ThumbsUp,
   Tag,
-  Building2
+  Building2,
+  Check
 } from 'lucide-react';
 import { fetchDoctorReviews, submitDoctorRating } from '../api';
 
@@ -73,7 +74,7 @@ export default function DoctorDrawer({ doctor, onClose, onBookClick, onChatClick
       };
       const res = await submitDoctorRating(doctor.id, payload);
       if (res.success) {
-        setRatingMsg(`Rating of ${ratingStars}★ published successfully!`);
+        setRatingMsg(`Rating of ${ratingStars} / 5 stars published successfully!`);
         setTimeout(() => {
           setShowRateModal(false);
           setRatingMsg('');
@@ -124,7 +125,7 @@ export default function DoctorDrawer({ doctor, onClose, onBookClick, onChatClick
             border: '1px solid #bfdbfe',
             color: '#1d4ed8',
             padding: '5px 12px',
-            borderRadius: '8px',
+            borderRadius: '10px',
             fontSize: '13px',
             fontWeight: 700
           }}>
@@ -140,7 +141,7 @@ export default function DoctorDrawer({ doctor, onClose, onBookClick, onChatClick
             marginTop: '8px',
             background: '#fef3c7',
             padding: '6px 14px',
-            borderRadius: '9999px',
+            borderRadius: '10px',
             fontSize: '13px',
             fontWeight: 800,
             color: '#b45309'
@@ -161,10 +162,10 @@ export default function DoctorDrawer({ doctor, onClose, onBookClick, onChatClick
           </div>
 
           <div style={{ display: 'flex', gap: '10px', width: '100%', marginTop: '20px' }}>
-            <button className="btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => onBookClick(doctor)}>
+            <button className="btn-google-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => onBookClick(doctor)}>
               <Calendar size={16} /> Book Appointment
             </button>
-            <button className="open-chat-btn" style={{ flex: 1, marginTop: 0 }} onClick={() => onChatClick(doctor)}>
+            <button className="btn-google-outline" style={{ flex: 1, justifyContent: 'center' }} onClick={() => onChatClick(doctor)}>
               <MessageSquare size={16} /> AI Chat Guide
             </button>
           </div>
@@ -190,7 +191,7 @@ export default function DoctorDrawer({ doctor, onClose, onBookClick, onChatClick
                   color: '#ffffff',
                   border: 'none',
                   padding: '6px 12px',
-                  borderRadius: '8px',
+                  borderRadius: '10px',
                   fontSize: '12px',
                   fontWeight: 700,
                   cursor: 'pointer',
@@ -212,7 +213,7 @@ export default function DoctorDrawer({ doctor, onClose, onBookClick, onChatClick
                   color: '#64748b',
                   background: '#f1f5f9',
                   padding: '4px 10px',
-                  borderRadius: '9999px'
+                  borderRadius: '10px'
                 }}
               >
                 <Lock size={11} /> Verified Patients Only
@@ -222,18 +223,20 @@ export default function DoctorDrawer({ doctor, onClose, onBookClick, onChatClick
 
           {/* Rating Breakdown */}
           {reviewsData && (
-            <div style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: '12px', fontSize: '12px' }}>
+            <div style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: '10px', fontSize: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontWeight: 700 }}>
                 <span>Overall Rating Quality</span>
-                <span style={{ color: '#d97706' }}>★ {avgRating} out of 5</span>
+                <span style={{ color: '#d97706', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <Star size={12} fill="#d97706" color="#d97706" /> {avgRating} out of 5
+                </span>
               </div>
               {[5, 4, 3, 2, 1].map((s) => {
                 const count = reviewsData.breakdown?.[String(s)] || 0;
                 const pct = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
                 return (
                   <div key={s} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                    <span style={{ width: '28px', color: 'var(--text-muted)' }}>{s} ★</span>
-                    <div style={{ flex: 1, height: '6px', background: '#e2e8f0', borderRadius: '9999px', overflow: 'hidden' }}>
+                    <span style={{ width: '28px', color: 'var(--text-muted)' }}>{s} </span>
+                    <div style={{ flex: 1, height: '6px', background: '#e2e8f0', borderRadius: '10px', overflow: 'hidden' }}>
                       <div style={{ width: `${pct}%`, height: '100%', background: '#f59e0b' }} />
                     </div>
                     <span style={{ width: '20px', textAlign: 'right', color: 'var(--text-muted)' }}>{count}</span>
@@ -260,7 +263,7 @@ export default function DoctorDrawer({ doctor, onClose, onBookClick, onChatClick
                   style={{
                     background: '#ffffff',
                     border: '1px solid #e2e8f0',
-                    borderRadius: '12px',
+                    borderRadius: '10px',
                     padding: '12px 14px'
                   }}
                 >
@@ -269,13 +272,13 @@ export default function DoctorDrawer({ doctor, onClose, onBookClick, onChatClick
                       <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-main)' }}>
                         {rev.patient_name}
                       </div>
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#ecfdf5', color: '#065f46', fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', marginTop: '2px' }}>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#ecfdf5', color: '#065f46', fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '10px', marginTop: '2px' }}>
                         <CheckCircle2 size={10} /> Verified Consultation
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px', color: '#f59e0b', fontWeight: 700, fontSize: '13px' }}>
-                      <Star size={13} fill="#f59e0b" /> {rev.rating}★
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#f59e0b', fontWeight: 700, fontSize: '13px' }}>
+                      <Star size={13} fill="#f59e0b" /> {rev.rating} / 5
                     </div>
                   </div>
 
@@ -286,7 +289,7 @@ export default function DoctorDrawer({ doctor, onClose, onBookClick, onChatClick
                   {rev.tags?.length > 0 && (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '8px' }}>
                       {rev.tags.map((t) => (
-                        <span key={t} style={{ fontSize: '10px', background: '#eff6ff', color: '#1d4ed8', padding: '2px 8px', borderRadius: '9999px', fontWeight: 600 }}>
+                        <span key={t} style={{ fontSize: '10px', background: '#eff6ff', color: '#1d4ed8', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
                           #{t}
                         </span>
                       ))}
@@ -314,13 +317,13 @@ export default function DoctorDrawer({ doctor, onClose, onBookClick, onChatClick
               </p>
 
               {ratingErr && (
-                <div style={{ padding: '8px 12px', background: '#fee2e2', color: '#b91c1c', borderRadius: '8px', fontSize: '12px', marginBottom: '12px' }}>
+                <div style={{ padding: '8px 12px', background: '#fee2e2', color: '#b91c1c', borderRadius: '10px', fontSize: '12px', marginBottom: '12px' }}>
                   {ratingErr}
                 </div>
               )}
 
               {ratingMsg && (
-                <div style={{ padding: '8px 12px', background: '#ecfdf5', color: '#065f46', borderRadius: '8px', fontSize: '12px', marginBottom: '12px' }}>
+                <div style={{ padding: '8px 12px', background: '#ecfdf5', color: '#065f46', borderRadius: '10px', fontSize: '12px', marginBottom: '12px' }}>
                   {ratingMsg}
                 </div>
               )}
@@ -354,15 +357,19 @@ export default function DoctorDrawer({ doctor, onClose, onBookClick, onChatClick
                           onClick={() => toggleTag(t)}
                           style={{
                             fontSize: '11px',
-                            padding: '4px 8px',
-                            borderRadius: '9999px',
-                            background: sel ? '#2563eb' : '#f1f5f9',
-                            color: sel ? '#ffffff' : '#334155',
-                            border: 'none',
-                            cursor: 'pointer'
+                            padding: '5px 10px',
+                            borderRadius: '10px',
+                            background: sel ? 'var(--primary-blue)' : '#f1f3f4',
+                            color: sel ? '#ffffff' : 'var(--text-main)',
+                            border: sel ? '1px solid var(--primary-blue)' : '1px solid #dadce0',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px'
                           }}
                         >
-                          {sel ? '✓ ' : '+ '} {t}
+                          {sel && <Check size={11} strokeWidth={3} />}
+                          {t}
                         </button>
                       );
                     })}
@@ -376,14 +383,14 @@ export default function DoctorDrawer({ doctor, onClose, onBookClick, onChatClick
                     placeholder="Feedback about doctor's diagnosis, clarity, and care..."
                     value={ratingComment}
                     onChange={(e) => setRatingComment(e.target.value)}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '12px' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '12px' }}
                   />
                 </div>
 
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button
                     type="button"
-                    className="btn-secondary"
+                    className="btn-google-outline"
                     style={{ flex: 1, justifyContent: 'center' }}
                     onClick={() => setShowRateModal(false)}
                   >
@@ -391,9 +398,9 @@ export default function DoctorDrawer({ doctor, onClose, onBookClick, onChatClick
                   </button>
                   <button
                     type="submit"
-                    className="btn-primary"
+                    className="btn-google-primary"
                     disabled={submittingRating}
-                    style={{ flex: 2, justifyContent: 'center', background: '#059669' }}
+                    style={{ flex: 2, justifyContent: 'center', background: '#0d904f', borderColor: '#0d904f' }}
                   >
                     {submittingRating ? 'Saving...' : 'Submit Review'}
                   </button>

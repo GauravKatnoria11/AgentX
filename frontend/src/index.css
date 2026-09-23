@@ -1,25 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 :root {
-  --bg-app: #f4f6fb;
+  /* Google Classroom & Material Design Canvas */
+  --bg-app: #f8f9fa;
   --bg-card: #ffffff;
-  --border-subtle: #eef2f7;
-  --primary-blue: #2563eb;
-  --primary-blue-hover: #1d4ed8;
-  --primary-blue-light: #eff6ff;
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --text-light: #94a3b8;
-  --badge-green-bg: #dcfce7;
-  --badge-green-text: #15803d;
-  --badge-red-bg: #fee2e2;
-  --badge-red-text: #b91c1c;
-  --badge-amber-bg: #fef3c7;
-  --badge-amber-text: #b45309;
-  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  --radius-card: 20px;
-  --radius-item: 14px;
-  --shadow-sm: 0 2px 10px rgba(15, 23, 42, 0.03);
-  --shadow-md: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
-  --shadow-lg: 0 12px 30px -4px rgba(15, 23, 42, 0.08);
+  --border-subtle: #dadce0;
+  --border-focus: #1a73e8;
+
+  /* Google Palette */
+  --primary-blue: #1a73e8;
+  --primary-blue-hover: #1557d0;
+  --primary-blue-light: #e8f0fe;
+  --primary-blue-border: #d2e3fc;
+
+  --google-red: #d93025;
+  --google-red-hover: #b3261e;
+  --google-red-light: #fce8e6;
+
+  --google-green: #188038;
+  --google-green-light: #e6f4ea;
+
+  --google-yellow: #f29900;
+  --google-yellow-light: #fef7e0;
+
+  --google-purple: #9334e6;
+  --google-purple-light: #f3e8fd;
+
+  --google-teal: #007b83;
+  --google-teal-light: #e0f2f1;
+
+  /* Text Tokens */
+  --text-main: #202124;
+  --text-body: #3c4043;
+  --text-muted: #5f6368;
+  --text-light: #80868b;
+
+  /* Badges */
+  --badge-green-bg: #e6f4ea;
+  --badge-green-text: #137333;
+  --badge-red-bg: #fce8e6;
+  --badge-red-text: #c5221f;
+  --badge-amber-bg: #fef7e0;
+  --badge-amber-text: #b06000;
+
+  /* Typography */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --radius-card: 10px;
+  --radius-item: 10px;
+  --radius-pill: 10px;
+  --radius-base: 10px;
+
+  /* Professional Spacing Scale (8pt Grid) */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 20px;
+  --space-2xl: 24px;
+  --space-3xl: 32px;
+  --space-4xl: 40px;
+
+  /* Google Material Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+  --shadow-md: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+  --shadow-lg: 0 2px 6px 2px rgba(60, 64, 67, 0.15), 0 8px 16px 4px rgba(60, 64, 67, 0.2);
 }
 
 * {
@@ -36,33 +80,88 @@ body {
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
   overflow-x: hidden;
+  letter-spacing: -0.01em;
 }
 
 button {
-  font-family: inherit;
+  font-family: var(--font-family);
   cursor: pointer;
   border: none;
   background: none;
-  transition: all 0.15s ease-in-out;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 input, select, textarea {
-  font-family: inherit;
+  font-family: var(--font-family);
   outline: none;
 }
 
-/* Custom Scrollbars */
+/* Custom Minimalist Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 9999px;
+  background: #dadce0;
+  border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #bdc1c6;
 }
+
+/* ==========================================================================
+   Universal 10px Roundedness Requirement
+   Cards, buttons, inputs, pills, badges, banners, avatars, modals, dropdowns
+   ========================================================================== */
+button,
+input,
+select,
+textarea,
+.card,
+.classroom-card,
+.classroom-card-banner,
+.classroom-card-avatar,
+.classroom-card-body,
+.classroom-card-footer,
+.pill-badge,
+.nav-item,
+.search-bar,
+.user-profile-btn,
+.round-action-btn,
+.icon-btn,
+.doctor-drawer,
+.drawer-avatar,
+.drawer-tags .drawer-tag,
+.google-login-box,
+.google-input-field,
+.google-oauth-btn,
+.brand-icon,
+.filter-chip,
+.tab-btn,
+.badge,
+.banner-badge,
+.banner-rating-pill,
+.classroom-chip,
+.classroom-chip-container,
+.btn-google-primary,
+.btn-google-outline,
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+.banner-action-btn,
+.modal-overlay,
+.modal-content,
+.dropdown-menu,
+.table-container {
+  border-radius: 10px !important;
+}
+
+/* Universal selector ensuring any inline styled elements adhere to 10px roundedness */
+[style*="border-radius"],
+[style*="borderRadius"] {
+  border-radius: 10px !important;
+}
+

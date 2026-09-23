@@ -1,10 +1,12 @@
 const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/v1';
 
 // Default mock patient token for initial seamless viewing
-let authToken = localStorage.getItem('auth_token') || '';
+const DEFAULT_GUEST_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMTExMTExMS0xMTExLTExMTEtMTExMS0xMTExMTExMTExMTEiLCJyb2xlIjoicGF0aWVudCIsImVtYWlsIjoicGF0aWVudEBleGFtcGxlLmNvbSIsImZ1bGxfbmFtZSI6IkpvaG4gRG9lIiwiZXhwIjoxNzkwNzUwNzg5LCJpYXQiOjE3OTAxNDU5ODl9.x5ADEfCW0vbyW-bGc3uZswGbIF-0gL3of8dS7Pq3_eI";
+
+let authToken = localStorage.getItem('auth_token') || DEFAULT_GUEST_TOKEN;
 
 export const setAuthToken = (token) => {
-  authToken = token;
+  authToken = token || DEFAULT_GUEST_TOKEN;
   if (token) {
     localStorage.setItem('auth_token', token);
   } else {
@@ -12,19 +14,32 @@ export const setAuthToken = (token) => {
   }
 };
 
-export const getAuthToken = () => authToken;
+export const getAuthToken = () => authToken || DEFAULT_GUEST_TOKEN;
 
 const headers = () => {
   const h = { 'Content-Type': 'application/json' };
-  if (authToken) {
-    h['Authorization'] = `Bearer ${authToken}`;
+  const token = authToken || localStorage.getItem('auth_token') || DEFAULT_GUEST_TOKEN;
+  if (token) {
+    h['Authorization'] = `Bearer ${token}`;
   }
   return h;
 };
 
-// Get stored user or null
+// Get stored user or auto-authenticate guest patient
 export const initGuestAuth = async () => {
-  return getStoredUser();
+  const stored = getStoredUser();
+  if (stored && localStorage.getItem('auth_token')) {
+    return stored;
+  }
+  try {
+    const res = await loginUser('patient@example.com', 'patient123');
+    if (res.success && res.data?.user) {
+      return res.data.user;
+    }
+  } catch (e) {
+    console.error('Guest auth failed:', e);
+  }
+  return null;
 };
 
 export const loginUser = async (email, password) => {

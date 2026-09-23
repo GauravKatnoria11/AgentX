@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, DollarSign, Calendar, Activity, Phone, MessageSquare, MoreVertical, ArrowUpRight, Star } from 'lucide-react';
+import { Users, DollarSign, Calendar, Activity, Phone, MessageSquare, MoreVertical, ArrowUpRight, Star, Clock } from 'lucide-react';
 
 export default function DashboardPage({ onSelectDoctor, onNavigate }) {
   const upcomingAppointments = [
@@ -177,7 +177,9 @@ export default function DashboardPage({ onSelectDoctor, onNavigate }) {
                       </span>
                     </div>
                     <div className="appointment-meta-bottom">
-                      <span>🕒 {app.time}</span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                        <Clock size={12} /> {app.time}
+                      </span>
                       <span>•</span>
                       <span>{app.doctor}</span>
                     </div>
@@ -228,8 +230,8 @@ export default function DashboardPage({ onSelectDoctor, onNavigate }) {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '13px', fontWeight: '700', color: '#eab308', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                    ★ {doc.rating}
+                  <span style={{ fontSize: '13px', fontWeight: '700', color: '#eab308', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Star size={12} fill="#eab308" color="#eab308" /> {doc.rating}
                   </span>
                   <button className="round-action-btn" title="Call Doctor" onClick={(e) => { e.stopPropagation(); onSelectDoctor(doc); }}>
                     <Phone size={14} />

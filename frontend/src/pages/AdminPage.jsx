@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Activity, Users, Building2, Calendar, ClipboardList, PlusCircle, CheckCircle2, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { Shield, Activity, Users, Building2, Calendar, ClipboardList, PlusCircle, CheckCircle2, AlertTriangle, ArrowLeft, Clock } from 'lucide-react';
 import { fetchAdminAnalytics, fetchAdminQueue, fetchAdminAuditLogs, setAuthToken } from '../api';
 
 export default function AdminPage({ onExitAdmin }) {
@@ -230,7 +230,7 @@ export default function AdminPage({ onExitAdmin }) {
                   <td style={{ fontWeight: 600 }}>{q.patient_name}</td>
                   <td>{q.doctor_name}</td>
                   <td>{q.department_name}</td>
-                  <td>🕒 {q.appointment_time}</td>
+                  <td><Clock size={12} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} /> {q.appointment_time}</td>
                   <td>
                     <span className={`pill-badge ${q.status === 'confirmed' ? 'green' : 'blue'}`}>
                       ● {q.status.toUpperCase()}
@@ -309,8 +309,8 @@ export default function AdminPage({ onExitAdmin }) {
         <div className="card" style={{ maxWidth: '600px' }}>
           <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '14px' }}>Onboard New Hospital Facility</h3>
           {hospCreated && (
-            <div style={{ padding: '10px 14px', background: '#dcfce7', color: '#15803d', borderRadius: '10px', fontSize: '13px', marginBottom: '14px' }}>
-              ✓ Hospital created and integrated into real database.
+            <div style={{ padding: '10px 14px', background: '#dcfce7', color: '#15803d', borderRadius: '10px', fontSize: '13px', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <CheckCircle2 size={14} /> Hospital created and integrated into real database.
             </div>
           )}
           <form onSubmit={handleAddHospital} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>

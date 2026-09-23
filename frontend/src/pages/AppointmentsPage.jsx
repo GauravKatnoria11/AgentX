@@ -107,7 +107,7 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
       };
       const res = await submitDoctorRating(ratingAppt.doctor_id, payload);
       if (res.success) {
-        setRatingSuccess(`Review submitted successfully! ${res.data?.doctor?.name} rating updated to ${res.data?.doctor?.rating}★.`);
+        setRatingSuccess(`Review submitted successfully! ${res.data?.doctor?.name} rating updated to ${res.data?.doctor?.rating}.`);
         setTimeout(() => {
           setRatingAppt(null);
           loadAppointments();
@@ -132,7 +132,7 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
             Track your consultation schedules, navigate to medical facilities, and rate completed doctor visits
           </div>
         </div>
-        <button className="btn-secondary" onClick={loadAppointments}>
+        <button className="btn-google-outline" onClick={loadAppointments}>
           Refresh
         </button>
       </div>
@@ -195,9 +195,9 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                           fontSize: '11px',
                           fontWeight: 700,
                           padding: '3px 10px',
-                          borderRadius: '9999px'
+                          borderRadius: '10px'
                         }}>
-                          <Star size={12} fill="#d97706" color="#d97706" /> Rated {a.patient_rating}★
+                          <Star size={12} fill="#d97706" color="#d97706" /> Rated {a.patient_rating}
                         </span>
                       )}
                     </div>
@@ -212,12 +212,12 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                     {(a.patient_phone || a.blood_group) && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px', fontSize: '12px', flexWrap: 'wrap' }}>
                         {a.patient_phone && (
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#f1f5f9', color: '#334155', padding: '2px 8px', borderRadius: '6px', fontWeight: 600 }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#f1f5f9', color: '#334155', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
                             <Phone size={12} color="var(--primary-blue)" /> {a.patient_phone}
                           </span>
                         )}
                         {a.blood_group && (
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#fef2f2', color: '#b91c1c', padding: '2px 8px', borderRadius: '6px', fontWeight: 700, border: '1px solid #fee2e2' }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#fef2f2', color: '#b91c1c', padding: '2px 8px', borderRadius: '10px', fontWeight: 700, border: '1px solid #fee2e2' }}>
                             <Droplet size={12} color="#ef4444" /> Blood: {a.blood_group}
                           </span>
                         )}
@@ -225,67 +225,62 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                     )}
                   </div>
 
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-main)' }}>
-                      📅 {a.appointment_date}
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end' }}>
+                        <Calendar size={14} color="var(--primary-blue)" /> {a.appointment_date}
+                      </div>
+                      <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end' }}>
+                        <Clock size={13} /> {a.appointment_time?.slice(0, 5)}
+                      </div>
                     </div>
-                    <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                      ⏰ {a.appointment_time?.slice(0, 5)}
+                  </div>
+
+                  {a.reason && (
+                    <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '12px', background: '#f8fafc', padding: '10px 14px', borderRadius: '10px' }}>
+                      <strong>Clinical Reason:</strong> {a.reason}
                     </div>
-                  </div>
-                </div>
+                  )}
 
-                {a.reason && (
-                  <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '12px', background: '#f8fafc', padding: '10px 14px', borderRadius: '10px' }}>
-                    <strong>Clinical Reason:</strong> {a.reason}
-                  </div>
-                )}
+                  {a.notes && (
+                    <div style={{ fontSize: '12px', color: '#475569', marginTop: '8px', background: '#f1f5f9', padding: '8px 12px', borderRadius: '10px', borderLeft: '3px solid #cbd5e1' }}>
+                      <strong>Facility Desk Note:</strong> {a.notes}
+                    </div>
+                  )}
 
-                {a.notes && (
-                  <div style={{ fontSize: '12px', color: '#475569', marginTop: '8px', background: '#f1f5f9', padding: '8px 12px', borderRadius: '8px', borderLeft: '3px solid #cbd5e1' }}>
-                    <strong>Facility Desk Note:</strong> {a.notes}
-                  </div>
-                )}
+                  {isCancelled && a.cancellation_reason && (
+                    <div style={{ fontSize: '13px', color: '#b91c1c', marginTop: '10px', background: '#fee2e2', padding: '8px 12px', borderRadius: '10px' }}>
+                      Cancelled: {a.cancellation_reason}
+                    </div>
+                  )}
 
-                {isCancelled && a.cancellation_reason && (
-                  <div style={{ fontSize: '13px', color: '#b91c1c', marginTop: '10px', background: '#fee2e2', padding: '8px 12px', borderRadius: '8px' }}>
-                    Cancelled: {a.cancellation_reason}
-                  </div>
-                )}
-
-                {/* Bottom Actions */}
-                <div style={{ display: 'flex', gap: '10px', marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--border-subtle)', flexWrap: 'wrap' }}>
-                  {/* Route & ETA */}
-                  <button
-                    className="btn-secondary"
-                    style={{ fontSize: '12px', padding: '8px 16px' }}
-                    onClick={() => onNavigateToRoute(a.hospital_name || 'Ivy Hospital Hoshiarpur')}
-                  >
-                    <Navigation size={14} /> Get Route & ETA
-                  </button>
-
-                  {/* Rating button - strictly enabled when appointment is completed */}
-                  {isCompleted ? (
+                  {/* Bottom Actions */}
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--border-subtle)', flexWrap: 'wrap' }}>
+                    {/* Route & ETA */}
                     <button
-                      onClick={() => openRatingModal(a)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        fontSize: '12px',
-                        padding: '8px 16px',
-                        borderRadius: '10px',
-                        border: 'none',
-                        background: a.patient_rating ? '#fef3c7' : '#059669',
-                        color: a.patient_rating ? '#92400e' : '#ffffff',
-                        fontWeight: 800,
-                        cursor: 'pointer'
-                      }}
+                      className="btn-google-outline"
+                      style={{ fontSize: '12px', padding: '8px 16px' }}
+                      onClick={() => onNavigateToRoute(a.hospital_name || 'Ivy Hospital Hoshiarpur')}
                     >
-                      <Star size={14} fill={a.patient_rating ? '#d97706' : '#ffffff'} />
-                      {a.patient_rating ? `Update Rating (${a.patient_rating}★)` : '⭐ Rate Doctor (Verified Consultation)'}
+                      <Navigation size={14} /> Get Route & ETA
                     </button>
-                  ) : (
+
+                    {/* Rating button - strictly enabled when appointment is completed */}
+                    {isCompleted ? (
+                      <button
+                        className="btn-google-primary"
+                        onClick={() => openRatingModal(a)}
+                        style={{
+                          fontSize: '12px',
+                          padding: '8px 16px',
+                          background: a.patient_rating ? '#fef3c7' : '#0d904f',
+                          color: a.patient_rating ? '#92400e' : '#ffffff',
+                          borderColor: a.patient_rating ? '#fde68a' : '#0d904f'
+                        }}
+                      >
+                        <Star size={14} fill={a.patient_rating ? '#d97706' : '#ffffff'} color={a.patient_rating ? '#d97706' : '#ffffff'} />
+                        {a.patient_rating ? `Update Rating (${a.patient_rating} / 5)` : 'Rate Doctor (Verified Consultation)'}
+                      </button>
+                    ) : (
                     <div
                       title="Doctor rating is strictly allowed only after consultation is completed."
                       style={{
@@ -296,7 +291,7 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                         color: '#64748b',
                         background: '#f8fafc',
                         padding: '6px 12px',
-                        borderRadius: '8px',
+                        borderRadius: '10px',
                         border: '1px solid #e2e8f0'
                       }}
                     >
@@ -330,7 +325,7 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-              <span style={{ background: '#dcfce7', color: '#166534', fontSize: '11px', fontWeight: 800, padding: '3px 10px', borderRadius: '9999px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ background: '#dcfce7', color: '#166534', fontSize: '11px', fontWeight: 800, padding: '3px 10px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <Check size={12} /> Verified Completed Consultation
               </span>
             </div>
@@ -404,17 +399,21 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                         type="button"
                         onClick={() => toggleTag(tag)}
                         style={{
-                          background: active ? '#2563eb' : '#f1f5f9',
-                          color: active ? '#ffffff' : '#334155',
-                          border: active ? '1px solid #2563eb' : '1px solid #e2e8f0',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                          background: active ? 'var(--primary-blue)' : '#f1f3f4',
+                          color: active ? '#ffffff' : 'var(--text-main)',
+                          border: active ? '1px solid var(--primary-blue)' : '1px solid #dadce0',
                           padding: '6px 12px',
-                          borderRadius: '9999px',
+                          borderRadius: '10px',
                           fontSize: '12px',
                           fontWeight: active ? 700 : 500,
                           cursor: 'pointer'
                         }}
                       >
-                        {active ? '✓ ' : '+ '} {tag}
+                        {active && <Check size={12} strokeWidth={3} />}
+                        {tag}
                       </button>
                     );
                   })}
@@ -446,7 +445,7 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
               <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
                 <button
                   type="button"
-                  className="btn-secondary"
+                  className="btn-google-outline"
                   style={{ flex: 1, justifyContent: 'center' }}
                   onClick={() => setRatingAppt(null)}
                 >
@@ -454,9 +453,9 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
                 </button>
                 <button
                   type="submit"
-                  className="btn-primary"
+                  className="btn-google-primary"
                   disabled={isSubmittingRating}
-                  style={{ flex: 2, justifyContent: 'center', background: '#059669' }}
+                  style={{ flex: 2, justifyContent: 'center', background: '#0d904f', borderColor: '#0d904f' }}
                 >
                   {isSubmittingRating ? 'Publishing...' : 'Submit Verified Rating'}
                 </button>
@@ -489,12 +488,12 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
               }}
             />
             <div style={{ display: 'flex', gap: '10px' }}>
-              <button className="btn-secondary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setCancellingId(null)}>
+              <button className="btn-google-outline" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setCancellingId(null)}>
                 Keep Slot
               </button>
               <button
-                className="btn-primary"
-                style={{ flex: 1, justifyContent: 'center', background: '#dc2626' }}
+                className="btn-google-danger"
+                style={{ flex: 1, justifyContent: 'center' }}
                 onClick={() => handleCancel(cancellingId)}
               >
                 Confirm Cancel
