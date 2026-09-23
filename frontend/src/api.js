@@ -44,51 +44,66 @@ export const initGuestAuth = async () => {
 };
 
 export const loginUser = async (email, password) => {
-  const res = await fetch(`${API_BASE}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
-  });
-  const json = await res.json();
-  if (json.success && json.data?.access_token) {
-    setAuthToken(json.data.access_token);
-    if (json.data.user) {
-      localStorage.setItem('auth_user', JSON.stringify(json.data.user));
+  try {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const json = await res.json();
+    if (json.success && json.data?.access_token) {
+      setAuthToken(json.data.access_token);
+      if (json.data.user) {
+        localStorage.setItem('auth_user', JSON.stringify(json.data.user));
+      }
     }
+    return json;
+  } catch (err) {
+    console.error('Login request failed:', err);
+    return { success: false, message: 'Unable to connect to authentication server. Please check your internet connection or verify the backend is online.' };
   }
-  return json;
 };
 
 export const signupUser = async (payload) => {
-  const res = await fetch(`${API_BASE}/auth/signup`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-  const json = await res.json();
-  if (json.success && json.data?.access_token) {
-    setAuthToken(json.data.access_token);
-    if (json.data.user) {
-      localStorage.setItem('auth_user', JSON.stringify(json.data.user));
+  try {
+    const res = await fetch(`${API_BASE}/auth/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+    if (json.success && json.data?.access_token) {
+      setAuthToken(json.data.access_token);
+      if (json.data.user) {
+        localStorage.setItem('auth_user', JSON.stringify(json.data.user));
+      }
     }
+    return json;
+  } catch (err) {
+    console.error('Signup request failed:', err);
+    return { success: false, message: 'Unable to connect to registration server. Please try again.' };
   }
-  return json;
 };
 
 export const oauthCallback = async (payload) => {
-  const res = await fetch(`${API_BASE}/auth/oauth-callback`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-  const json = await res.json();
-  if (json.success && json.data?.access_token) {
-    setAuthToken(json.data.access_token);
-    if (json.data.user) {
-      localStorage.setItem('auth_user', JSON.stringify(json.data.user));
+  try {
+    const res = await fetch(`${API_BASE}/auth/oauth-callback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+    if (json.success && json.data?.access_token) {
+      setAuthToken(json.data.access_token);
+      if (json.data.user) {
+        localStorage.setItem('auth_user', JSON.stringify(json.data.user));
+      }
     }
+    return json;
+  } catch (err) {
+    console.error('OAuth callback request failed:', err);
+    return { success: false, message: 'OAuth sync failed with backend.' };
   }
-  return json;
 };
 
 export const fetchCurrentUser = async () => {

@@ -31,10 +31,11 @@ export const signInWithGoogle = async () => {
     throw new Error('Supabase client is not configured.');
   }
 
+  const redirectOrigin = window.location.origin.replace(/\/+$/, '');
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: window.location.origin
+      redirectTo: redirectOrigin
     }
   });
 
@@ -50,10 +51,11 @@ export const signInWithFacebook = async () => {
     throw new Error('Supabase client is not configured.');
   }
 
+  const redirectOrigin = window.location.origin.replace(/\/+$/, '');
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'facebook',
     options: {
-      redirectTo: window.location.origin
+      redirectTo: redirectOrigin
     }
   });
 
@@ -103,21 +105,50 @@ export const signUpWithEmail = async (email, password, metadata = {}) => {
  */
 export const initOAuthRedirectListener = async (onUserLoaded) => {
   if (isLiveSupabase && supabase) {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        const u = session.user;
-        const provider = u.app_metadata?.provider || 'google';
+    const processSession = async (session) => {
+      if (!session?.user) return;
+      const u = session.user;
+      const provider = u.app_metadata?.provider || 'google';
+
+      const fallbackUser = {
+        id: u.id,
+        email: u.email,
+        full_name: u.user_metadata?.full_name || u.user_metadata?.name || u.email?.split('@')[0] || 'User',
+        role: 'patient',
+        avatar_url: u.user_metadata?.avatar_url || u.user_metadata?.picture,
+        created_at: u.created_at
+      };
+
+      try {
         const res = await oauthCallback({
           provider: provider === 'facebook' ? 'facebook' : 'google',
           access_token: session.access_token,
           email: u.email,
-          full_name: u.user_metadata?.full_name || u.user_metadata?.name || u.email.split('@')[0],
-          avatar_url: u.user_metadata?.avatar_url || u.user_metadata?.picture
+          full_name: fallbackUser.full_name,
+          avatar_url: fallbackUser.avatar_url
         });
         if (res.success && res.data?.user && onUserLoaded) {
           onUserLoaded(res.data.user);
+          return;
         }
+      } catch (err) {
+        console.warn('Backend sync delayed, using authenticated session user:', err);
+      }
+
+      // Graceful fallback: set authenticated Supabase user immediately
+      localStorage.setItem('auth_user', JSON.stringify(fallbackUser));
+      if (session.access_token) {
+        setAuthToken(session.access_token);
+      }
+      if (onUserLoaded) {
+        onUserLoaded(fallbackUser);
+      }
+    };
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await processSession(session);
       }
     } catch (e) {
       console.warn('OAuth session check error:', e);
@@ -125,18 +156,7 @@ export const initOAuthRedirectListener = async (onUserLoaded) => {
 
     supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
-        const u = session.user;
-        const provider = u.app_metadata?.provider || 'google';
-        const res = await oauthCallback({
-          provider: provider === 'facebook' ? 'facebook' : 'google',
-          access_token: session.access_token,
-          email: u.email,
-          full_name: u.user_metadata?.full_name || u.user_metadata?.name || u.email.split('@')[0],
-          avatar_url: u.user_metadata?.avatar_url || u.user_metadata?.picture
-        });
-        if (res.success && res.data?.user && onUserLoaded) {
-          onUserLoaded(res.data.user);
-        }
+        await processSession(session);
       }
     });
   }
