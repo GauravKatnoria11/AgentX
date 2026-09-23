@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Activity, Users, Building2, Calendar, ClipboardList, PlusCircle, CheckCircle2, AlertTriangle, ArrowLeft, Clock } from 'lucide-react';
-import { fetchAdminAnalytics, fetchAdminQueue, fetchAdminAuditLogs, setAuthToken } from '../api';
+import { fetchAdminAnalytics, fetchAdminQueue, fetchAdminAuditLogs, setAuthToken, API_BASE } from '../api';
 
 export default function AdminPage({ onExitAdmin }) {
   const [adminToken, setAdminToken] = useState('');
@@ -27,7 +27,7 @@ export default function AdminPage({ onExitAdmin }) {
     setLoading(true);
     setLoginError('');
     try {
-      const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/v1/auth/login', {
+      const res = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: loginEmail, password: loginPassword })
@@ -65,7 +65,7 @@ export default function AdminPage({ onExitAdmin }) {
   const handleAddHospital = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/v1/admin/hospitals', {
+      const res = await fetch(`${API_BASE}/admin/hospitals`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

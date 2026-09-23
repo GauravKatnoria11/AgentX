@@ -1,4 +1,5 @@
-const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/v1';
+const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+export const API_BASE = rawApiUrl.replace(/\/+$/, '') + '/api/v1';
 
 // Default mock patient token for initial seamless viewing
 const DEFAULT_GUEST_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMTExMTExMS0xMTExLTExMTEtMTExMS0xMTExMTExMTExMTEiLCJyb2xlIjoicGF0aWVudCIsImVtYWlsIjoicGF0aWVudEBleGFtcGxlLmNvbSIsImZ1bGxfbmFtZSI6IkpvaG4gRG9lIiwiZXhwIjoxNzkwNzUwNzg5LCJpYXQiOjE3OTAxNDU5ODl9.x5ADEfCW0vbyW-bGc3uZswGbIF-0gL3of8dS7Pq3_eI";

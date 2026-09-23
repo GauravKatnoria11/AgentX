@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     # App Settings
     APP_ENV: str = Field(default="development", description="Application Environment (development, staging, production)")
     FRONTEND_URL: str = Field(default="http://localhost:5173", description="Frontend Origin for CORS")
+    ALLOWED_ORIGINS: str = Field(default="", description="Comma-separated additional allowed origins (e.g. Vercel domains)")
     PORT: int = Field(default=8000, description="Server Port")
     JWT_SECRET: str = Field(default="dev-secret-key-tnhackathon-healthcare-321", description="JWT secret signing key")
     JWT_ALGORITHM: str = Field(default="HS256", description="JWT algorithm")
@@ -42,9 +43,18 @@ class Settings(BaseSettings):
 
     @property
     def cors_origins(self) -> List[str]:
-        origins = [self.FRONTEND_URL, "http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:5173", "http://127.0.0.1:3000"]
-        if self.APP_ENV != "production":
-            origins.append("*")
+        origins = [
+            self.FRONTEND_URL,
+            "http://localhost:3000",
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "http://127.0.0.1:3000"
+        ]
+        if self.ALLOWED_ORIGINS:
+            for item in self.ALLOWED_ORIGINS.split(","):
+                cleaned = item.strip().rstrip("/")
+                if cleaned:
+                    origins.append(cleaned)
         return list(set([o.rstrip("/") for o in origins if o]))
 
 
