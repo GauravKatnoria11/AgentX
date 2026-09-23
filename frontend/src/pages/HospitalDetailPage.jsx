@@ -207,11 +207,11 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
         {/* Tab Navigation */}
         <div style={{ display: 'flex', gap: '12px', marginTop: '28px', borderBottom: '1px solid var(--border-subtle)', flexWrap: 'wrap' }}>
           {[
-            { id: 'overview', label: 'Overview & Diseases Treated' },
+            { id: 'overview', label: 'Overview' },
             { id: 'departments', label: `Departments (${hospital.departments?.length || 0})` },
-            { id: 'doctors', label: `Specialists on Staff (${hospital.doctors?.length || 0})` },
-            { id: 'transport', label: 'Transportation & Ambulances' },
-            { id: 'map', label: 'Live Google Maps Location' }
+            { id: 'doctors', label: `Specialists (${hospital.doctors?.length || 0})` },
+            { id: 'transport', label: 'Transportation' },
+            { id: 'map', label: 'Map & Location' }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -239,12 +239,9 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* Diseases Treated Section */}
           <div className="card" style={{ padding: '24px' }}>
-            <h3 style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-main)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Stethoscope size={16} color="var(--primary-blue)" /> Specialized Disease & Condition Coverage
+            <h3 style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-main)', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Stethoscope size={16} color="var(--primary-blue)" /> Specialized Disease Coverage
             </h3>
-            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 16px 0' }}>
-              This facility has dedicated clinical protocols and specialist teams for the following medical conditions:
-            </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
               {hospital.diseases_treated?.map((disease, i) => (
                 <div
@@ -292,19 +289,19 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
             </div>
           </div>
 
-          {/* Empanelled Government Healthcare Schemes & Subsidies */}
+          {/* Empanelled Government Healthcare Schemes */}
           {hospital.government_schemes?.length > 0 && (
-            <div className="card" style={{ padding: '24px', background: 'linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)', border: '1px solid #bbf7d0' }}>
+            <div className="card" style={{ padding: '24px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '3px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                <div style={{ background: '#dcfce7', padding: '6px', borderRadius: '8px', display: 'flex' }}>
+                <div style={{ background: '#dcfce7', padding: '6px', borderRadius: '3px', display: 'flex' }}>
                   <Landmark size={20} color="#15803d" />
                 </div>
                 <div>
                   <h3 style={{ fontSize: '17px', fontWeight: 800, color: '#14532d', margin: 0 }}>
-                    Empanelled Government Healthcare Schemes & Cashless Cover
+                    Empanelled Government Schemes
                   </h3>
                   <div style={{ fontSize: '12px', color: '#166534' }}>
-                    Cashless hospitalization, surgical coverage & subsidized treatment accepted under state and national welfare programs
+                    Cashless inpatient admission accepted for eligible beneficiaries
                   </div>
                 </div>
               </div>
@@ -316,12 +313,11 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
                     style={{
                       background: '#ffffff',
                       border: '1px solid #86efac',
-                      borderRadius: '10px',
+                      borderRadius: '3px',
                       padding: '12px 16px',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '10px',
-                      boxShadow: '0 2px 4px rgba(22, 101, 52, 0.05)'
+                      gap: '10px'
                     }}
                   >
                     <span style={{ fontSize: '18px' }}>🏛️</span>
@@ -330,17 +326,17 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
                         {sch}
                       </div>
                       <div style={{ fontSize: '11px', color: '#15803d', marginTop: '2px' }}>
-                        Eligible Beneficiaries Accepted • Cashless Desk Available
+                        Cashless desk available
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div style={{ marginTop: '16px', padding: '10px 14px', background: '#ecfdf5', borderRadius: '8px', fontSize: '12px', color: '#166534', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ marginTop: '14px', padding: '10px 14px', background: '#ffffff', borderRadius: '3px', border: '1px solid #bbf7d0', fontSize: '12px', color: '#166534', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <CheckCircle2 size={16} color="#16a34a" />
                 <span>
-                  <strong>Required Documentation at Admissions:</strong> Carry Aadhaar Card and PM-JAY / AB-SSBY Golden Card / ECHS Smart Card for immediate pre-authorization.
+                  <strong>Admissions Document:</strong> Carry Aadhaar Card and Golden Card / Smart Card for pre-authorization.
                 </span>
               </div>
             </div>

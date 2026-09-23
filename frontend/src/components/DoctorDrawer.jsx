@@ -113,23 +113,22 @@ export default function DoctorDrawer({ doctor, onClose, onBookClick, onChatClick
             className="drawer-avatar"
           />
           <h2 className="drawer-name">{doctor.name}</h2>
-          <div className="drawer-handle">@{doctor.name.toLowerCase().replace(/[^a-z0-9]/g, '.')}</div>
 
           {/* Specific Hospital Badge */}
           <div style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '6px',
-            marginTop: '8px',
+            marginTop: '6px',
             background: '#eff6ff',
             border: '1px solid #bfdbfe',
             color: '#1d4ed8',
-            padding: '5px 12px',
-            borderRadius: '10px',
-            fontSize: '13px',
+            padding: '4px 10px',
+            borderRadius: '3px',
+            fontSize: '12.5px',
             fontWeight: 700
           }}>
-            <Building2 size={14} />
+            <Building2 size={13} />
             <span>{doctor.hospital_name || 'Hoshiarpur Hospital'}</span>
           </div>
 

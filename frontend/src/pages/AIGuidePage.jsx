@@ -92,9 +92,9 @@ export default function AIGuidePage({ onSelectDoctor, onNavigateToRoute }) {
       {/* Header */}
       <div className="section-header">
         <div>
-          <h2 className="section-title">AI Healthcare Guide & Clinical Triage</h2>
+          <h2 className="section-title">AI Health Guide</h2>
           <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-            Intelligent natural language navigation, structured symptom triage intake, and real-time care assistant
+            Instant answers, symptom intake, and health guidance
           </div>
         </div>
       </div>

@@ -166,27 +166,27 @@ function App() {
   const getPageMeta = () => {
     switch (currentPage) {
       case 'hospitals':
-        return { title: 'Find Best Hospitals & Clinics', subtitle: 'Search facilities by disease specialization, locality proximity & consultation fee' };
+        return { title: 'Hospitals & Clinics', subtitle: 'Find verified hospitals and healthcare facilities nearby' };
       case 'hospital-detail':
-        return { title: 'Hospital Dossier & Transport', subtitle: 'Comprehensive clinical services, specialist staff roster, and 24/7 transportation facilities' };
+        return { title: 'Hospital Overview', subtitle: 'Specialists, clinical services, and route guidance' };
       case 'emergency':
-        return { title: 'Emergency SOS & Critical Triage', subtitle: '24/7 Rapid ambulance dispatch & Level-3 trauma hospital alerts' };
+        return { title: 'Emergency SOS & Triage', subtitle: '24/7 ambulance dispatch and emergency triage' };
       case 'labs':
-        return { title: 'Diagnostic Laboratories & Pathology', subtitle: 'NABL accredited test catalog, home sample collection, MRI & CT imaging' };
+        return { title: 'Diagnostic Labs', subtitle: 'Book pathology tests, imaging, and home sample collection' };
       case 'doctors':
-        return { title: 'Doctors & Specialists', subtitle: 'Book consultation slots with verified medical practitioners' };
+        return { title: 'Doctors & Specialists', subtitle: 'Book appointments with verified specialists' };
       case 'appointments':
-        return { title: 'Appointments & Schedule', subtitle: 'Manage your confirmed consultations and clinic arrival queues' };
+        return { title: 'Appointments', subtitle: 'Manage upcoming consultations and visits' };
       case 'records':
-        return { title: 'Personal Medical Records', subtitle: 'End-to-end encrypted health documents with AI summarizer' };
+        return { title: 'Medical Records', subtitle: 'Prescriptions, schedules, and clinical summaries' };
       case 'pharmacy':
-        return { title: 'Prescriptions & Pharmacy', subtitle: 'Doctor instructions, medication schedules, and medicine stock' };
+        return { title: 'Prescriptions & Pharmacy', subtitle: 'Medication schedules and pharmacy stock' };
       case 'followups':
-        return { title: 'Recovery Follow-up Engine', subtitle: 'Scheduled post-treatment health check-ins and symptom tracking' };
+        return { title: 'Recovery Follow-ups', subtitle: 'Post-treatment check-ins and recovery progress' };
       case 'ai-guide':
-        return { title: 'AI Healthcare Guide', subtitle: 'Powered by Gemini AI • Triage assistance, search, and FAQ guidance' };
+        return { title: 'AI Health Guide', subtitle: 'Instant answers and clinical triage assistance' };
       case 'maps':
-        return { title: 'Hospital Navigation & ETA', subtitle: 'Google Maps turn-by-turn routing and departure calculator' };
+        return { title: 'Hospital Route & ETA', subtitle: 'Turn-by-turn navigation and estimated travel times' };
       default:
         return { title: 'Carelink', subtitle: 'Healthcare Discovery & Management Platform' };
     }
@@ -208,7 +208,7 @@ function App() {
           className="brand-header"
           style={{ cursor: 'pointer' }}
           onClick={() => handleNavigate('hospitals')}
-          title="Carelink Patient Portal"
+          title="Carelink"
         >
           <div className="brand-icon">
             <Building2 size={20} />
@@ -238,31 +238,6 @@ function App() {
             );
           })}
         </nav>
-
-        {/* Hospital Authority & Facility Portal Button */}
-        <div style={{ padding: '12px 14px', borderTop: '1px solid var(--border-subtle)', marginTop: 'auto' }}>
-          <button
-            className={`nav-item ${currentPage === 'hospital-portal' ? 'active' : ''}`}
-            style={{
-              padding: '10px 14px',
-              borderRadius: '10px',
-              border: '1px solid #bfdbfe',
-              background: '#eff6ff',
-              color: 'var(--primary-blue)',
-              fontWeight: 700,
-              fontSize: '12px',
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px'
-            }}
-            onClick={() => handleNavigate('hospital-portal')}
-            title="Hospital Authority & Bed Management Console"
-          >
-            <ShieldCheck size={16} color="var(--primary-blue)" />
-            <span>Hospital Portal</span>
-          </button>
-        </div>
       </aside>
 
       {/* Main Content Area */}
@@ -369,21 +344,14 @@ function App() {
 
                       <button
                         onClick={() => { handleNavigate('appointments'); setIsProfileMenuOpen(false); }}
-                        style={{ textAlign: 'left', background: 'none', border: 'none', color: '#cbd5e1', padding: '8px 10px', borderRadius: '10px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                        style={{ textAlign: 'left', background: 'none', border: 'none', color: '#cbd5e1', padding: '8px 10px', borderRadius: '3px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
                       >
                         <Calendar size={14} color="#34d399" /> My Appointments
                       </button>
 
                       <button
-                        onClick={() => { handleNavigate('hospital-portal'); setIsProfileMenuOpen(false); }}
-                        style={{ textAlign: 'left', background: 'none', border: 'none', color: '#cbd5e1', padding: '8px 10px', borderRadius: '10px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
-                      >
-                        <ShieldCheck size={14} color="#38bdf8" /> Hospital Management Portal
-                      </button>
-
-                      <button
                         onClick={() => { setIsAuthModalOpen(true); setIsProfileMenuOpen(false); }}
-                        style={{ textAlign: 'left', background: 'none', border: 'none', color: '#cbd5e1', padding: '8px 10px', borderRadius: '10px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                        style={{ textAlign: 'left', background: 'none', border: 'none', color: '#cbd5e1', padding: '8px 10px', borderRadius: '3px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
                       >
                         <Sparkles size={14} color="#f59e0b" /> Switch / Add Account
                       </button>

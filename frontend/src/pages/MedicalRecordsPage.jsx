@@ -77,15 +77,15 @@ export default function MedicalRecordsPage() {
       {/* Header */}
       <div className="section-header">
         <div>
-          <h2 className="section-title">Medical Records & Disease Management</h2>
+          <h2 className="section-title">Medical Records</h2>
           <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-            Categorized by appointment according to disease • Medicine schedules (morning/evening) • Doctor prescribed diet plans
+            Prescriptions, medication schedules, and clinical summaries
           </div>
         </div>
       </div>
 
       {/* Disease Category Filter Chips & Search Bar */}
-      <div className="card" style={{ padding: '20px 24px', background: '#ffffff', display: 'flex', flexDirection: 'column', gap: '16px', borderRadius: '10px' }}>
+      <div className="card" style={{ padding: '20px 24px', background: '#ffffff', display: 'flex', flexDirection: 'column', gap: '16px', borderRadius: '3px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Activity size={18} color="var(--primary-blue)" />

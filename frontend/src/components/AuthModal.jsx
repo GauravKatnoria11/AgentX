@@ -192,14 +192,14 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, onEmergencyC
 
   return (
     <div className="fullscreen-login-overlay">
-      {/* Top Header with Back to Portal & High-Priority Emergency SOS */}
+      {/* Top Header with Back to Home & High-Priority Emergency SOS */}
       <div className="fullscreen-login-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <button
           onClick={onClose}
           className="btn-google-outline"
-          style={{ padding: '8px 14px', fontSize: '13px' }}
+          style={{ padding: '8px 14px', fontSize: '13px', borderRadius: '3px' }}
         >
-          <ArrowLeft size={16} /> Back to Carelink Portal
+          <ArrowLeft size={16} /> Back to Carelink
         </button>
 
         {/* Emergency SOS Quick Button */}
@@ -220,12 +220,12 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, onEmergencyC
             padding: '8px 16px',
             fontSize: '13px',
             fontWeight: 800,
-            borderRadius: '10px',
+            borderRadius: '3px',
             background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
             color: '#ffffff',
             border: 'none',
             cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(220, 38, 38, 0.35)'
+            boxShadow: '0 2px 8px rgba(220, 38, 38, 0.3)'
           }}
         >
           <ShieldAlert size={16} /> EMERGENCY SOS (108 / 112)
@@ -236,16 +236,16 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, onEmergencyC
       <div className="google-login-box">
         {/* Brand Icon & Title */}
         <div className="google-login-logo">
-          <div className="brand-icon" style={{ width: '44px', height: '44px', borderRadius: '10px' }}>
-            <Building2 size={24} />
+          <div className="brand-icon" style={{ width: '40px', height: '40px', borderRadius: '3px' }}>
+            <Building2 size={22} />
           </div>
           <h1 className="google-login-title">
-            {mode === 'login' ? 'Sign in to Carelink' : 'Create your Carelink Account'}
+            {mode === 'login' ? 'Sign in to Carelink' : 'Create Carelink Account'}
           </h1>
           <p className="google-login-subtitle">
             {mode === 'login'
-              ? 'Access hospital bookings, prescriptions & medical records'
-              : 'Sign up for instant appointment booking & health tracking'}
+              ? 'Access hospital bookings, prescriptions, and health records'
+              : 'Instant appointment booking and health tracking'}
           </p>
         </div>
 
@@ -257,14 +257,14 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, onEmergencyC
             justifyContent: 'space-between',
             gap: '12px',
             padding: '12px 14px',
-            background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+            background: '#fef2f2',
             border: '1px solid #fecaca',
-            borderRadius: '10px',
+            borderRadius: '3px',
             marginBottom: '16px'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ background: '#fee2e2', padding: '6px', borderRadius: '8px', color: '#dc2626', display: 'flex' }}>
+            <div style={{ background: '#fee2e2', padding: '6px', borderRadius: '3px', color: '#dc2626', display: 'flex' }}>
               <PhoneCall size={16} />
             </div>
             <div>
@@ -272,7 +272,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, onEmergencyC
                 Medical Emergency?
               </div>
               <div style={{ fontSize: '11px', color: '#b91c1c' }}>
-                Skip login for 108 ambulance & trauma triage
+                Skip login for 108 ambulance dispatch
               </div>
             </div>
           </div>

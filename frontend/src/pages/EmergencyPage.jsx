@@ -172,7 +172,7 @@ export default function EmergencyPage({ onNavigateToRoute }) {
               style={{
                 background: 'rgba(255, 255, 255, 0.2)',
                 padding: '4px 12px',
-                borderRadius: '10px',
+                borderRadius: '3px',
                 fontSize: '12px',
                 fontWeight: 700,
                 letterSpacing: '0.05em',
@@ -180,14 +180,14 @@ export default function EmergencyPage({ onNavigateToRoute }) {
               }}
             >
               <ShieldAlert size={14} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '6px' }} />
-              24/7 Rapid Emergency Response • Hoshiarpur District
+              24/7 Emergency Dispatch
             </span>
           </div>
-          <h2 style={{ fontSize: '26px', fontWeight: 800, margin: '6px 0', letterSpacing: '-0.02em' }}>
-            Critical Medical Situation? Dispatch Assistance Now
+          <h2 style={{ fontSize: '24px', fontWeight: 800, margin: '6px 0', letterSpacing: '-0.02em' }}>
+            Emergency Response & Ambulance Dispatch
           </h2>
-          <p style={{ fontSize: '14px', opacity: 0.9, lineHeight: 1.5, margin: 0 }}>
-            Instantly alerts the nearest Hoshiarpur emergency room, reserves a Level-3 trauma/ICU bed, and coordinates with Punjab 108 Emergency Ambulance network.
+          <p style={{ fontSize: '13px', opacity: 0.95, lineHeight: 1.4, margin: 0 }}>
+            Alerts the nearest emergency facility, reserves an ICU trauma bed, and coordinates 108 ambulance dispatch.
           </p>
         </div>
 

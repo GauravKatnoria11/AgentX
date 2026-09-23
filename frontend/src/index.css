@@ -45,10 +45,10 @@
 
   /* Typography */
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --radius-card: 10px;
-  --radius-item: 10px;
-  --radius-pill: 10px;
-  --radius-base: 10px;
+  --radius-card: 3px;
+  --radius-item: 3px;
+  --radius-pill: 3px;
+  --radius-base: 3px;
 
   /* Professional Spacing Scale (8pt Grid) */
   --space-xs: 4px;
@@ -106,14 +106,14 @@ input, select, textarea {
 }
 ::-webkit-scrollbar-thumb {
   background: #dadce0;
-  border-radius: 10px;
+  border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #bdc1c6;
 }
 
 /* ==========================================================================
-   Universal 10px Roundedness Requirement
+   Universal 3px Roundedness Requirement
    Cards, buttons, inputs, pills, badges, banners, avatars, modals, dropdowns
    ========================================================================== */
 button,
@@ -156,12 +156,12 @@ textarea,
 .modal-content,
 .dropdown-menu,
 .table-container {
-  border-radius: 10px !important;
+  border-radius: 3px !important;
 }
 
-/* Universal selector ensuring any inline styled elements adhere to 10px roundedness */
+/* Universal selector ensuring any inline styled elements adhere to 3px roundedness */
 [style*="border-radius"],
 [style*="borderRadius"] {
-  border-radius: 10px !important;
+  border-radius: 3px !important;
 }
 

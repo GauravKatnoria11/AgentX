@@ -111,14 +111,11 @@ export default function LabsPage() {
       <div className="card" style={{ padding: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
           <div>
-            <span className="pill-badge blue" style={{ marginBottom: '6px' }}>
-              NABL & ICMR Verified Network • Hoshiarpur
-            </span>
-            <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-main)', margin: '4px 0' }}>
-              Diagnostic Laboratories & Pathology Tests
+            <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>
+              Diagnostic Laboratories
             </h2>
-            <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-              Book accredited blood tests, MRI & CT scans, ultrasound, and home sample collection across Hoshiarpur
+            <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>
+              Book pathology tests, imaging, and home sample collection
             </div>
           </div>
 

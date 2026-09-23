@@ -259,11 +259,11 @@ export default function HospitalsPage({
 
           let bestBadge = null;
           if (fee <= 50) {
-            bestBadge = 'Most Affordable (Govt Subsidized)';
+            bestBadge = 'Subsidized Fee';
           } else if (dist <= 2.0 && h.rating >= 4.8) {
-            bestBadge = 'Top Proximity & Highest Rated';
+            bestBadge = 'Top Rated';
           } else if (compositeScore >= 85) {
-            bestBadge = 'Best Overall Match';
+            bestBadge = 'Best Match';
           }
 
           return {
@@ -318,16 +318,13 @@ export default function HospitalsPage({
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* Smart Search Control Center */}
       <div className="card" style={{ padding: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '18px' }}>
           <div>
-            <span className="pill-badge blue" style={{ marginBottom: '6px' }}>
-              Google Maps Integrated • Hoshiarpur Healthcare Corridor
-            </span>
-            <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-main)', margin: '4px 0' }}>
-              Find Best Hospitals by Disease, Live Location & Fee
+            <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>
+              Find Hospitals & Clinics
             </h2>
-            <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-              Search any location or street across Hoshiarpur to instantly recalculate hospital proximity, route times, and specialist rankings.
+            <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>
+              Search facilities by specialty, locality, or consultation fee
             </div>
           </div>
 
@@ -382,15 +379,15 @@ export default function HospitalsPage({
         <div style={{ marginTop: '20px', padding: '18px', background: '#f8fafc', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '28px', height: '28px', borderRadius: '10px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '3px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <MapPin size={16} color="var(--primary-blue)" />
               </div>
               <div>
-                <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-main)' }}>
-                  Set Patient Location in Hoshiarpur (Google Maps)
+                <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)' }}>
+                  Patient Location & Distance Calibration
                 </span>
                 <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block' }}>
-                  Search any colony, chowk, landmark or street in Hoshiarpur to compute real GPS distances
+                  Select or search your location to calculate real road distance and travel time
                 </span>
               </div>
             </div>
@@ -518,9 +515,6 @@ export default function HospitalsPage({
                       <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
                         {item.formatted_address}
                       </div>
-                      <div style={{ fontSize: '10px', color: '#16a34a', fontWeight: 600, marginTop: '2px' }}>
-                        GPS: {item.latitude.toFixed(4)}° N, {item.longitude.toFixed(4)}° E
-                      </div>
                     </div>
                   </div>
                 ))}
@@ -546,7 +540,7 @@ export default function HospitalsPage({
                   fontSize: '11px',
                   fontWeight: 700,
                   padding: '4px 10px',
-                  borderRadius: '10px',
+                  borderRadius: '3px',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease'
                 }}
@@ -557,14 +551,13 @@ export default function HospitalsPage({
           </div>
 
           {/* Active Patient Location Status Ribbon */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginTop: '12px', paddingTop: '10px', borderTop: '1px solid #e2e8f0', fontSize: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #e2e8f0', fontSize: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontWeight: 800, color: '#1e40af' }}>Active Patient Origin:</span>
+              <span style={{ color: 'var(--text-muted)' }}>Calculating distances from:</span>
               <strong style={{ color: 'var(--text-main)' }}>{activeLocation.name}</strong>
-              <span style={{ color: 'var(--text-muted)' }}>({activeLocation.lat.toFixed(4)}, {activeLocation.lon.toFixed(4)})</span>
             </div>
-            <span style={{ color: '#059669', fontWeight: 700, fontSize: '11px' }}>
-               All 7 hospital driving distances dynamically calibrated
+            <span style={{ color: '#059669', fontWeight: 600, fontSize: '11px' }}>
+              ✓ Road distances calibrated
             </span>
           </div>
 
@@ -737,11 +730,11 @@ export default function HospitalsPage({
                 <div>
                   <h3 className="banner-title">{h.name}</h3>
                   <div className="banner-subtitle">
-                    {h.bestBadge ? `Specialist Focus: ${h.bestBadge}` : 'Verified Healthcare Facility'}
+                    {h.bestBadge || 'Verified Facility'}
                   </div>
                 </div>
 
-                {/* Overlapping Circular Facility Avatar */}
+                {/* Overlapping Facility Avatar */}
                 <div className="classroom-card-avatar">
                   <Building2 size={22} color="var(--primary-blue)" />
                 </div>
@@ -749,11 +742,11 @@ export default function HospitalsPage({
 
               {/* Clean Scannable Card Body */}
               <div className="classroom-card-body">
-                {/* Proximity & Real GPS Distance */}
+                {/* Proximity & Distance */}
                 <div className="classroom-meta-row">
                   <MapPin size={16} color="var(--primary-blue)" />
                   <span style={{ fontWeight: 500, fontSize: '13px' }}>
-                    {h.address.split(',')[0]} • <strong>{h.distance_km ? `${h.distance_km} km` : '1.8 km'}</strong> from {activeLocation.name.split(',')[0]}
+                    {h.address.split(',')[0]} • <strong>{h.distance_km ? `${h.distance_km} km` : '1.8 km'}</strong> away
                   </span>
                 </div>
 

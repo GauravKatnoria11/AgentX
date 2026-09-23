@@ -36,7 +36,7 @@
   height: 38px;
   background: var(--primary-blue);
   color: white;
-  border-radius: 10px;
+  border-radius: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -65,7 +65,7 @@
   align-items: center;
   gap: 12px;
   padding: 10px 16px;
-  border-radius: 10px;
+  border-radius: 3px;
   color: var(--text-body);
   font-size: 13.5px;
   font-weight: 500;
@@ -162,7 +162,7 @@
   align-items: center;
   background: #f1f3f4;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: 3px;
   padding: 9px 16px;
   width: 320px;
   transition: all 0.2s ease;
@@ -191,7 +191,7 @@
 .icon-btn {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -208,7 +208,7 @@
 .user-avatar-circle {
   width: 36px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: 3px;
   background: var(--primary-blue);
   color: #ffffff;
   display: flex;
@@ -243,7 +243,7 @@
 .card {
   background: #ffffff;
   border: 1px solid var(--border-subtle);
-  border-radius: 10px;
+  border-radius: 3px;
   box-shadow: var(--shadow-sm);
   transition: all 0.2s ease;
 }
@@ -258,7 +258,7 @@
   font-weight: 600;
   font-size: 13px;
   padding: 9px 18px;
-  border-radius: 10px;
+  border-radius: 3px;
   border: 1px solid transparent;
   display: inline-flex;
   align-items: center;
@@ -291,7 +291,7 @@
   font-weight: 600;
   font-size: 13px;
   padding: 8px 16px;
-  border-radius: 10px;
+  border-radius: 3px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -314,7 +314,7 @@
   font-weight: 600;
   font-size: 13px;
   padding: 9px 18px;
-  border-radius: 10px;
+  border-radius: 3px;
   border: 1px solid transparent;
   display: inline-flex;
   align-items: center;
@@ -341,7 +341,7 @@ input[type="number"],
 select,
 textarea {
   font-family: var(--font-family);
-  border-radius: 10px;
+  border-radius: 3px;
   border: 1px solid var(--border-subtle);
   padding: 10px 14px;
   font-size: 13px;
@@ -366,7 +366,7 @@ textarea:focus {
 .classroom-stream-banner {
   background: #ffffff;
   border: 1px solid var(--border-subtle);
-  border-radius: 10px;
+  border-radius: 3px;
   padding: 20px 26px;
   margin-bottom: 24px;
   display: flex;
@@ -386,7 +386,7 @@ textarea:focus {
 .classroom-stream-icon {
   width: 44px;
   height: 44px;
-  border-radius: 10px;
+  border-radius: 3px;
   background: var(--primary-blue-light);
   color: var(--primary-blue);
   display: flex;
@@ -411,7 +411,7 @@ textarea:focus {
 .classroom-card {
   background: #ffffff;
   border: 1px solid var(--border-subtle);
-  border-radius: 10px;
+  border-radius: 3px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -435,7 +435,7 @@ textarea:focus {
   flex-direction: column;
   justify-content: space-between;
   cursor: pointer;
-  border-radius: 10px 10px 0 0;
+  border-radius: 3px 3px 0 0;
 }
 
 /* Thematic Clinical Gradients */
@@ -473,7 +473,7 @@ textarea:focus {
   font-size: 11px;
   font-weight: 600;
   padding: 3px 8px;
-  border-radius: 10px;
+  border-radius: 3px;
   background: rgba(255, 255, 255, 0.22);
   backdrop-filter: blur(4px);
   color: #ffffff;
@@ -484,7 +484,7 @@ textarea:focus {
   font-size: 12px;
   font-weight: 700;
   padding: 3px 8px;
-  border-radius: 10px;
+  border-radius: 3px;
   background: rgba(0, 0, 0, 0.25);
   color: #ffffff;
   display: flex;
@@ -514,7 +514,7 @@ textarea:focus {
   bottom: -20px;
   width: 44px;
   height: 44px;
-  border-radius: 10px;
+  border-radius: 3px;
   background: #ffffff;
   border: 2px solid #ffffff;
   box-shadow: 0 1px 3px rgba(60, 64, 67, 0.3);
@@ -560,7 +560,7 @@ textarea:focus {
   font-size: 11px;
   font-weight: 500;
   padding: 4px 9px;
-  border-radius: 10px;
+  border-radius: 3px;
   background: #f1f3f4;
   color: var(--text-body);
   display: inline-flex;
@@ -624,7 +624,7 @@ textarea:focus {
   width: 100%;
   max-width: 448px;
   border: 1px solid var(--border-subtle);
-  border-radius: 10px;
+  border-radius: 3px;
   padding: 40px;
   background: #ffffff;
   box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.15);
@@ -668,7 +668,7 @@ textarea:focus {
   width: 100%;
   padding: 12px 14px;
   border: 1px solid var(--border-subtle);
-  border-radius: 10px;
+  border-radius: 3px;
   font-size: 14px;
   color: var(--text-main);
   background: #ffffff;
@@ -684,7 +684,7 @@ textarea:focus {
   width: 100%;
   padding: 10px 16px;
   border: 1px solid var(--border-subtle);
-  border-radius: 10px;
+  border-radius: 3px;
   background: #ffffff;
   color: var(--text-body);
   font-size: 14px;
@@ -739,7 +739,7 @@ textarea:focus {
   font-size: 12px;
   font-weight: 600;
   padding: 4px 10px;
-  border-radius: 10px;
+  border-radius: 3px;
 }
 
 .pill-badge.blue {
@@ -787,7 +787,7 @@ textarea:focus {
 
 .doctor-drawer {
   background: #ffffff;
-  border-radius: 10px;
+  border-radius: 3px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
@@ -813,7 +813,7 @@ textarea:focus {
 .drawer-avatar {
   width: 96px;
   height: 96px;
-  border-radius: 10px;
+  border-radius: 3px;
   object-fit: cover;
   border: 3px solid #ffffff;
   box-shadow: var(--shadow-sm);
@@ -852,7 +852,7 @@ textarea:focus {
   font-size: 12px;
   font-weight: 600;
   padding: 4px 10px;
-  border-radius: 10px;
+  border-radius: 3px;
   background: #f1f5f9;
   color: #334155;
   border: 1px solid #e2e8f0;
@@ -883,7 +883,7 @@ textarea:focus {
 .table-container {
   width: 100%;
   overflow-x: auto;
-  border-radius: 10px;
+  border-radius: 3px;
   border: 1px solid var(--border-subtle);
   background: #ffffff;
 }

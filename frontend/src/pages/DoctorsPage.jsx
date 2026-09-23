@@ -433,7 +433,7 @@ export default function DoctorsPage({
                 <div className="classroom-meta-row">
                   <Award size={16} color="#059669" />
                   <span style={{ fontSize: '13px', color: 'var(--text-body)' }}>
-                    <strong>{doc.experience_years || 10}+ years</strong> clinical practice in Hoshiarpur
+                    <strong>{doc.experience_years || 10}+ years</strong> clinical practice
                   </span>
                 </div>
 
@@ -442,7 +442,6 @@ export default function DoctorsPage({
                   <CreditCard size={16} color="var(--primary-blue)" />
                   <span style={{ fontSize: '13px' }}>
                     Consultation Fee: <strong style={{ color: 'var(--primary-blue)', fontSize: '15px' }}>₹{doc.consultation_fee}</strong>
-                    <span style={{ color: 'var(--text-muted)', fontSize: '11px', marginLeft: '6px' }}>(Hospital OPD)</span>
                   </span>
                 </div>
               </div>

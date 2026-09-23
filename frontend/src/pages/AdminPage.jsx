@@ -145,7 +145,7 @@ export default function AdminPage({ onExitAdmin }) {
             style={{ width: '100%', justifyContent: 'center', marginTop: '12px' }}
             onClick={onExitAdmin}
           >
-            <ArrowLeft size={14} /> Back to Patient Portal
+            <ArrowLeft size={14} /> Back to Carelink
           </button>
         </div>
       </div>
