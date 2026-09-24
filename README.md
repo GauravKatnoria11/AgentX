@@ -107,7 +107,7 @@ Carelink addresses the fragmented healthcare ecosystem by delivering an integrat
 - **Anti-Bot & Abuse Mitigation (hCaptcha)**: Protects appointment booking workflows and administrative portals from automated bot attacks and slot manipulation.
 
 ### 12. 📱 Modern, Fully Responsive Human-Centric UI/UX
-- **Google Workspace Aesthetic**: Clean interface built with modern React 19, Google Workspace/Classroom design tokens, 3px border radii, and accessible high-contrast typography.
+
 - **Universal Multi-Device Responsiveness**: Seamless experience across mobile smartphones, tablets, and desktop workstations—equipped with off-canvas drawer navigation, swipeable category chips, and a fixed 5-tab mobile bottom navigation bar.
 - **Resilient Offline Fallback**: Robust client and backend fallbacks ensure uninterrupted service availability and clinical guidance even during external network disruptions.
 
