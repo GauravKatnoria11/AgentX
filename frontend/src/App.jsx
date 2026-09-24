@@ -252,8 +252,12 @@ function App() {
           onClick={() => handleNavigate('ai-guide')}
           title="Carelink"
         >
-          <div className="brand-icon">
-            <Building2 size={20} />
+          <div className="brand-icon" style={{ overflow: 'hidden', padding: 0 }}>
+            <img
+              src="/favicon.jpeg"
+              alt="Carelink"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '3px', display: 'block' }}
+            />
           </div>
           <span className="brand-title">Carelink</span>
 
