@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  /* Warm neutral canvas and restrained sage accent */
-  --bg-app: #f6f6f4;
+  /* Cool neutral canvas with a restrained slate-blue accent */
+  --bg-app: #f5f7f8;
   --bg-card: #ffffff;
-  --border-subtle: #e7e6e2;
-  --border-focus: #66756e;
+  --border-subtle: #e2e7ea;
+  --border-focus: #3f647c;
 
   /* Primary accent */
-  --primary-blue: #66756e;
-  --primary-blue-hover: #53625b;
-  --primary-blue-light: #edf0ed;
-  --primary-blue-border: #d9dfda;
+  --primary-blue: #3f647c;
+  --primary-blue-hover: #315267;
+  --primary-blue-light: #eaf1f5;
+  --primary-blue-border: #d4e0e7;
 
   --google-red: #d93025;
   --google-red-hover: #b3261e;
@@ -30,10 +30,10 @@
   --google-teal-light: #e0f2f1;
 
   /* Text Tokens */
-  --text-main: #222622;
-  --text-body: #4c514d;
-  --text-muted: #7e837f;
-  --text-light: #a0a49f;
+  --text-main: #222a30;
+  --text-body: #4d5961;
+  --text-muted: #7c878e;
+  --text-light: #9da7ad;
 
   /* Badges */
   --badge-green-bg: #e6f4ea;
