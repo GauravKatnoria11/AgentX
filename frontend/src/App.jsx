@@ -61,11 +61,12 @@ function App() {
   const [headerSearch, setHeaderSearch] = useState('');
   const [doctorToBook, setDoctorToBook] = useState(null);
   const [patientLocation, setPatientLocation] = useState({
-    name: 'Model Town',
-    formatted_address: 'Model Town, Hoshiarpur, Punjab 146001',
+    name: 'Hoshiarpur',
+    formatted_address: 'Hoshiarpur, Punjab, India',
     lat: 31.5312,
     lon: 75.9184,
-    locality: 'Model Town'
+    locality: 'Hoshiarpur',
+    isExactGPS: false
   });
   const [isLocatingHeader, setIsLocatingHeader] = useState(false);
 
@@ -159,11 +160,18 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const formatHospitalRouteQuery = (hospital) => {
+    if (!hospital || typeof hospital === 'string') return hospital || '';
+    return [hospital.name, hospital.address, hospital.city, hospital.state, hospital.postal_code]
+      .filter(Boolean)
+      .join(', ');
+  };
+
   const handleSelectHospitalForRoute = (hospital, originLoc) => {
     if (originLoc) {
       setPatientLocation(originLoc);
     }
-    setRoutePresetDestination(hospital.name);
+    setRoutePresetDestination(formatHospitalRouteQuery(hospital));
     setCurrentPage('maps');
   };
 
@@ -497,8 +505,8 @@ function App() {
                 setDoctorToBook(doc);
                 setCurrentPage('doctors');
               }}
-              onNavigateToRoute={(hospName) => {
-                setRoutePresetDestination(hospName);
+              onNavigateToRoute={(hospital) => {
+                setRoutePresetDestination(formatHospitalRouteQuery(hospital));
                 setCurrentPage('maps');
               }}
             />
@@ -510,8 +518,8 @@ function App() {
           {currentPage === 'emergency' && (
             <EmergencyPage
               patientLocation={patientLocation}
-              onNavigateToRoute={(hospName) => {
-                setRoutePresetDestination(hospName);
+              onNavigateToRoute={(hospital) => {
+                setRoutePresetDestination(formatHospitalRouteQuery(hospital));
                 setCurrentPage('maps');
               }}
             />

@@ -4,7 +4,6 @@ import {
   Building2,
   MapPin,
   Phone,
-  Star,
   ShieldAlert,
   Clock,
   Navigation,
@@ -77,17 +76,15 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
   const mapEmbedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(
     hospital.name + ', ' + hospital.address + ', Hoshiarpur, Punjab'
   )}&t=&z=16&ie=UTF8&iwloc=&output=embed`;
-  const availableIcuBeds = Math.max(0, Number(hospital.available_icu_beds) || 0);
-  const totalBeds = Math.max(0, Number(hospital.total_beds) || 0);
-  const availableIcuBedShare = totalBeds > 0
-    ? Math.min(100, (availableIcuBeds / totalBeds) * 100)
-    : 0;
 
   const directionsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     hospital.name + ', ' + hospital.address + ', Hoshiarpur, Punjab'
   )}`;
 
-  const turnByTurnUrl = `https://www.google.com/maps/dir/?api=1&destination=${hospital.latitude},${hospital.longitude}`;
+  const verifiedAddressQuery = [hospital.name, hospital.address, hospital.city, hospital.state, hospital.postal_code]
+    .filter(Boolean)
+    .join(', ');
+  const turnByTurnUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(verifiedAddressQuery)}`;
 
 
   return (
@@ -116,7 +113,7 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <button
             className="btn-secondary"
-            onClick={() => onNavigateToRoute && onNavigateToRoute(hospital.name)}
+            onClick={() => onNavigateToRoute && onNavigateToRoute(hospital)}
           >
             <Navigation size={15} /> Calculate Route & ETA
           </button>
@@ -149,9 +146,6 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
               {hospital.emergency_available && (
                 <span className="pill-badge red">● 24/7 Trauma Emergency</span>
               )}
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: 800, color: '#eab308' }}>
-                <Star size={15} fill="#eab308" /> {hospital.rating} (Verified Accreditation)
-              </span>
             </div>
 
             <h1 style={{ fontSize: '26px', fontWeight: 800, color: 'var(--text-main)', margin: '4px 0 12px 0' }}>
@@ -171,7 +165,7 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
             </div>
           </div>
 
-          {/* Real-Time Bed Availability Badge Box */}
+          {/* Bed availability needs a live facility data source */}
           <div
             style={{
               background: '#ffffff',
@@ -184,31 +178,13 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
             }}
           >
             <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-              Hospital Bed Status
+              Bed availability
             </div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '6px' }}>
-              <span style={{ fontSize: '32px', fontWeight: 900, color: '#059669' }}>
-                {hospital.available_icu_beds}
-              </span>
-              <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: 600 }}>
-                ICU Beds Available
-              </span>
+            <div style={{ marginTop: '8px', color: 'var(--text-main)', fontSize: '14px', fontWeight: 650 }}>
+              Live facility data unavailable
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
-              Total Bed Capacity: <strong>{hospital.total_beds} beds</strong>
-            </div>
-            <div className="hospital-bed-share">
-              <div
-                style={{
-                  width: `${availableIcuBedShare}%`,
-                  height: '100%',
-                  background: '#74877a',
-                  borderRadius: '999px'
-                }}
-              />
-            </div>
-            <div className="hospital-bed-share-caption">
-              {availableIcuBedShare.toFixed(1)}% of total bed capacity
+              Contact the hospital to confirm current capacity.
             </div>
           </div>
         </div>
@@ -584,10 +560,7 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px', flexWrap: 'wrap', gap: '16px' }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                <span className="pill-badge blue"> Verified Google Maps Location</span>
-                <span style={{ fontSize: '12px', background: '#f1f5f9', padding: '3px 8px', borderRadius: '10px', fontWeight: 700, color: '#334155' }}>
-                  GPS: {hospital.latitude}° N, {hospital.longitude}° E
-                </span>
+                <span className="pill-badge blue">Search this address in Google Maps</span>
               </div>
               <h3 style={{ fontSize: '20px', fontWeight: 800, margin: '6px 0 4px 0', color: 'var(--text-main)' }}>
                 {hospital.name}
@@ -618,7 +591,7 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
               </a>
               <button
                 className="btn-secondary"
-                onClick={() => onNavigateToRoute && onNavigateToRoute(hospital.name)}
+                onClick={() => onNavigateToRoute && onNavigateToRoute(hospital)}
                 style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
               >
                 Route from My Location

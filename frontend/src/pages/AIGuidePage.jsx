@@ -213,7 +213,7 @@ export default function AIGuidePage({
           <div className="classroom-meta-row">
             <MapPin size={16} color="var(--primary-blue)" />
             <span style={{ fontWeight: 500, fontSize: '13px' }}>
-              {h.address?.split(',')[0]} • <strong>{h.distance_km ? `${h.distance_km} km` : '1.8 km'}</strong> away
+              {h.address}
             </span>
           </div>
 
@@ -221,7 +221,7 @@ export default function AIGuidePage({
           <div className="classroom-meta-row">
             <Bed size={16} color="#188038" />
             <span style={{ color: '#137333', fontWeight: 600, fontSize: '13px' }}>
-              {h.available_icu_beds ?? h.icu_beds ?? 0} ICU Beds Available
+              Live bed availability unavailable
             </span>
             {h.emergency_available && (
               <span className="classroom-chip red" style={{ marginLeft: 'auto', borderRadius: '3px' }}>
@@ -296,7 +296,7 @@ export default function AIGuidePage({
               if (onSelectHospitalForRoute) {
                 onSelectHospitalForRoute(h, patientLocation);
               } else if (onNavigateToRoute) {
-                onNavigateToRoute(h.name);
+                onNavigateToRoute(h);
               }
             }}
             title="Route & Directions"

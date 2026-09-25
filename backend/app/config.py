@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     GEMINI_CHAT_MODEL: str = Field(default="gemini-3.8-flash", description="Gemini model used by the FAQ assistant")
     GOOGLE_MAPS_API_KEY: str = Field(default="", description="Google Maps API Key")
     GOOGLE_MAP_API_KEY: str = Field(default="", description="Alternative alias for Google Maps API Key")
+    NOMINATIM_BASE_URL: str = Field(default="https://nominatim.openstreetmap.org", description="Geocoding provider base URL")
+    OSRM_BASE_URL: str = Field(default="https://router.project-osrm.org", description="Routing provider base URL")
 
     # Resend Email Service for Appointment Reminders
     RESEND_API_KEY: str = Field(default="re_JgXyeiYh_AGbctPreY5vkLvoeCjAWTRbt", description="Resend API Key")

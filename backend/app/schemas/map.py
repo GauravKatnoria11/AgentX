@@ -18,6 +18,12 @@ class RouteResponse(BaseModel):
     duration_text: str
     steps: List[RouteStep] = []
     polyline: Optional[str] = None
+    traffic_aware: bool = False
+    routing_source: Optional[str] = None
+    origin_lat: Optional[float] = None
+    origin_lon: Optional[float] = None
+    destination_lat: Optional[float] = None
+    destination_lon: Optional[float] = None
 
 
 class DistanceMatrixResponse(BaseModel):
@@ -27,6 +33,7 @@ class DistanceMatrixResponse(BaseModel):
     distance_text: str
     duration_minutes: int
     duration_text: str
+    traffic_aware: bool = False
 
 
 class ETAResponse(BaseModel):

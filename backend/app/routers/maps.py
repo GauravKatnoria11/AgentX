@@ -1,5 +1,5 @@
 from typing import Optional, List
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, HTTPException
 from app.schemas.map import (
     RouteResponse,
     DistanceMatrixResponse,
@@ -45,7 +45,10 @@ async def get_route(
     destination: str = Query(..., description="Hospital or clinic address or lat,lon"),
     mode: str = Query("driving", description="Travel mode (driving, walking, transit, bicycling)")
 ):
-    route_data = await map_service.get_route(origin=origin, destination=destination, mode=mode)
+    try:
+        route_data = await map_service.get_route(origin=origin, destination=destination, mode=mode)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     return ApiResponse(
         success=True,
         message="Route calculated successfully",
@@ -59,7 +62,10 @@ async def get_distance(
     destination: str = Query(..., description="Destination hospital"),
     mode: str = Query("driving")
 ):
-    matrix_data = await map_service.get_distance_matrix(origin=origin, destination=destination, mode=mode)
+    try:
+        matrix_data = await map_service.get_distance_matrix(origin=origin, destination=destination, mode=mode)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     return ApiResponse(
         success=True,
         message="Distance calculated successfully",
@@ -73,7 +79,10 @@ async def get_eta(
     destination: str = Query(..., description="Destination medical center"),
     mode: str = Query("driving")
 ):
-    eta_data = await map_service.get_eta(origin=origin, destination=destination, mode=mode)
+    try:
+        eta_data = await map_service.get_eta(origin=origin, destination=destination, mode=mode)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     return ApiResponse(
         success=True,
         message="Estimated arrival time and departure suggestion calculated",

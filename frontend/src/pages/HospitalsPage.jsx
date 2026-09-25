@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Building2,
   MapPin,
@@ -29,7 +29,7 @@ import {
   Landmark,
   Map as MapIcon
 } from 'lucide-react';
-import { fetchHospitals, searchHospitals, searchLocation } from '../api';
+import { fetchHospitals, searchHospitals, searchLocation, fetchRoute } from '../api';
 import { getAccurateGPSLocation } from '../utils/geolocation';
 
 const DEFAULT_HOSHIARPUR_LOCALITIES = [
@@ -100,14 +100,17 @@ export default function HospitalsPage({
   const [isSearchingLocation, setIsSearchingLocation] = useState(false);
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
   const [showMapPreview, setShowMapPreview] = useState(false);
+  const [isMapLoading, setIsMapLoading] = useState(false);
   const [activeMapHospitalId, setActiveMapHospitalId] = useState(null);
   const dropdownRef = useRef(null);
 
 
   const [feeFilter, setFeeFilter] = useState('all'); // 'all' | 'subsidized' | 'mid' | 'premium'
-  const [sortBy, setSortBy] = useState('best'); // 'best' | 'fee_asc' | 'distance' | 'rating'
+  const [sortBy, setSortBy] = useState('distance'); // 'distance' | 'best' | 'fee_asc' | 'rating'
   const [emergencyOnly, setEmergencyOnly] = useState(false);
   const [selectedScheme, setSelectedScheme] = useState('all');
+  const [isCalculatingNearby, setIsCalculatingNearby] = useState(false);
+  const nearbyRequestRef = useRef(0);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -129,7 +132,7 @@ export default function HospitalsPage({
 
   useEffect(() => {
     loadHospitals();
-  }, [emergencyOnly, selectedDisease, selectedScheme, activeLocation, feeFilter, sortBy]);
+  }, [emergencyOnly, selectedDisease, selectedScheme, activeLocation, feeFilter]);
 
   // Debounced Google Maps Location Search for any Hoshiarpur location
   useEffect(() => {
@@ -160,9 +163,8 @@ export default function HospitalsPage({
     const newLoc = {
       name: item.name,
       formatted_address: item.formatted_address,
-      lat: item.latitude,
-      lon: item.longitude,
-      locality: item.locality
+      locality: item.locality,
+      isExactGPS: false
     };
     setActiveLocation(newLoc);
     setLocationSearchInput('');
@@ -190,13 +192,20 @@ export default function HospitalsPage({
   };
 
   const loadHospitals = async () => {
+    const requestId = ++nearbyRequestRef.current;
     setLoading(true);
+    setIsCalculatingNearby(false);
     try {
       const params = {
         emergency_only: emergencyOnly,
-        user_lat: activeLocation.lat,
-        user_lon: activeLocation.lon
       };
+      // The directory currently contains this verified city only. Keep the
+      // nearby list scoped to Hoshiarpur so records from elsewhere don't rank
+      // as local hospitals just because their city field is stale.
+      const selectedArea = `${activeLocation?.name || ''} ${activeLocation?.formatted_address || ''}`.toLowerCase();
+      if (!selectedArea || selectedArea.includes('hoshiarpur') || selectedArea.includes('model town') || selectedArea.includes('civil lines')) {
+        params.city = 'Hoshiarpur';
+      }
       if (selectedDisease !== 'all') {
         const filterItem = DISEASE_FILTERS.find((f) => f.id === selectedDisease);
         if (filterItem?.query) {
@@ -231,45 +240,7 @@ export default function HospitalsPage({
           items = items.filter(h => (h.consultation_fee || 100) > 450);
         }
 
-        // Calculate Multi-Factor "Best Match Score"
-        items = items.map(h => {
-          const fee = h.consultation_fee || 350;
-          const dist = h.distance_km || 3.0;
-
-          const feeScore = Math.max(30, 100 - (fee / 10));
-          const distScore = Math.max(20, 100 - (dist * 7));
-          const ratingScore = ((h.rating || 4.5) / 5.0) * 100;
-
-          const compositeScore = Math.round((distScore * 0.40) + (feeScore * 0.35) + (ratingScore * 0.25));
-
-          let bestBadge = null;
-          if (fee <= 50) {
-            bestBadge = 'Subsidized Fee';
-          } else if (dist <= 2.0 && h.rating >= 4.8) {
-            bestBadge = 'Top Rated';
-          } else if (compositeScore >= 85) {
-            bestBadge = 'Best Match';
-          }
-
-          return {
-            ...h,
-            bestScore: compositeScore,
-            bestBadge
-          };
-        });
-
-        // Apply Sorting
-        if (sortBy === 'best') {
-          items.sort((a, b) => (b.bestScore || 0) - (a.bestScore || 0));
-        } else if (sortBy === 'fee_asc') {
-          items.sort((a, b) => (a.consultation_fee || 0) - (b.consultation_fee || 0));
-        } else if (sortBy === 'distance') {
-          items.sort((a, b) => (a.distance_km || 999) - (b.distance_km || 999));
-        } else if (sortBy === 'rating') {
-          items.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-        }
-
-        setHospitals(items);
+        await calculateNearbyDistances(items, requestId);
       }
     } catch (e) {
       console.error('Error fetching hospitals:', e);
@@ -284,11 +255,12 @@ export default function HospitalsPage({
       loadHospitals();
       return;
     }
+    const requestId = ++nearbyRequestRef.current;
     setLoading(true);
     try {
-      const res = await searchHospitals(searchQuery, activeLocation.lat, activeLocation.lon);
+      const res = await searchHospitals(searchQuery);
       if (res.success && res.data) {
-        setHospitals(res.data);
+        await calculateNearbyDistances(res.data, requestId);
       }
     } catch (e) {
       console.error(e);
@@ -297,7 +269,78 @@ export default function HospitalsPage({
     }
   };
 
-  const patientMapUrl = `https://maps.google.com/maps?q=${activeLocation.lat},${activeLocation.lon}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+  const calculateNearbyDistances = async (items, requestId) => {
+    if (requestId !== nearbyRequestRef.current) return;
+    const origin = activeLocation?.isExactGPS && Number.isFinite(activeLocation.lat) && Number.isFinite(activeLocation.lon)
+      ? `${activeLocation.lat},${activeLocation.lon}`
+      : activeLocation?.formatted_address || activeLocation?.name || 'Hoshiarpur, Punjab, India';
+  const routeDestination = (hospital) => [
+      hospital.name,
+      hospital.id === 'hosp-1' || hospital.id === 'hosp-hoshiarpur-1' ? '' : hospital.address,
+      hospital.city,
+      hospital.state,
+      hospital.postal_code,
+      'India'
+    ].filter(Boolean).join(', ');
+
+    setHospitals(items.map((hospital) => ({ ...hospital, distance_km: null, distance_text: null, drive_duration_text: null, distance_status: 'calculating' })));
+    setIsCalculatingNearby(true);
+    const routes = await Promise.all(items.map(async (hospital) => {
+      try {
+        const result = await fetchRoute(origin, routeDestination(hospital), 'driving');
+        if (!result?.success || !result.data) return null;
+        return {
+          distance_km: result.data.distance_km,
+          distance_text: result.data.distance_text,
+          drive_duration_text: result.data.duration_text,
+          traffic_aware: result.data.traffic_aware,
+          distance_source: result.data.routing_source,
+          distance_status: 'ready'
+        };
+      } catch (error) {
+        console.warn(`Could not calculate route to ${hospital.name}:`, error);
+        return null;
+      }
+    }));
+
+    if (requestId !== nearbyRequestRef.current) return;
+    setHospitals(items.map((hospital, index) => ({
+      ...hospital,
+      ...(routes[index] || { distance_status: 'unavailable' })
+    })));
+    setIsCalculatingNearby(false);
+  };
+
+  const sortedHospitals = useMemo(() => {
+    const items = [...hospitals];
+    if (sortBy === 'distance') {
+      items.sort((a, b) => (Number.isFinite(a.distance_km) ? a.distance_km : Infinity) - (Number.isFinite(b.distance_km) ? b.distance_km : Infinity));
+    } else if (sortBy === 'fee_asc') {
+      items.sort((a, b) => (a.consultation_fee ?? Infinity) - (b.consultation_fee ?? Infinity));
+    } else if (sortBy === 'rating') {
+      items.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    } else if (sortBy === 'best') {
+      const score = (hospital) => {
+        const feeScore = Math.max(30, 100 - ((hospital.consultation_fee ?? 350) / 10));
+        const roadDistanceScore = Number.isFinite(hospital.distance_km)
+          ? Math.max(20, 100 - (hospital.distance_km * 7))
+          : 0;
+        const ratingScore = ((hospital.rating ?? 0) / 5) * 100;
+        return roadDistanceScore * 0.4 + feeScore * 0.35 + ratingScore * 0.25;
+      };
+      items.sort((a, b) => score(b) - score(a));
+    }
+    return items;
+  }, [hospitals, sortBy]);
+
+  const mapLocation = activeLocation?.isExactGPS && Number.isFinite(activeLocation.lat) && Number.isFinite(activeLocation.lon)
+    ? `${activeLocation.lat},${activeLocation.lon}`
+    : activeLocation?.formatted_address || activeLocation?.name || 'Hoshiarpur, Punjab, India';
+  const patientMapUrl = `https://maps.google.com/maps?q=${encodeURIComponent(mapLocation)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+
+  useEffect(() => {
+    if (showMapPreview) setIsMapLoading(true);
+  }, [mapLocation, showMapPreview]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -540,25 +583,32 @@ export default function HospitalsPage({
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginTop: '10px', padding: '10px 14px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '3px', fontSize: '13px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <MapPin size={15} color="#2563eb" />
-              <span style={{ color: '#1e40af', fontWeight: 600 }}>Calculating distances from:</span>
+              <span style={{ color: '#1e40af', fontWeight: 600 }}>Driving distances from:</span>
               <strong style={{ color: '#1e3a5f', fontSize: '14px' }}>{activeLocation.name}</strong>
             </div>
-            <span style={{ color: '#059669', fontWeight: 700, fontSize: '12px', background: '#ecfdf5', padding: '3px 10px', borderRadius: '3px', border: '1px solid #a7f3d0' }}>
-              ✓ Road distances calibrated
+            <span style={{ color: isCalculatingNearby ? '#475569' : '#166534', fontWeight: 700, fontSize: '12px', background: isCalculatingNearby ? '#f8fafc' : '#ecfdf5', padding: '3px 10px', borderRadius: '3px', border: '1px solid #a7f3d0' }}>
+              {isCalculatingNearby ? 'Calculating road routes…' : 'Road routes updated'}
             </span>
           </div>
 
           {/* Google Maps Embed Preview of Patient Location */}
           {showMapPreview && (
-            <div style={{ marginTop: '14px', borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--border-subtle)', height: '220px' }}>
+            <div className="map-location-frame" style={{ marginTop: '14px', height: '220px' }}>
               <iframe
                 title="Patient Location Google Map"
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}
                 loading="lazy"
+                onLoad={() => setIsMapLoading(false)}
                 src={patientMapUrl}
               />
+              {isMapLoading && (
+                <div className="map-location-loading" role="status" aria-live="polite">
+                  <span className="map-location-spinner" aria-hidden="true" />
+                  <span>Updating map…</span>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -612,8 +662,8 @@ export default function HospitalsPage({
                 cursor: 'pointer'
               }}
             >
-              <option value="best">Best Match (Specialty, Proximity & Fee)</option>
-              <option value="distance">Closest by Distance First</option>
+              <option value="distance">Nearest by driving distance</option>
+              <option value="best">Best Match (Distance, Rating & Fee)</option>
               <option value="fee_asc">Lowest Consultation Fee First</option>
               <option value="rating">Highest Patient Rating First</option>
             </select>
@@ -692,7 +742,7 @@ export default function HospitalsPage({
       {/* Hospitals Result Cards */}
       {loading ? (
         <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-muted)' }}>
-          Computing best hospital rankings across Hoshiarpur for {activeLocation.name}...
+          {isCalculatingNearby ? 'Calculating driving routes near ' : 'Finding hospitals near '}{activeLocation.name}...
         </div>
       ) : hospitals.length === 0 ? (
         <div className="card" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
@@ -700,7 +750,7 @@ export default function HospitalsPage({
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '22px' }}>
-          {hospitals.map((h, index) => (
+          {sortedHospitals.map((h, index) => (
             <div
               key={h.id}
               className="classroom-card hospital-rank-change"
@@ -739,15 +789,26 @@ export default function HospitalsPage({
                 <div className="classroom-meta-row">
                   <MapPin size={16} color="var(--primary-blue)" />
                   <span style={{ fontWeight: 500, fontSize: '13px' }}>
-                    {h.address.split(',')[0]} • <strong>{h.distance_km ? `${h.distance_km} km` : '1.8 km'}</strong> away
+                    {h.address}
+                  </span>
+                </div>
+
+                <div className="classroom-meta-row">
+                  <Car size={16} color="var(--primary-blue)" />
+                  <span style={{ color: 'var(--text-muted)', fontWeight: 600, fontSize: '12px' }}>
+                    {h.distance_status === 'calculating'
+                      ? 'Calculating drive distance…'
+                      : Number.isFinite(h.distance_km)
+                        ? `${h.distance_text} · ${h.drive_duration_text} drive${h.traffic_aware ? ' · traffic-aware' : ' · no live traffic data'}`
+                        : 'Driving distance unavailable for this address'}
                   </span>
                 </div>
 
                 {/* ICU Bed Capacity & Emergency Service */}
                 <div className="classroom-meta-row">
                   <Bed size={16} color="#188038" />
-                  <span style={{ color: '#137333', fontWeight: 600, fontSize: '13px' }}>
-                    {h.available_icu_beds} ICU Beds Available
+                  <span style={{ color: 'var(--text-muted)', fontWeight: 600, fontSize: '12px' }}>
+                    Live bed availability unavailable
                   </span>
                   {h.emergency_available && (
                     <span className="classroom-chip red" style={{ marginLeft: 'auto' }}>

@@ -45,12 +45,15 @@ async def lifespan(app: FastAPI):
             logger.info("Loaded application data from Supabase: %s", hydrated)
     except Exception as e:
         logger.warning(f"Supabase data hydration skipped: {e}")
-    try:
-        from app.services.email_service import email_reminder_service
-        res = email_reminder_service.trigger_auto_reminders_for_today()
-        logger.info(f"Automatic appointment date reminder scan completed: {res.get('total_reminders_triggered', 0)} reminders sent.")
-    except Exception as e:
-        logger.warning(f"Initial appointment reminder trigger check: {e}")
+    if settings.APP_ENV.lower() == "production":
+        try:
+            from app.services.email_service import email_reminder_service
+            res = email_reminder_service.trigger_auto_reminders_for_today()
+            logger.info(f"Automatic appointment date reminder scan completed: {res.get('total_reminders_triggered', 0)} reminders sent.")
+        except Exception as e:
+            logger.warning(f"Initial appointment reminder trigger check: {e}")
+    else:
+        logger.info("Skipping automatic appointment reminders outside production.")
     yield
     logger.info("Shutting down Carelink monorepo backend...")
 

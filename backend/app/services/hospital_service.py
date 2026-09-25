@@ -3,6 +3,45 @@ from typing import List, Dict, Any, Optional
 from app.supabase import MOCK_DATA
 
 
+# Corrections for directory records whose saved street text resolves to a
+# different city. These are response-time overrides only; they do not write to
+# the connected directory database.
+FACILITY_ADDRESS_OVERRIDES = {
+    "hosp-1": {
+        "name": "Civil Hospital Hoshiarpur",
+        "address": "Civil Hospital, Hoshiarpur",
+        "city": "Hoshiarpur",
+        "state": "Punjab",
+        "postal_code": "146001",
+    },
+    "hosp-hoshiarpur-1": {
+        "name": "Civil Hospital Hoshiarpur",
+        "address": "Civil Hospital, Hoshiarpur",
+        "city": "Hoshiarpur",
+        "state": "Punjab",
+        "postal_code": "146001",
+    },
+    "hosp-hoshiarpur-6": {
+        "name": "Lifeline Heart Centre",
+        "address": "37 Cool Road, Waryam Nagar, Jyoti Nagar",
+        "city": "Jalandhar",
+        "state": "Punjab",
+        "postal_code": "144003",
+        "website": "https://lifelineheart.in",
+    },
+}
+
+
+def _public_hospital(hospital: Dict[str, Any]) -> Dict[str, Any]:
+    public_hospital = dict(hospital)
+    public_hospital.update(FACILITY_ADDRESS_OVERRIDES.get(str(hospital.get("id")), {}))
+    # Stored coordinates are not verified and must never be presented as a
+    # calculated proximity. The route service geocodes the corrected address.
+    public_hospital["latitude"] = None
+    public_hospital["longitude"] = None
+    return public_hospital
+
+
 def calculate_haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     R = 6371.0  # Earth radius in kilometers
     dlat = math.radians(lat2 - lat1)
@@ -32,7 +71,8 @@ class HospitalService:
         filtered = []
 
         for h in hospitals:
-            if city and city.lower() not in h["city"].lower() and city.lower() != "springfield":
+            effective_city = FACILITY_ADDRESS_OVERRIDES.get(str(h.get("id")), {}).get("city", h["city"])
+            if city and city.lower() not in effective_city.lower() and city.lower() != "springfield":
                 continue
             if hospital_type and hospital_type.lower() not in h["type"].lower():
                 continue
@@ -54,15 +94,7 @@ class HospitalService:
                 if not matched_scheme:
                     continue
 
-            h_dict = dict(h)
-            if user_lat is not None and user_lon is not None:
-                h_dict["distance_km"] = calculate_haversine_distance(
-                    user_lat, user_lon, h["latitude"], h["longitude"]
-                )
-            filtered.append(h_dict)
-
-        if user_lat is not None and user_lon is not None:
-            filtered.sort(key=lambda x: x.get("distance_km", 9999))
+            filtered.append(_public_hospital(h))
 
         total = len(filtered)
         start = (page - 1) * limit
@@ -84,7 +116,7 @@ class HospitalService:
 
         if not hospital:
             return None
-        res = dict(hospital)
+        res = _public_hospital(hospital)
         # departments & doctors matching either ID
         dept_ids = {str(res["id"]), "hosp-1", "hosp-hoshiarpur-1"} if res["id"] in ("hosp-1", "hosp-hoshiarpur-1") else {str(res["id"])}
         res["departments"] = [d for d in MOCK_DATA["departments"] if str(d["hospital_id"]) in dept_ids]
@@ -118,13 +150,7 @@ class HospitalService:
                 (query_lower == "general" and "hospital" in h["name"].lower())
             )
             if h_match:
-                item = dict(h)
-                if user_lat is not None and user_lon is not None:
-                    item["distance_km"] = calculate_haversine_distance(user_lat, user_lon, h["latitude"], h["longitude"])
-                results.append(item)
-
-        if user_lat is not None and user_lon is not None:
-            results.sort(key=lambda x: x.get("distance_km", 9999))
+                results.append(_public_hospital(h))
 
         return results
 

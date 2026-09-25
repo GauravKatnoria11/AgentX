@@ -9,8 +9,8 @@ class HospitalBase(BaseModel):
     city: str
     state: str
     postal_code: Optional[str] = None
-    latitude: float
-    longitude: float
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     phone: str
     emergency_hotline: Optional[str] = None
     email: Optional[str] = None

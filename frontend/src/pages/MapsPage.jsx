@@ -16,7 +16,7 @@ import {
   Crosshair,
   Search
 } from 'lucide-react';
-import { fetchRoute, fetchETA, searchLocation } from '../api';
+import { fetchRoute, searchLocation } from '../api';
 import { getAccurateGPSLocation } from '../utils/geolocation';
 
 const HOSHIARPUR_ORIGINS = [
@@ -33,14 +33,16 @@ const HOSHIARPUR_ORIGINS = [
 ];
 
 const HOSHIARPUR_HOSPITALS = [
-  { name: 'Civil Hospital Hoshiarpur (General Hospital)', address: 'Court Road, Civil Lines, Hoshiarpur' },
-  { name: 'Ivy Hospital Hoshiarpur', address: 'Chandigarh-Hoshiarpur Highway, Near Rama Mandi Bypass' },
-  { name: 'Vasal Hospital', address: 'Mall Road, Model Town, Hoshiarpur' },
-  { name: 'Saini Hospital', address: 'Sutheri Road, Hoshiarpur' },
-  { name: 'Apex Hospital & Critical Care', address: 'Sutheri Road, Near Central Bus Stand, Hoshiarpur' },
-  { name: 'Lifeline Heart Hospital', address: 'Phagwara Road, Opposite Session Courts, Hoshiarpur' },
-  { name: 'Grover Eye Hospital & Laser Centre', address: 'Model Town Road, Near Sessions Chowk, Hoshiarpur' }
+  { name: 'Civil Hospital Hoshiarpur (General Hospital)', address: 'Jalandhar Road, Hoshiarpur, Punjab' },
+  { name: 'IVY Hospital', address: 'Opposite St. Joseph School, Chandigarh Road, Hoshiarpur' },
+  { name: 'K.D.M. Hospital', address: 'Near Tanda Bye Pass Chowk, Hoshiarpur' },
+  { name: 'St. Joseph Hospital', address: 'Ram Colony Camp, Hoshiarpur' },
+  { name: 'New Saini Hospital', address: '11 Fatehgarh Road, Hoshiarpur' },
+  { name: 'Central Hospital', address: 'Sutheri Road, Hoshiarpur' },
+  { name: 'Bariana Eye Hospital', address: '1-R Model Town, Hoshiarpur' }
 ];
+
+const hospitalRouteQuery = (hospital) => `${hospital.name}, ${hospital.address}, Punjab, India`;
 
 export default function MapsPage({
   destinationPreset,
@@ -52,7 +54,9 @@ export default function MapsPage({
     originPreset || patientLocation?.formatted_address || patientLocation?.name || 'Model Town, Hoshiarpur, Punjab'
   );
   const [originCoords, setOriginCoords] = useState(
-    patientLocation?.lat && patientLocation?.lon ? { lat: patientLocation.lat, lon: patientLocation.lon } : null
+    patientLocation?.isExactGPS && patientLocation?.lat && patientLocation?.lon
+      ? { lat: patientLocation.lat, lon: patientLocation.lon }
+      : null
   );
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsStatusMsg, setGpsStatusMsg] = useState('');
@@ -60,12 +64,14 @@ export default function MapsPage({
     patientLocation?.isExactGPS ? `±${patientLocation.accuracy || 8}m (${patientLocation.accuracy_label || 'GPS Lock'})` : null
   );
   const [destination, setDestination] = useState(
-    destinationPreset || 'Civil Hospital Hoshiarpur (General Hospital)'
+    destinationPreset || hospitalRouteQuery(HOSHIARPUR_HOSPITALS[0])
   );
   const [mode, setMode] = useState('driving');
   const [routeData, setRouteData] = useState(null);
   const [etaData, setEtaData] = useState(null);
+  const [routeError, setRouteError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isMapLoading, setIsMapLoading] = useState(true);
 
   // Live Location Search for Origin
   const [originSuggestions, setOriginSuggestions] = useState([]);
@@ -77,6 +83,8 @@ export default function MapsPage({
   useEffect(() => {
     if (destinationPreset) {
       setDestination(destinationPreset);
+      setRouteData(null);
+      setEtaData(null);
     }
   }, [destinationPreset]);
 
@@ -84,8 +92,18 @@ export default function MapsPage({
   useEffect(() => {
     if (originPreset) {
       setOrigin(originPreset);
+      setOriginCoords(null);
+      setRouteData(null);
+      setEtaData(null);
     } else if (patientLocation?.formatted_address || patientLocation?.name) {
       setOrigin(patientLocation.formatted_address || patientLocation.name);
+      setOriginCoords(
+        patientLocation.isExactGPS && patientLocation.lat && patientLocation.lon
+          ? { lat: patientLocation.lat, lon: patientLocation.lon }
+          : null
+      );
+      setRouteData(null);
+      setEtaData(null);
     }
   }, [originPreset, patientLocation]);
 
@@ -100,23 +118,29 @@ export default function MapsPage({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Calculate route whenever origin, destination or mode changes
-  useEffect(() => {
-    calculateNavigation();
-  }, [origin, destination, mode]);
-
   const calculateNavigation = async () => {
     if (!origin || !destination) return;
     setLoading(true);
+    setRouteError('');
+    setRouteData(null);
+    setEtaData(null);
     try {
-      const [routeRes, etaRes] = await Promise.all([
-        fetchRoute(origin, destination, mode),
-        fetchETA(origin, destination, mode)
-      ]);
-      if (routeRes?.success) setRouteData(routeRes.data);
-      if (etaRes?.success) setEtaData(etaRes.data);
+      const routeOrigin = originCoords ? `${originCoords.lat},${originCoords.lon}` : origin;
+      const routeRes = await fetchRoute(routeOrigin, destination, mode);
+      if (!routeRes?.success || !routeRes.data) {
+        throw new Error(routeRes?.detail || routeRes?.message || 'Could not calculate a route. Check the location and try again.');
+      }
+      setRouteData(routeRes.data);
+      const departure = new Date();
+      const arrival = new Date(departure.getTime() + routeRes.data.duration_minutes * 60000);
+      const timeFormat = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' });
+      setEtaData({
+        suggested_departure_time: timeFormat.format(departure),
+        eta_timestamp: timeFormat.format(arrival)
+      });
     } catch (e) {
       console.error('Route calculation error:', e);
+      setRouteError(e.message || 'Could not calculate a route. Check the location and try again.');
     } finally {
       setLoading(false);
     }
@@ -124,6 +148,10 @@ export default function MapsPage({
 
   const handleOriginChange = async (val) => {
     setOrigin(val);
+    setOriginCoords(null);
+    setGpsAccuracyInfo(null);
+    setRouteData(null);
+    setEtaData(null);
     if (val.trim().length >= 2) {
       setIsSearchingOrigin(true);
       try {
@@ -145,18 +173,12 @@ export default function MapsPage({
 
   const handleSelectOrigin = (item) => {
     setOrigin(item.formatted_address || item.name);
-    setOriginCoords({ lat: item.latitude, lon: item.longitude });
+    // Search suggestions may be neighborhood-level only; geocode the selected address on route submit.
+    setOriginCoords(null);
     setGpsAccuracyInfo(null);
+    setRouteData(null);
+    setEtaData(null);
     setShowOriginDropdown(false);
-    if (onSelectPatientLocation) {
-      onSelectPatientLocation({
-        name: item.name,
-        formatted_address: item.formatted_address,
-        lat: item.latitude,
-        lon: item.longitude,
-        locality: item.locality
-      });
-    }
   };
 
   const handleUseGPS = async () => {
@@ -166,6 +188,8 @@ export default function MapsPage({
       const loc = await getAccurateGPSLocation((msg) => setGpsStatusMsg(msg));
       setOrigin(loc.formatted_address || loc.name);
       setOriginCoords({ lat: loc.lat, lon: loc.lon });
+      setRouteData(null);
+      setEtaData(null);
       setGpsAccuracyInfo(`±${loc.accuracy}m (${loc.accuracy_label})`);
       if (onSelectPatientLocation) {
         onSelectPatientLocation(loc);
@@ -184,19 +208,27 @@ export default function MapsPage({
     calculateNavigation();
   };
 
-  // When exact GPS coordinates are available, pass `${lat},${lon}` to Google Maps for exact meter-level pinning!
-  const originParam = originCoords ? `${originCoords.lat},${originCoords.lon}` : origin;
+  // Use coordinates only for a fresh, exact GPS fix; typed addresses resolve when the route is requested.
+  const originParam = routeData?.origin_lat != null && routeData?.origin_lon != null
+    ? `${routeData.origin_lat},${routeData.origin_lon}`
+    : originCoords ? `${originCoords.lat},${originCoords.lon}` : origin;
+  const destinationParam = routeData?.destination_lat != null && routeData?.destination_lon != null
+    ? `${routeData.destination_lat},${routeData.destination_lon}`
+    : destination;
 
-  // REAL WORKING GOOGLE MAPS EMBED DIRECTIONS URL
-  // Uses Google Maps embed directions with zero billing/quota restrictions!
+  // Google Maps preview starts from the same provider-resolved endpoints.
   const googleMapsEmbedUrl = `https://maps.google.com/maps?saddr=${encodeURIComponent(
     originParam
-  )}&daddr=${encodeURIComponent(destination)}&output=embed`;
+  )}&daddr=${encodeURIComponent(destinationParam)}&output=embed`;
+
+  useEffect(() => {
+    setIsMapLoading(true);
+  }, [googleMapsEmbedUrl]);
 
   // Direct link to launch Google Maps Turn-by-Turn GPS App
   const googleMapsExternalUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(
     originParam
-  )}&destination=${encodeURIComponent(destination)}&travelmode=${mode}`;
+  )}&destination=${encodeURIComponent(destinationParam)}&travelmode=${mode}`;
 
   const cleanInstruction = (htmlStr) => {
     if (!htmlStr) return 'Proceed on route toward hospital destination';
@@ -208,10 +240,10 @@ export default function MapsPage({
       {/* Page Header */}
       <div className="section-header">
         <div>
-          <h2 className="section-title">Hospital Route & Live Google Maps Navigation</h2>
+          <h2 className="section-title">Hospital Routes & Directions</h2>
           <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-            Real-time GPS turn-by-turn routing across Hoshiarpur, travel duration, traffic conditions, and departure planner
-          </div>
+              Road routes and travel estimates for the addresses you enter. Live traffic is shown when available.
+            </div>
         </div>
 
         <a
@@ -352,6 +384,9 @@ export default function MapsPage({
                     type="button"
                     onClick={() => {
                       setOrigin(loc);
+                      setOriginCoords(null);
+                      setRouteData(null);
+                      setEtaData(null);
                       setShowOriginDropdown(false);
                     }}
                     style={{
@@ -390,7 +425,11 @@ export default function MapsPage({
                 <Building2 size={18} color="#dc2626" />
                 <select
                   value={destination}
-                  onChange={(e) => setDestination(e.target.value)}
+                  onChange={(e) => {
+                    setDestination(e.target.value);
+                    setRouteData(null);
+                    setEtaData(null);
+                  }}
                   style={{
                     width: '100%',
                     border: 'none',
@@ -403,7 +442,7 @@ export default function MapsPage({
                   }}
                 >
                   {HOSHIARPUR_HOSPITALS.map((hosp, idx) => (
-                    <option key={idx} value={hosp.name}>
+                    <option key={idx} value={hospitalRouteQuery(hosp)}>
                        {hosp.name}
                     </option>
                   ))}
@@ -417,11 +456,15 @@ export default function MapsPage({
                   <button
                     key={idx}
                     type="button"
-                    onClick={() => setDestination(h.name)}
+                    onClick={() => {
+                      setDestination(hospitalRouteQuery(h));
+                      setRouteData(null);
+                      setEtaData(null);
+                    }}
                     style={{
-                      background: destination === h.name ? '#fef2f2' : '#f1f5f9',
-                      border: destination === h.name ? '1px solid #fecaca' : 'none',
-                      color: destination === h.name ? '#dc2626' : '#475569',
+                      background: destination === hospitalRouteQuery(h) ? '#fef2f2' : '#f1f5f9',
+                      border: destination === hospitalRouteQuery(h) ? '1px solid #fecaca' : 'none',
+                      color: destination === hospitalRouteQuery(h) ? '#dc2626' : '#475569',
                       fontSize: '11px',
                       padding: '4px 8px',
                       borderRadius: '10px',
@@ -453,7 +496,11 @@ export default function MapsPage({
                   <button
                     key={m.id}
                     type="button"
-                    onClick={() => setMode(m.id)}
+                    onClick={() => {
+                      setMode(m.id);
+                      setRouteData(null);
+                      setEtaData(null);
+                    }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -519,19 +566,32 @@ export default function MapsPage({
         </div>
 
         {/* Real Embedded Google Map with Turn-by-Turn Route */}
-        <div style={{ width: '100%', height: 'clamp(300px, 50vh, 480px)', position: 'relative', background: '#e2e8f0' }}>
+        <div className="map-location-frame" style={{ width: '100%', height: 'clamp(300px, 50vh, 480px)', background: '#e2e8f0' }}>
           <iframe
             title="Google Maps Hospital Route"
             width="100%"
             height="100%"
             style={{ border: 0, display: 'block' }}
             loading="lazy"
+            onLoad={() => setIsMapLoading(false)}
             allowFullScreen
             referrerPolicy="no-referrer-when-downgrade"
             src={googleMapsEmbedUrl}
           />
+          {isMapLoading && (
+            <div className="map-location-loading" role="status" aria-live="polite">
+              <span className="map-location-spinner" aria-hidden="true" />
+              <span>Updating map…</span>
+            </div>
+          )}
         </div>
       </div>
+
+      {routeError && (
+        <div role="alert" className="card" style={{ padding: '14px 16px', color: '#9a342e', background: '#fbf5f3', borderColor: '#ead8d4', fontSize: '13px' }}>
+          {routeError}
+        </div>
+      )}
 
       {/* Route & ETA Telemetry Cards */}
       {routeData && (
@@ -551,8 +611,13 @@ export default function MapsPage({
                   {routeData.distance_text}
                 </div>
                 <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  Via Hoshiarpur City Route
+                  {routeData.routing_source === 'google' ? 'Google Maps route' : 'OpenStreetMap road route'}
                 </div>
+                {routeData.routing_source === 'openstreetmap' && (
+                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                    © OpenStreetMap contributors
+                  </div>
+                )}
               </div>
 
               <div style={{ padding: '16px', background: '#f0fdf4', borderRadius: '10px', border: '1px solid #dcfce7' }}>
@@ -563,7 +628,7 @@ export default function MapsPage({
                   {routeData.duration_text}
                 </div>
                 <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  Normal Traffic Flow
+                  {routeData.traffic_aware ? 'Live traffic estimate' : 'Traffic conditions not provided'}
                 </div>
               </div>
             </div>
@@ -577,7 +642,7 @@ export default function MapsPage({
                   Depart at: {etaData.suggested_departure_time}
                 </div>
                 <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                  Estimated Arrival: <strong>{etaData.eta_timestamp}</strong> (includes hospital OPD registration buffer)
+                  Estimated arrival: <strong>{etaData.eta_timestamp}</strong>
                 </div>
               </div>
             )}

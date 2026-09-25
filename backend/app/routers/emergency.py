@@ -2,10 +2,9 @@ import uuid
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any, List
 from pydantic import BaseModel, Field
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, status
 from app.schemas.common import ApiResponse
 from app.supabase import MOCK_DATA
-from app.services.hospital_service import calculate_haversine_distance
 
 router = APIRouter(prefix="/api/v1/emergency", tags=["Emergency SOS & Critical Triage"])
 
@@ -15,18 +14,18 @@ class EmergencySOSRequest(BaseModel):
     patient_name: str = Field(default="Emergency Patient")
     phone: str = Field(..., description="Callback contact phone")
     current_location: Optional[str] = "Hoshiarpur, Punjab"
-    current_lat: Optional[float] = 31.5273
-    current_lon: Optional[float] = 75.9149
+    current_lat: Optional[float] = None
+    current_lon: Optional[float] = None
     notes: Optional[str] = None
 
 
 class EmergencySOSResponse(BaseModel):
     alert_id: str
     status: str
-    eta_minutes: int
-    nearest_hospital: Dict[str, Any]
-    ambulance_assigned: str
-    emergency_hotline: str
+    eta_minutes: Optional[int] = None
+    nearest_hospital: Optional[Dict[str, Any]] = None
+    ambulance_assigned: Optional[str] = None
+    emergency_hotline: str = "108"
     national_ambulance_number: str = "108"
     first_aid_instructions: List[str]
 
@@ -34,39 +33,16 @@ class EmergencySOSResponse(BaseModel):
 @router.post("/sos", response_model=ApiResponse[EmergencySOSResponse], status_code=status.HTTP_201_CREATED)
 async def trigger_emergency_sos(req: EmergencySOSRequest):
     """
-    Critical Emergency SOS Trigger:
-    Finds closest emergency-equipped hospital in Hoshiarpur, reserves ICU alert,
-    and alerts trauma desk.
+    Record the request locally. This app has no connection to ambulance dispatch
+    or a live hospital capacity service, so it must not claim to dispatch help.
     """
-    user_lat = req.current_lat or 31.5273
-    user_lon = req.current_lon or 75.9149
-
-    emergency_hospitals = [
-        h for h in MOCK_DATA["hospitals"]
-        if h.get("emergency_available", False)
-    ]
-
-    # Calculate distance and sort
-    for h in emergency_hospitals:
-        h["distance_km"] = calculate_haversine_distance(user_lat, user_lon, h["latitude"], h["longitude"])
-
-    emergency_hospitals.sort(key=lambda x: x.get("distance_km", 9999))
-    target_hospital = emergency_hospitals[0] if emergency_hospitals else MOCK_DATA["hospitals"][0]
-
-    # Calculate dynamic ETA (assuming 35 km/h emergency ambulance speed in Hoshiarpur town)
-    dist = target_hospital.get("distance_km", 2.5)
-    eta_mins = max(3, int(round(dist * 2.2)))
-
     alert_id = str(uuid.uuid4())
     alert_record = {
         "id": alert_id,
         "patient_name": req.patient_name,
         "phone": req.phone,
         "emergency_type": req.emergency_type,
-        "hospital_id": target_hospital["id"],
-        "hospital_name": target_hospital["name"],
-        "status": "ambulance_dispatched",
-        "eta_minutes": eta_mins,
+        "status": "request_recorded",
         "current_location": req.current_location,
         "notes": req.notes,
         "created_at": datetime.now(timezone.utc).isoformat()
@@ -94,18 +70,14 @@ async def trigger_emergency_sos(req: EmergencySOSRequest):
 
     response_data = EmergencySOSResponse(
         alert_id=alert_id,
-        status="Ambulance Dispatched & Trauma Bay Alerted",
-        eta_minutes=eta_mins,
-        nearest_hospital=target_hospital,
-        ambulance_assigned=f"Punjab 108 Advanced Life Support Unit #PB-07-{alert_id[:4].upper()}",
-        emergency_hotline=target_hospital.get("emergency_hotline") or target_hospital["phone"],
+        status="Request recorded by this app. Call 108 to request emergency dispatch.",
         national_ambulance_number="108",
         first_aid_instructions=instructions
     )
 
     return ApiResponse(
         success=True,
-        message="Critical Emergency SOS received. Ambulance dispatched and hospital trauma team standing by.",
+        message="Request recorded by this app. No ambulance dispatch connection is available; call 108.",
         data=response_data
     )
 

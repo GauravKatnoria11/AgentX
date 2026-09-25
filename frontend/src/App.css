@@ -1561,6 +1561,11 @@ tr:last-child td {
 .profile-dropdown-signout { display: flex; align-items: center; gap: 9px; width: 100%; padding: 9px 10px; border: 1px solid #eee4e1; border-radius: 7px !important; background: #fbf7f6; color: #9b5d55; text-align: left; font-size: 12px; font-weight: 650; transition: background .16s ease, border-color .16s ease; }
 .profile-dropdown-signout:hover { border-color: #e8d6d2; background: #f8efed; }
 @keyframes profile-menu-in { from { opacity: 0; transform: translateY(-4px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.map-location-frame { position: relative; overflow: hidden; border: 1px solid var(--border-subtle); border-radius: 8px; background: #f2f4f3; }
+.map-location-loading { position: absolute; inset: 0; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 9px; color: #52645a; background: rgba(248, 249, 247, .82); font-size: 12px; font-weight: 600; }
+.map-location-spinner { width: 17px; height: 17px; border: 2px solid #cbd5cf; border-top-color: #607a69; border-radius: 50%; animation: map-location-spin .8s linear infinite; }
+@keyframes map-location-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .map-location-spinner { animation-duration: 2s; } }
 .hospital-bed-share { height: 7px; margin-top: 12px; overflow: hidden; border-radius: 999px; background: #e6ebee; }
 .hospital-bed-share-caption { margin-top: 6px; color: #7c878e; font-size: 10px; text-align: right; }
 .hospital-detail-tabs { display: flex; gap: 8px; margin-top: 24px; overflow-x: auto; border-bottom: 1px solid #e2e7ea; padding: 0; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }

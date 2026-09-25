@@ -4,9 +4,6 @@ import {
   PhoneCall,
   Ambulance,
   HeartPulse,
-  Navigation,
-  Clock,
-  MapPin,
   CheckCircle2,
   ShieldAlert,
   Activity,
@@ -16,22 +13,20 @@ import {
   Brain,
   Car,
   Wind,
-  Building2,
-  Phone,
   Crosshair
 } from 'lucide-react';
 import { triggerEmergencySOS } from '../api';
 import { getAccurateGPSLocation } from '../utils/geolocation';
 
 const HOSHIARPUR_LOCATIONS = [
-  { name: 'Model Town, Hoshiarpur', lat: 31.5312, lon: 75.9184 },
-  { name: 'Civil Lines, Court Road, Hoshiarpur', lat: 31.5284, lon: 75.9122 },
-  { name: 'Bus Stand / Sutheri Road, Hoshiarpur', lat: 31.5342, lon: 75.9158 },
-  { name: 'Phagwara Road / Session Courts, Hoshiarpur', lat: 31.5188, lon: 75.9082 },
-  { name: 'Chandigarh Road / Bypass, Hoshiarpur', lat: 31.5165, lon: 75.9285 },
-  { name: 'Railway Station Road, Hoshiarpur', lat: 31.5245, lon: 75.9055 },
-  { name: 'Mahilpur Road / Bullowal Area', lat: 31.4850, lon: 75.9550 },
-  { name: 'Rayat Bahra Professional University (Bohan)', lat: 31.4820, lon: 75.9591 }
+  { name: 'Model Town, Hoshiarpur' },
+  { name: 'Civil Lines, Hoshiarpur' },
+  { name: 'Bus Stand / Sutheri Road, Hoshiarpur' },
+  { name: 'Phagwara Road / Session Courts, Hoshiarpur' },
+  { name: 'Chandigarh Road / Bypass, Hoshiarpur' },
+  { name: 'Railway Station Road, Hoshiarpur' },
+  { name: 'Mahilpur Road / Bullowal Area' },
+  { name: 'Rayat Bahra Professional University (Bohan)' }
 ];
 
 const EMERGENCY_CONDITIONS = [
@@ -91,7 +86,7 @@ export default function EmergencyPage({ onNavigateToRoute, patientLocation }) {
   const [customNotes, setCustomNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sosResult, setSosResult] = useState(null);
-  const [countdownTimer, setCountdownTimer] = useState(null);
+  const [sosError, setSosError] = useState('');
 
   useEffect(() => {
     if (patientLocation) {
@@ -116,27 +111,18 @@ export default function EmergencyPage({ onNavigateToRoute, patientLocation }) {
     }
   };
 
-  useEffect(() => {
-    let interval;
-    if (sosResult && sosResult.eta_minutes) {
-      setCountdownTimer(sosResult.eta_minutes * 60);
-      interval = setInterval(() => {
-        setCountdownTimer((prev) => (prev > 0 ? prev - 1 : 0));
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [sosResult]);
-
   const handleTriggerSOS = async () => {
     setIsSubmitting(true);
+    setSosError('');
+    setSosResult(null);
     try {
       const payload = {
         emergency_type: selectedCondition.label,
         patient_name: patientName || 'Emergency Patient',
         phone: patientPhone || '',
         current_location: selectedLocation.name,
-        current_lat: selectedLocation.lat,
-        current_lon: selectedLocation.lon,
+        current_lat: selectedLocation.isExactGPS ? selectedLocation.lat : null,
+        current_lon: selectedLocation.isExactGPS ? selectedLocation.lon : null,
         notes: customNotes || `Urgent triage requested for ${selectedCondition.label}`
       };
 
@@ -146,39 +132,10 @@ export default function EmergencyPage({ onNavigateToRoute, patientLocation }) {
       }
     } catch (e) {
       console.error('Failed to trigger emergency SOS:', e);
-      // Fallback display
-      setSosResult({
-        alert_id: 'HSP-SOS-' + Math.floor(1000 + Math.random() * 9000),
-        status: 'Ambulance Dispatched & Trauma Bay Alerted',
-        eta_minutes: 6,
-        ambulance_assigned: 'Punjab 108 Advanced Life Support Unit #PB-07-HSP',
-        emergency_hotline: '+91-1882-220022',
-        national_ambulance_number: '108',
-        nearest_hospital: {
-          name: 'Civil Hospital Hoshiarpur',
-          address: 'Court Road, Near District Administrative Complex, Hoshiarpur',
-          phone: '+91-1882-220022',
-          emergency_hotline: '108 / +91-1882-220022',
-          available_icu_beds: 14,
-          distance_km: 1.8
-        },
-        first_aid_instructions: [
-          'Keep patient seated upright with clothing loosened.',
-          'Do not offer water or food until emergency paramedics arrive.',
-          'If chest pain is diagnosed, administer chewable Aspirin (300mg) if non-allergic.',
-          'Ensure road/stair access is clear for incoming stretcher team.'
-        ]
-      });
+      setSosError('We could not confirm an emergency dispatch. Call 108 now for ambulance assistance.');
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const formatCountdown = (seconds) => {
-    if (seconds === null) return '--:--';
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
   return (
@@ -212,14 +169,14 @@ export default function EmergencyPage({ onNavigateToRoute, patientLocation }) {
               }}
             >
               <ShieldAlert size={14} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '6px' }} />
-              24/7 Emergency Dispatch
+              Emergency help
             </span>
           </div>
           <h2 style={{ fontSize: 'clamp(20px, 4vw, 24px)', fontWeight: 800, margin: '6px 0', letterSpacing: '-0.02em' }}>
-            Emergency Response & Ambulance Dispatch
+            Emergency assistance
           </h2>
           <p style={{ fontSize: '13px', opacity: 0.95, lineHeight: 1.4, margin: 0 }}>
-            Alerts the nearest emergency facility, reserves an ICU trauma bed, and coordinates 108 ambulance dispatch.
+            Call 108 for ambulance dispatch. This app can record your request but cannot contact emergency services.
           </p>
         </div>
 
@@ -246,7 +203,7 @@ export default function EmergencyPage({ onNavigateToRoute, patientLocation }) {
             <PhoneCall size={18} /> Call 108 Ambulance
           </a>
           <a
-            href="tel:+911882220022"
+            href="tel:+911882250700"
             style={{
               flex: '1 1 180px',
               display: 'flex',
@@ -263,7 +220,7 @@ export default function EmergencyPage({ onNavigateToRoute, patientLocation }) {
               textDecoration: 'none'
             }}
           >
-            <ShieldAlert size={18} /> Civil Hospital Casualty
+            <ShieldAlert size={18} /> Civil Hospital: 01882-250700
           </a>
         </div>
       </div>
@@ -292,35 +249,14 @@ export default function EmergencyPage({ onNavigateToRoute, patientLocation }) {
                   letterSpacing: '0.05em'
                 }}
               >
-                ● LIVE SOS ACTIVE • ALERT #{sosResult.alert_id.slice(-6).toUpperCase()}
+                REQUEST RECORDED • REF #{sosResult.alert_id.slice(-6).toUpperCase()}
               </span>
               <h3 style={{ fontSize: '22px', fontWeight: 800, color: '#991b1b', marginTop: '10px', marginBottom: '4px' }}>
                 {sosResult.status}
               </h3>
               <p style={{ fontSize: '14px', color: '#7f1d1d', margin: 0 }}>
-                {sosResult.ambulance_assigned}
+                This app cannot dispatch an ambulance. Call 108 now.
               </p>
-            </div>
-
-            {/* Countdown Clock */}
-            <div
-              style={{
-                background: '#ffffff',
-                border: '2px solid #fecaca',
-                padding: '14px 22px',
-                borderRadius: '10px',
-                textAlign: 'center',
-                boxShadow: '0 4px 10px rgba(239, 68, 68, 0.1)',
-                minWidth: 'min(100%, 200px)'
-              }}
-            >
-              <div style={{ fontSize: '11px', fontWeight: 700, color: '#dc2626', textTransform: 'uppercase' }}>
-                Estimated Ambulance Arrival
-              </div>
-              <div style={{ fontSize: '32px', fontWeight: 900, color: '#b91c1c', fontFamily: 'monospace' }}>
-                {formatCountdown(countdownTimer)}
-              </div>
-              <div style={{ fontSize: '11px', color: '#991b1b' }}>~{sosResult.eta_minutes} min response window</div>
             </div>
           </div>
 
@@ -332,38 +268,10 @@ export default function EmergencyPage({ onNavigateToRoute, patientLocation }) {
               marginTop: '20px'
             }}
           >
-            {/* Nearest Hospital Card */}
-            <div style={{ background: '#ffffff', padding: '18px', borderRadius: '10px', border: '1px solid #fecaca' }}>
-              <div style={{ fontSize: '12px', fontWeight: 700, color: '#991b1b', textTransform: 'uppercase', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Building2 size={14} /> Assigned Receiving Facility
-              </div>
-              <div style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-main)' }}>
-                {sosResult.nearest_hospital.name}
-              </div>
-              <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <MapPin size={13} /> {sosResult.nearest_hospital.address}
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginTop: '12px', fontSize: '13px', fontWeight: 700, flexWrap: 'wrap' }}>
-                <span style={{ color: '#059669', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  <CheckCircle2 size={14} /> {sosResult.nearest_hospital.available_icu_beds} ICU Beds Available
-                </span>
-                <span style={{ color: '#dc2626', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  <Phone size={14} /> {sosResult.nearest_hospital.phone}
-                </span>
-              </div>
-              <button
-                className="btn-google-danger"
-                style={{ width: '100%', marginTop: '14px', justifyContent: 'center' }}
-                onClick={() => onNavigateToRoute && onNavigateToRoute(sosResult.nearest_hospital.name)}
-              >
-                <Navigation size={16} /> Open Turn-by-Turn GPS Route
-              </button>
-            </div>
-
             {/* Critical First-Aid Guidance */}
             <div style={{ background: '#ffffff', padding: '18px', borderRadius: '10px', border: '1px solid #fecaca' }}>
               <div style={{ fontSize: '12px', fontWeight: 700, color: '#991b1b', textTransform: 'uppercase', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Activity size={14} /> Critical Actions While Help Is En-Route
+                <Activity size={14} /> First-aid guidance
               </div>
               <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '13px', color: '#334155', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {sosResult.first_aid_instructions?.map((inst, i) => (
@@ -374,6 +282,12 @@ export default function EmergencyPage({ onNavigateToRoute, patientLocation }) {
               </ul>
             </div>
           </div>
+        </div>
+      )}
+
+      {sosError && (
+        <div role="alert" className="card" style={{ padding: '14px 16px', color: '#991b1b', background: '#fff7f7', borderColor: '#fecaca' }}>
+          {sosError}
         </div>
       )}
 
