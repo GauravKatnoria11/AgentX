@@ -172,6 +172,11 @@ export default function MedicalRecordsPage() {
           {filteredRecords.map((r) => {
             const hasMedicines = r.medicines && r.medicines.length > 0;
             const hasDiet = !!r.diet_plan;
+            const foodsToAvoid = Array.isArray(r.diet_plan?.foods_to_avoid)
+              ? r.diet_plan.foods_to_avoid
+              : typeof r.diet_plan?.foods_to_avoid === 'string'
+                ? r.diet_plan.foods_to_avoid.split(',').map((item) => item.trim()).filter(Boolean)
+                : [];
 
             return (
               <div 
@@ -476,13 +481,13 @@ export default function MedicalRecordsPage() {
                     </div>
 
                     {/* Foods to Avoid (Red tags) */}
-                    {r.diet_plan.foods_to_avoid && r.diet_plan.foods_to_avoid.length > 0 && (
+                    {foodsToAvoid.length > 0 && (
                       <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px dashed #86efac' }}>
                         <div style={{ fontSize: '12px', fontWeight: 700, color: '#991b1b', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
                           <AlertTriangle size={14} color="#dc2626" /> Strictly Avoid / Restriction List:
                         </div>
                         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                          {r.diet_plan.foods_to_avoid.map((item, i) => (
+                          {foodsToAvoid.map((item, i) => (
                             <span 
                               key={i}
                               style={{
