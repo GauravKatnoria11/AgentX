@@ -9,6 +9,7 @@ import { fetchMyMedicalRecords, aiSummarizeRecord } from '../api';
 export default function MedicalRecordsPage() {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -23,13 +24,16 @@ export default function MedicalRecordsPage() {
 
   const loadRecords = async () => {
     setLoading(true);
+    setLoadError('');
     try {
       const res = await fetchMyMedicalRecords();
-      if (res.success && res.data) {
-        setRecords(res.data);
+      if (!res?.success || !Array.isArray(res.data)) {
+        throw new Error(res?.detail || res?.message || 'Could not load medical records. Please sign in again and retry.');
       }
+      setRecords(res.data);
     } catch (e) {
       console.error(e);
+      setLoadError(e.message || 'Could not load medical records. Please sign in again and retry.');
     } finally {
       setLoading(false);
     }
@@ -158,6 +162,13 @@ export default function MedicalRecordsPage() {
       {loading ? (
         <div style={{ textAlign: 'center', padding: '56px 24px', color: 'var(--text-muted)' }}>
           Loading your medical records, medicine schedules, and diet plans...
+        </div>
+      ) : loadError ? (
+        <div className="card" role="alert" style={{ textAlign: 'center', padding: '32px', borderRadius: '5px' }}>
+          <AlertCircle size={32} color="#9a6b37" style={{ margin: '0 auto 10px' }} />
+          <h3 style={{ fontSize: '15px', fontWeight: 700 }}>Medical records could not be loaded</h3>
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '6px 0 14px' }}>{loadError}</p>
+          <button className="btn-google-outline" onClick={loadRecords}>Try again</button>
         </div>
       ) : filteredRecords.length === 0 ? (
         <div className="card" style={{ textAlign: 'center', padding: '56px 24px', borderRadius: '10px' }}>

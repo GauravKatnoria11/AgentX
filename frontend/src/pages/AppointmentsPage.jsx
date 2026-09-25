@@ -24,6 +24,7 @@ import {
 export default function AppointmentsPage({ onNavigateToRoute }) {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [cancellingId, setCancellingId] = useState(null);
   const [cancelReason, setCancelReason] = useState('');
   const [activeFilter, setActiveFilter] = useState('upcoming'); // 'upcoming' | 'done'
@@ -56,6 +57,7 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
 
   const loadAppointments = async () => {
     setLoading(true);
+    setLoadError('');
     try {
       // 1. Read cached historical appointments
       const cachedRaw = localStorage.getItem('carelink_customer_appointments_history');
@@ -70,7 +72,10 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
 
       // 2. Fetch server appointments
       const res = await fetchMyAppointments();
-      const serverList = (res.success && res.data) ? res.data : [];
+      if (!res?.success || !Array.isArray(res.data)) {
+        throw new Error(res?.detail || res?.message || 'Could not load appointments. Please sign in again and retry.');
+      }
+      const serverList = res.data;
 
       // 3. Merge server list with cached history by appointment ID
       const map = new Map();
@@ -106,6 +111,7 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
       localStorage.setItem('carelink_customer_appointments_history', JSON.stringify(merged));
     } catch (e) {
       console.error(e);
+      setLoadError(e.message || 'Could not load appointments. Please sign in again and retry.');
       // Fallback cache
       const cachedRaw = localStorage.getItem('carelink_customer_appointments_history');
       if (cachedRaw) {
@@ -262,6 +268,13 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
       {loading ? (
         <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
           Loading your appointments...
+        </div>
+      ) : loadError ? (
+        <div className="card" role="alert" style={{ textAlign: 'center', padding: '32px', borderRadius: '5px' }}>
+          <AlertTriangle size={32} color="#9a6b37" style={{ margin: '0 auto 10px' }} />
+          <h3 style={{ fontSize: '15px', fontWeight: 700 }}>Appointments could not be loaded</h3>
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '6px 0 14px' }}>{loadError}</p>
+          <button className="btn-google-outline" onClick={loadAppointments}>Try again</button>
         </div>
       ) : displayedAppointments.length === 0 ? (
         <div className="card" style={{ textAlign: 'center', padding: '40px', borderRadius: '3px' }}>

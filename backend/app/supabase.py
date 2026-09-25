@@ -1593,6 +1593,24 @@ class SupabaseService:
     def is_live(self) -> bool:
         return self.client is not None
 
+    def verify_auth_access_token(self, access_token: str) -> Optional[Dict[str, Any]]:
+        """Validate a Supabase session token and return its stable user identity."""
+        if not self.is_live or not access_token:
+            return None
+        try:
+            response = self.client.auth.get_user(access_token)
+            auth_user = getattr(response, "user", None)
+            if not auth_user or not getattr(auth_user, "id", None) or not getattr(auth_user, "email", None):
+                return None
+            return {
+                "id": str(auth_user.id),
+                "email": str(auth_user.email).strip().lower(),
+                "user_metadata": getattr(auth_user, "user_metadata", None) or {},
+            }
+        except Exception as exc:
+            logger.info("Supabase session token verification failed: %s", exc)
+            return None
+
     def get_table_data(self, table_name: str) -> List[Dict[str, Any]]:
         if self.is_live:
             try:

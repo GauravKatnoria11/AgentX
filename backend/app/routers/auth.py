@@ -6,7 +6,7 @@ from app.schemas.common import ApiResponse
 from app.utils.security import hash_password, verify_password, create_access_token
 from app.utils.validators import validate_email, validate_phone
 from app.dependencies import get_current_user
-from app.supabase import MOCK_DATA
+from app.supabase import MOCK_DATA, supabase_service
 from app.utils.permissions import log_audit_event
 
 router = APIRouter(prefix="/api/v1/auth", tags=["Authentication"])
@@ -124,21 +124,52 @@ async def oauth_callback(req: OAuthCallbackRequest):
     """
     Handles Google and Facebook OAuth authenticated sessions originating from Supabase Auth.
     """
-    email = req.email or f"{req.provider}_user@oauth.internal"
-    user = next((p for p in MOCK_DATA["profiles"] if p["email"].lower() == email.lower()), None)
+    verified_auth_user = supabase_service.verify_auth_access_token(req.access_token)
+    if supabase_service.is_live and not verified_auth_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Your sign-in session could not be verified. Please sign in again.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
-    if not user:
-        user_id = str(uuid.uuid4())
-        user = {
-            "id": user_id,
-            "role": "patient",
-            "full_name": req.full_name or f"{req.provider.capitalize()} User",
-            "email": email,
-            "avatar_url": req.avatar_url,
-            "metadata": {"provider": req.provider},
-            "created_at": datetime.now(timezone.utc).isoformat()
-        }
-        MOCK_DATA["profiles"].append(user)
+    if verified_auth_user:
+        # The authenticated Supabase UUID is stable and is the identity stored
+        # on patient-owned database rows. Never mint a new UUID for OAuth users.
+        user_id = verified_auth_user["id"]
+        email = verified_auth_user["email"]
+        metadata = verified_auth_user["user_metadata"]
+        user = next((p for p in MOCK_DATA["profiles"] if str(p.get("id")) == user_id), None)
+        if not user:
+            user = {
+                "id": user_id,
+                "role": "patient",
+                "full_name": req.full_name or metadata.get("full_name") or metadata.get("name") or email.split("@")[0],
+                "email": email,
+                "avatar_url": req.avatar_url or metadata.get("avatar_url") or metadata.get("picture"),
+                "metadata": {"provider": req.provider},
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            MOCK_DATA["profiles"].append(user)
+        else:
+            user["email"] = email
+            user["full_name"] = req.full_name or user.get("full_name") or email.split("@")[0]
+            user["avatar_url"] = req.avatar_url or user.get("avatar_url")
+    else:
+        # Local fallback for development when Supabase is not configured.
+        email = (req.email or f"{req.provider}_user@oauth.internal").strip().lower()
+        user = next((p for p in MOCK_DATA["profiles"] if p["email"].lower() == email), None)
+        if not user:
+            user_id = str(uuid.uuid4())
+            user = {
+                "id": user_id,
+                "role": "patient",
+                "full_name": req.full_name or f"{req.provider.capitalize()} User",
+                "email": email,
+                "avatar_url": req.avatar_url,
+                "metadata": {"provider": req.provider},
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            MOCK_DATA["profiles"].append(user)
 
     MOCK_DATA["last_active_user_email"] = user["email"]
 
