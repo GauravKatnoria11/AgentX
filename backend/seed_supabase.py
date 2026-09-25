@@ -18,6 +18,18 @@ def seed():
     logger.info(f"Connecting to Supabase at {url}...")
     sb = create_client(url, key)
 
+    def seed_rows(table, rows, columns):
+        seeded = 0
+        for row in rows:
+            payload = {column: row[column] for column in columns if column in row}
+            try:
+                sb.table(table).upsert(payload).execute()
+                seeded += 1
+            except Exception as e:
+                logger.warning(f"{table} row {row.get('id')} notice: {e}")
+        logger.info("Seeded %s/%s rows into %s", seeded, len(rows), table)
+        return seeded
+
     # 1. Seed Hospitals
     logger.info("Seeding hospitals...")
     for h in MOCK_DATA.get("hospitals", []):
@@ -185,7 +197,53 @@ def seed():
         except Exception as e:
             logger.warning(f"Medical record {rec['id']} notice: {e}")
 
-    logger.info("All tables seeded into Supabase successfully!")
+    # 8. Seed the remaining catalog and user-data tables. Fields not represented
+    # by the current SQL schema are intentionally omitted rather than failing the
+    # whole import; the existing frontend defaults preserve those display fields.
+    seed_rows("labs", MOCK_DATA.get("labs", []), [
+        "id", "hospital_id", "name", "test_types", "address", "city", "latitude",
+        "longitude", "contact_phone", "hours", "price_range", "is_available"
+    ])
+    seed_rows("pharmacies", MOCK_DATA.get("pharmacies", []), [
+        "id", "hospital_id", "name", "address", "city", "latitude", "longitude",
+        "phone", "hours", "is_open"
+    ])
+    seed_rows("medicines", MOCK_DATA.get("medicines", []), [
+        "id", "pharmacy_id", "name", "generic_name", "dosage_form", "strength",
+        "manufacturer", "price", "prescription_required", "in_stock"
+    ])
+    prescription_rows = []
+    for prescription in MOCK_DATA.get("prescriptions", []):
+        row = dict(prescription)
+        if row.get("appointment_id") not in valid_app_ids:
+            row["appointment_id"] = None
+        prescription_rows.append(row)
+    seed_rows("prescriptions", prescription_rows, [
+        "id", "patient_id", "doctor_id", "appointment_id", "diagnosis", "medications",
+        "instructions", "file_url", "created_at"
+    ])
+    followup_rows = []
+    for followup in MOCK_DATA.get("followups", []):
+        row = dict(followup)
+        if row.get("appointment_id") not in valid_app_ids:
+            row["appointment_id"] = None
+        followup_rows.append(row)
+    seed_rows("followups", followup_rows, [
+        "id", "patient_id", "doctor_id", "appointment_id", "interval_type", "scheduled_at",
+        "questions", "status", "created_at"
+    ])
+    seed_rows("followup_responses", MOCK_DATA.get("followup_responses", []), [
+        "id", "followup_id", "patient_id", "responses", "submitted_at", "flagged_for_review",
+        "review_notes", "reviewed_by", "created_at"
+    ])
+    seed_rows("notifications", MOCK_DATA.get("notifications", []), [
+        "id", "user_id", "title", "message", "type", "is_read", "created_at"
+    ])
+    seed_rows("audit_logs", MOCK_DATA.get("audit_logs", []), [
+        "id", "user_id", "action", "resource_type", "resource_id", "ip_address", "details", "created_at"
+    ])
+
+    logger.info("Supabase seed completed. Tables with auth-user foreign keys are skipped unless their users already exist.")
 
 if __name__ == "__main__":
     seed()

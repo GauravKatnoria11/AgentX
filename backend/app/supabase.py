@@ -1609,7 +1609,48 @@ class SupabaseService:
         return self.client is not None
 
     def get_table_data(self, table_name: str) -> List[Dict[str, Any]]:
+        if self.is_live:
+            try:
+                response = self.client.table(table_name).select("*").execute()
+                if response.data:
+                    return response.data
+            except Exception as e:
+                logger.warning(f"Failed to read {table_name} from Supabase: {e}")
         return MOCK_DATA.get(table_name, [])
+
+    def hydrate_mock_data_from_supabase(self) -> Dict[str, int]:
+        """Load seeded Supabase rows into the legacy service data shape."""
+        if not self.is_live:
+            return {}
+
+        counts = {}
+        table_names = [
+            "hospitals", "departments", "doctors", "doctor_schedules", "appointments",
+            "labs", "pharmacies", "medicines", "prescriptions", "medical_records",
+            "followups", "followup_responses", "notifications", "audit_logs", "doctor_reviews"
+        ]
+        for table_name in table_names:
+            try:
+                rows = self.client.table(table_name).select("*").execute().data or []
+                if table_name == "medical_records":
+                    rows = [self._unpack_medical_record_row(row) for row in rows]
+                existing_by_id = {
+                    str(row.get("id")): row
+                    for row in MOCK_DATA.get(table_name, [])
+                    if isinstance(row, dict) and row.get("id") is not None
+                }
+                merged_rows = []
+                for row in rows:
+                    merged = dict(existing_by_id.get(str(row.get("id")), {}))
+                    merged.update(row)
+                    merged_rows.append(merged)
+                if merged_rows:
+                    MOCK_DATA[table_name] = merged_rows
+                counts[table_name] = len(rows)
+            except Exception as e:
+                logger.warning(f"Failed to hydrate {table_name} from Supabase: {e}")
+
+        return counts
 
     # ==========================================
     # APPOINTMENTS CRUD OPERATIONS
@@ -1647,10 +1688,18 @@ class SupabaseService:
 
         if self.is_live:
             try:
-                self.client.table("appointments").insert(record).execute()
+                response = self.client.table("appointments").insert(record).select("*").execute()
+                if not response.data:
+                    raise RuntimeError("Supabase returned no appointment row after insert")
+                persisted_record = dict(response.data[0])
+                for field in ("patient_name", "patient_email"):
+                    if field in full_record:
+                        persisted_record[field] = full_record[field]
+                full_record = persisted_record
                 logger.info(f"Appointment {appt_id} saved to Supabase database successfully.")
             except Exception as e:
                 logger.error(f"Failed to insert appointment into Supabase: {e}")
+                raise
 
         # Sync in-memory store
         existing_idx = next((i for i, a in enumerate(MOCK_DATA["appointments"]) if str(a.get("id")) == appt_id), None)
@@ -1711,7 +1760,14 @@ class SupabaseService:
                         results[str(a["id"])][k] = v
 
         appt_list = list(results.values())
-        appt_list.sort(key=lambda x: (str(x.get("appointment_date", "")), str(x.get("appointment_time", ""))), reverse=True)
+        appt_list.sort(
+            key=lambda x: (
+                str(x.get("created_at") or ""),
+                str(x.get("appointment_date", "")),
+                str(x.get("appointment_time", ""))
+            ),
+            reverse=True
+        )
         return appt_list
 
     def update_appointment(self, appointment_id: str, updates: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -1844,10 +1900,15 @@ class SupabaseService:
 
         if self.is_live:
             try:
-                self.client.table("medical_records").insert(db_row).execute()
+                response = self.client.table("medical_records").insert(db_row).select("*").execute()
+                if not response.data:
+                    raise RuntimeError("Supabase returned no medical record row after insert")
+                persisted_row = response.data[0]
+                full_record = self._unpack_medical_record_row(persisted_row)
                 logger.info(f"Medical record {rec_id} saved to Supabase database successfully.")
             except Exception as e:
                 logger.error(f"Failed to insert medical record into Supabase: {e}")
+                raise
 
         # Sync in-memory store
         existing_idx = next((i for i, r in enumerate(MOCK_DATA["medical_records"]) if str(r.get("id")) == rec_id), None)

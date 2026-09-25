@@ -1,0 +1,22 @@
+name: Keep Render Backend Awake
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render health endpoint
+        env:
+          RENDER_HEALTH_URL: ${{ secrets.RENDER_HEALTH_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${RENDER_HEALTH_URL:-}" ]; then
+            echo "Missing repository secret: RENDER_HEALTH_URL"
+            exit 1
+          fi
+          curl --fail --silent --show-error --max-time 30 "$RENDER_HEALTH_URL/health"
+          echo

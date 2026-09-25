@@ -159,7 +159,10 @@ You can deploy the backend using either **Option A (Render Blueprint - Easiest)*
 ### 1. Render Free Tier Cold Starts
 - On Render's free tier, backend instances spin down after 15 minutes of inactivity.
 - The first request after sleep takes ~45-50 seconds to boot up. Subsequent requests respond in milliseconds.
-- *Tip*: You can set up a free uptime monitor (like [UptimeRobot](https://uptimerobot.com) or [cron-job.org](https://cron-job.org)) to ping `https://your-backend.onrender.com/health` every 10 minutes to keep it warm.
+- This repository includes [`.github/workflows/keep-render-awake.yml`](.github/workflows/keep-render-awake.yml), which pings the Render health endpoint every 10 minutes.
+- Add a GitHub repository secret named `RENDER_HEALTH_URL` with the backend origin, for example `https://carelink-backend.onrender.com`.
+- Run the workflow once manually from the GitHub Actions tab to verify the secret and endpoint.
+- A Render paid instance is the only platform-native way to guarantee no sleeping; scheduled pings reduce free-tier cold starts but are not an uptime guarantee.
 
 ### 2. Double Slash in API URL
 - Make sure `VITE_API_URL` on Vercel is `https://your-backend.onrender.com` (without a trailing `/`).

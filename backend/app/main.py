@@ -39,6 +39,13 @@ import asyncio
 async def lifespan(app: FastAPI):
     logger.info("Initializing Carelink monorepo backend...")
     try:
+        from app.supabase import supabase_service
+        hydrated = supabase_service.hydrate_mock_data_from_supabase()
+        if hydrated:
+            logger.info("Loaded application data from Supabase: %s", hydrated)
+    except Exception as e:
+        logger.warning(f"Supabase data hydration skipped: {e}")
+    try:
         from app.services.email_service import email_reminder_service
         res = email_reminder_service.trigger_auto_reminders_for_today()
         logger.info(f"Automatic appointment date reminder scan completed: {res.get('total_reminders_triggered', 0)} reminders sent.")

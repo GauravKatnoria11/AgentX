@@ -90,11 +90,16 @@ export default function AppointmentsPage({ onNavigateToRoute }) {
       }
 
       const merged = Array.from(map.values());
-      // Sort newest / upcoming first
+      // Show the most recently booked appointment first.
       merged.sort((a, b) => {
-        const dateA = a.appointment_date || '';
-        const dateB = b.appointment_date || '';
-        return dateB.localeCompare(dateA);
+        const bookedAtA = a.created_at || '';
+        const bookedAtB = b.created_at || '';
+        const bookedOrder = bookedAtB.localeCompare(bookedAtA);
+        if (bookedOrder !== 0) return bookedOrder;
+
+        const dateOrder = (b.appointment_date || '').localeCompare(a.appointment_date || '');
+        if (dateOrder !== 0) return dateOrder;
+        return (b.appointment_time || '').localeCompare(a.appointment_time || '');
       });
 
       setAppointments(merged);
