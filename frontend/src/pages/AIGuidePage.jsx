@@ -357,7 +357,7 @@ export default function AIGuidePage({
       {/* 1. Natural Language Search & Cost Prediction */}
       {activeTab === 'search' && (
         <div className="ai-search-workspace">
-          <div className="ai-prompt-shell">
+          <div className={`ai-prompt-shell ${searchLoading ? 'is-searching' : ''}`} aria-busy={searchLoading}>
           <form onSubmit={handleAISearch} className="ai-prompt-form">
             <div className="ai-prompt-leading"><AiMark size={20} /></div>
             <input
@@ -376,6 +376,7 @@ export default function AIGuidePage({
               {searchLoading ? <span className="ai-spinner" /> : <ArrowUp size={19} />}
             </button>
           </form>
+          {searchLoading && <span className="ai-search-progress" aria-hidden="true" />}
           <div className="ai-prompt-footer"><span><MapPinned size={14} /> Near {patientLocation?.locality || 'you'}</span><span><ShieldCheck size={14} /> Care guidance</span></div>
           </div>
 

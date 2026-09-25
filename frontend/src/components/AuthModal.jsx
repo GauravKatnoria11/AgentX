@@ -11,8 +11,7 @@ import {
   AlertCircle,
   Building2,
   ShieldCheck,
-  ShieldAlert,
-  PhoneCall
+  ShieldAlert
 } from 'lucide-react';
 import { loginUser, signupUser, oauthCallback } from '../api';
 import {
@@ -195,24 +194,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, onEmergencyC
           </h1>
         </div>
 
-        {/* Compact emergency action */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '8px',
-            padding: '7px 9px',
-            background: '#fef2f2',
-            border: '1px solid #fecaca',
-            borderRadius: '3px',
-            marginBottom: '16px'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#991b1b', fontSize: '11px', fontWeight: 700 }}>
-            <PhoneCall size={14} /> Medical Emergency
-          </div>
-
+        {/* Emergency quick action */}
+        <div className="signin-emergency-action">
           <button
             type="button"
             onClick={() => {
@@ -222,20 +205,9 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, onEmergencyC
                 window.location.href = 'tel:108';
               }
             }}
-            style={{
-              background: '#dc2626',
-              color: '#ffffff',
-              border: 'none',
-              padding: '4px 8px',
-              borderRadius: '5px',
-              fontSize: '10.5px',
-              fontWeight: 800,
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              boxShadow: '0 2px 6px rgba(220, 38, 38, 0.25)'
-            }}
+            className="signin-emergency-button"
           >
-            <ShieldAlert size={12} /> 108 SOS
+            <ShieldAlert size={14} strokeWidth={2.2} /> <span>Emergency SOS</span>
           </button>
         </div>
 
