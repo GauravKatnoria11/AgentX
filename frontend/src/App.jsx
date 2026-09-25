@@ -201,7 +201,7 @@ function App() {
   const getPageMeta = () => {
     switch (currentPage) {
       case 'ai-guide':
-        return { title: 'AI Search & Clinical Triage', subtitle: 'Instant symptom analysis, disease triage, and cost prediction' };
+        return { title: 'AI Care Guide', subtitle: 'Search care, understand symptoms, and find nearby support' };
       case 'emergency':
         return { title: 'Emergency Care', subtitle: '24/7 direct ambulance dispatch, casualty units, and emergency triage' };
       case 'hospitals':
@@ -235,7 +235,7 @@ function App() {
   const meta = getPageMeta();
 
   return (
-    <div className="app-container">
+      <div className={`app-container ${currentPage === 'ai-guide' ? 'ai-app-shell' : ''}`}>
       {/* Mobile Drawer Backdrop */}
       <div
         className={`sidebar-backdrop ${isMobileMenuOpen ? 'active' : ''}`}

@@ -1487,12 +1487,52 @@ tr:last-child td {
     background: var(--google-red);
   }
 
-  .mobile-nav-item span {
+.mobile-nav-item span {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 62px;
   }
+}
+
+/* Carelink visual refresh */
+.app-container { background: var(--bg-app); }
+.sidebar { width: 252px; padding: 22px 14px 16px; background: #fbfbfe; border-right-color: #ececf3; }
+.brand-header { gap: 10px; padding: 0 11px; margin-bottom: 30px; }
+.brand-icon { width: 34px; height: 34px; }
+.brand-title { font-size: 18px; font-weight: 700; letter-spacing: -0.6px; }
+.sidebar-nav { gap: 5px; padding: 0 3px; }
+.nav-item { min-height: 42px; padding: 10px 13px; border-radius: 11px !important; color: #696b7c; font-size: 13px; transition: background .18s ease, color .18s ease, transform .18s ease; }
+.nav-item:hover { background: #f1f0fb; color: #282941; transform: translateX(2px); }
+.nav-item.active { background: #eeedfc; color: #514bc4; font-weight: 650; }
+.nav-item.emergency-nav-item, .nav-item.emergency-nav-item.active { border-radius: 11px !important; }
+.main-wrapper { background: var(--bg-app); }
+.top-header { height: 72px; padding: 0 34px; border-bottom-color: #ebeaf2; background: rgba(255,255,255,.88); backdrop-filter: blur(16px); }
+.page-title { font-size: 17px; font-weight: 650; letter-spacing: -.35px; }
+.header-right { gap: 11px; }
+.content-area { padding: 34px 42px 54px; }
+.card, .table-card { border-radius: 16px !important; border-color: #e8e8f0; box-shadow: 0 3px 14px rgba(31, 33, 67, .035); }
+.btn-google-primary, .btn-primary { border-radius: 10px !important; background: var(--primary-blue); }
+.btn-google-primary:hover, .btn-primary:hover { background: var(--primary-blue-hover); transform: translateY(-1px); }
+.btn-google-outline, .btn-secondary { border-radius: 10px !important; }
+.icon-btn, .round-action-btn { border-radius: 11px !important; }
+.pill-badge { border-radius: 999px !important; }
+.search-bar { border-radius: 12px !important; background: #f4f4f8; }
+.user-avatar-circle { border-radius: 50% !important; }
+.sidebar-backdrop { z-index: 998; }
+@media (max-width: 1024px) {
+  .sidebar { width: 276px; }
+  .content-area { padding: 26px 24px 72px; }
+  .top-header { padding: 0 24px; }
+}
+@media (max-width: 768px) {
+  .top-header { height: 62px; }
+  .content-area { padding: 22px 16px 82px; }
+  .page-title { max-width: 180px; }
+}
+@media (max-width: 480px) {
+  .top-header { padding: 0 12px; }
+  .content-area { padding: 18px 12px 80px; }
 }
 
 /* Small Smartphone Breakpoint (<= 480px) */

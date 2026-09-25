@@ -17,9 +17,15 @@ import {
   Navigation,
   Stethoscope,
   Info,
-  Landmark
+  Landmark,
+  ArrowUp,
+  HeartPulse,
+  MapPinned,
+  WalletCards,
+  ClipboardPlus
 } from 'lucide-react';
 import { aiSearch, aiSymptomIntake, aiChat, fetchHospitals } from '../api';
+import './AIGuidePage.css';
 
 export default function AIGuidePage({
   onSelectDoctor,
@@ -86,6 +92,19 @@ export default function AIGuidePage({
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const handleSuggestedSearch = async (query) => {
+    setSearchQuery(query);
+    setSearchLoading(true);
+    try {
+      const res = await aiSearch(query, patientLocation?.lat || 31.5312, patientLocation?.lon || 75.9184);
+      if (res.success && res.data) setSearchResult(res.data);
+    } catch (err) {
+      console.error(err);
     } finally {
       setSearchLoading(false);
     }
@@ -304,151 +323,81 @@ export default function AIGuidePage({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Header */}
-      <div className="section-header">
-        <div>
-          <h2 className="section-title">AI Health Guide</h2>
-          <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-            Instant search with disease cost prediction, symptom intake triage, and clinical guidance
-          </div>
-        </div>
-      </div>
+    <div className={`ai-guide-page ai-workflow-${activeTab}`}>
+      <section className="ai-welcome">
+        <div className="ai-orb"><Sparkles size={22} /></div>
+        <span className="ai-eyebrow">CARELINK AI</span>
+        <h2>{activeTab === 'symptoms' ? 'Let’s understand what you’re feeling.' : activeTab === 'chat' ? 'How can I help with your care?' : 'What can I help you find?'}</h2>
+        <p>{activeTab === 'symptoms' ? 'Share a few details to prepare for your next step.' : activeTab === 'chat' ? 'Ask about care, services, or appointments.' : 'Search trusted care, symptoms, and treatment costs.'}</p>
+      </section>
 
-      {/* Sub-nav switcher */}
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', overflowX: 'auto', paddingBottom: '2px' }}>
+      <div className="ai-mode-switcher" role="tablist" aria-label="AI care tools">
         <button
-          className={`pill-badge ${activeTab === 'search' ? 'blue' : ''}`}
-          style={{
-            padding: '9px 18px',
-            fontSize: '13px',
-            fontWeight: activeTab === 'search' ? 700 : 500,
-            background: activeTab === 'search' ? 'var(--primary-blue)' : '#ffffff',
-            color: activeTab === 'search' ? '#ffffff' : 'var(--text-main)',
-            border: activeTab === 'search' ? '1px solid var(--primary-blue)' : '1px solid var(--border-subtle)',
-            borderRadius: '3px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            cursor: 'pointer',
-            transition: 'all 0.15s ease',
-            whiteSpace: 'nowrap'
-          }}
+          className={`ai-mode ${activeTab === 'search' ? 'active' : ''}`}
           onClick={() => setActiveTab('search')}
+          role="tab" aria-selected={activeTab === 'search'}
         >
-          <Search size={15} /> Natural Language Search
+          <Search size={16} /> Care search
         </button>
 
         <button
-          className={`pill-badge ${activeTab === 'symptoms' ? 'blue' : ''}`}
-          style={{
-            padding: '9px 18px',
-            fontSize: '13px',
-            fontWeight: activeTab === 'symptoms' ? 700 : 500,
-            background: activeTab === 'symptoms' ? 'var(--primary-blue)' : '#ffffff',
-            color: activeTab === 'symptoms' ? '#ffffff' : 'var(--text-main)',
-            border: activeTab === 'symptoms' ? '1px solid var(--primary-blue)' : '1px solid var(--border-subtle)',
-            borderRadius: '3px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            cursor: 'pointer',
-            transition: 'all 0.15s ease',
-            whiteSpace: 'nowrap'
-          }}
+          className={`ai-mode ${activeTab === 'symptoms' ? 'active' : ''}`}
           onClick={() => setActiveTab('symptoms')}
+          role="tab" aria-selected={activeTab === 'symptoms'}
         >
-          <Sparkles size={15} /> Symptom Intake Triage
+          <HeartPulse size={16} /> Symptom check
         </button>
 
         <button
-          className={`pill-badge ${activeTab === 'chat' ? 'blue' : ''}`}
-          style={{
-            padding: '9px 18px',
-            fontSize: '13px',
-            fontWeight: activeTab === 'chat' ? 700 : 500,
-            background: activeTab === 'chat' ? 'var(--primary-blue)' : '#ffffff',
-            color: activeTab === 'chat' ? '#ffffff' : 'var(--text-main)',
-            border: activeTab === 'chat' ? '1px solid var(--primary-blue)' : '1px solid var(--border-subtle)',
-            borderRadius: '3px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            cursor: 'pointer',
-            transition: 'all 0.15s ease',
-            whiteSpace: 'nowrap'
-          }}
+          className={`ai-mode ${activeTab === 'chat' ? 'active' : ''}`}
           onClick={() => setActiveTab('chat')}
+          role="tab" aria-selected={activeTab === 'chat'}
         >
-          <MessageSquare size={15} /> Healthcare FAQ Chat
+          <MessageSquare size={16} /> Ask Carelink
         </button>
       </div>
 
       {/* 1. Natural Language Search & Cost Prediction */}
       {activeTab === 'search' && (
-        <div className="card" style={{ padding: '24px 26px', borderRadius: '3px' }}>
-          <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '4px' }}>
-            Natural Language Hospital & Disease Search
-          </h3>
-          <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '18px' }}>
-            Describe your clinical condition or query in plain English. The AI predicts estimated costs, matches local hospital departments, and highlights government scheme subsidies.
-          </p>
-
-          <form onSubmit={handleAISearch} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        <div className="ai-search-workspace">
+          <div className="ai-prompt-shell">
+          <form onSubmit={handleAISearch} className="ai-prompt-form">
+            <div className="ai-prompt-leading"><Sparkles size={19} /></div>
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="e.g. Find hospital for heart bypass or stent, knee arthritis surgery, normal delivery..."
-              style={{
-                flex: 1,
-                minWidth: 'min(100%, 260px)',
-                padding: '11px 16px',
-                borderRadius: '3px',
-                border: '1px solid var(--border-subtle)',
-                fontSize: '13px',
-                background: '#f8fafc'
-              }}
+              placeholder="Describe the care you’re looking for..."
+              aria-label="Search for care"
             />
             <button
               type="submit"
-              className="btn-primary"
-              style={{ padding: '11px 22px', borderRadius: '3px', fontSize: '13px' }}
-              disabled={searchLoading}
+              className="ai-submit"
+              disabled={searchLoading || !searchQuery.trim()}
+              aria-label="Search with Carelink AI"
             >
-              <Sparkles size={15} /> {searchLoading ? 'Analyzing...' : 'Search with AI'}
+              {searchLoading ? <span className="ai-spinner" /> : <ArrowUp size={19} />}
             </button>
           </form>
+          <div className="ai-prompt-footer"><span><MapPinned size={14} /> Near {patientLocation?.locality || 'you'}</span><span><ShieldCheck size={14} /> Care guidance</span></div>
+          </div>
 
           {/* Quick Disease Sample Queries */}
-          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '12px' }}>
+          <div className="ai-suggestions" aria-label="Suggested searches">
             {[
-              'Heart treatment and bypass',
-              'Knee replacement surgery',
-              'Acute brain stroke emergency',
-              'Pregnancy delivery and C-section',
-              'Gallbladder stone laparoscopy',
-              'Diabetes sugar management',
-              'Cataract eye surgery',
-              'Dengue viral fever treatment'
-            ].map((sample) => (
+              { label: 'Heart care', icon: HeartPulse, query: 'Heart treatment and bypass' },
+              { label: 'Nearby hospitals', icon: MapPinned, query: 'Find nearby hospitals for my care' },
+              { label: 'Treatment costs', icon: WalletCards, query: 'Treatment cost and available government schemes' },
+              { label: 'Find a specialist', icon: Stethoscope, query: 'Find a specialist near me' }
+            ].map(({ label, icon: SuggestionIcon, query: sample }) => (
               <button
-                key={sample}
+                key={label}
                 type="button"
-                onClick={() => {
-                  setSearchQuery(sample);
-                }}
-                style={{
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  color: 'var(--text-muted)',
-                  padding: '4px 10px',
-                  borderRadius: '3px',
-                  fontSize: '11px',
-                  cursor: 'pointer'
-                }}
+                onClick={() => handleSuggestedSearch(sample)}
+                disabled={searchLoading}
+                className="ai-suggestion"
               >
-                {sample}
+                <SuggestionIcon size={15} /> {label}
               </button>
             ))}
           </div>
