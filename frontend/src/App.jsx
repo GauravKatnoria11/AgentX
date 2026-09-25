@@ -40,6 +40,7 @@ import EmergencyPage from './pages/EmergencyPage';
 import HospitalSecurePortal from './pages/HospitalSecurePortal';
 import DoctorDrawer from './components/DoctorDrawer';
 import AuthModal from './components/AuthModal';
+import AiMark from './components/AiMark';
 
 function App() {
   // Authentication State (genuine user or null)
@@ -186,7 +187,7 @@ function App() {
   // Nav Items relocated strictly to requested sequence without any loss:
   // AI Search (main page) -> Emergency -> Hospital Search -> Doctors -> Appointments -> Medical Records -> Pharmacy & Rx -> Follow-ups -> Diagnostics Labs -> Hospital Routes
   const navItems = [
-    { id: 'ai-guide', label: 'AI Search', icon: Sparkles },
+    { id: 'ai-guide', label: 'AI Search', icon: AiMark },
     { id: 'emergency', label: 'Emergency', icon: ShieldAlert, isEmergency: true },
     { id: 'hospitals', label: 'Hospital Search', icon: Building2 },
     { id: 'doctors', label: 'Doctors', icon: Stethoscope },
@@ -595,7 +596,7 @@ function App() {
       {/* Mobile Bottom Navigation Bar (5 Primary Touch Flows) */}
       <nav className="mobile-bottom-nav" aria-label="Mobile Navigation">
         {[
-          { id: 'ai-guide', label: 'AI Search', icon: Sparkles },
+          { id: 'ai-guide', label: 'AI Search', icon: AiMark },
           { id: 'emergency', label: 'SOS', icon: ShieldAlert, isEmergency: true },
           { id: 'hospitals', label: 'Hospitals', icon: Building2 },
           { id: 'doctors', label: 'Doctors', icon: Stethoscope },

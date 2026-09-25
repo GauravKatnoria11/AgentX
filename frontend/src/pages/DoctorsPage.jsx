@@ -465,7 +465,7 @@ export default function DoctorsPage({
                     e.stopPropagation();
                     openBookingModal(doc);
                   }}
-                  style={{ flex: 1.2 }}
+                  className="doctor-card-action doctor-card-action-primary"
                 >
                   <Calendar size={15} /> Book Appointment
                 </button>
@@ -478,7 +478,7 @@ export default function DoctorsPage({
                     onSelectDoctor && onSelectDoctor(doc);
                   }}
                   title="View Doctor Profile"
-                  style={{ flex: 1 }}
+                  className="doctor-card-action doctor-card-action-secondary"
                 >
                   Profile <ArrowRight size={14} />
                 </button>

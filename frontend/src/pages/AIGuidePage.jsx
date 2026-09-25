@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { aiSearch, aiSymptomIntake, aiChat, fetchHospitals } from '../api';
 import './AIGuidePage.css';
+import AiMark from '../components/AiMark';
 
 export default function AIGuidePage({
   onSelectDoctor,
@@ -325,7 +326,7 @@ export default function AIGuidePage({
   return (
     <div className={`ai-guide-page ai-workflow-${activeTab}`}>
       <section className="ai-welcome">
-        <div className="ai-orb"><Sparkles size={22} /></div>
+        <div className="ai-orb"><AiMark size={26} /></div>
         <span className="ai-eyebrow">CARELINK AI</span>
         <h2>{activeTab === 'symptoms' ? 'Let’s understand what you’re feeling.' : activeTab === 'chat' ? 'How can I help with your care?' : 'What can I help you find?'}</h2>
         <p>{activeTab === 'symptoms' ? 'Share a few details to prepare for your next step.' : activeTab === 'chat' ? 'Ask about care, services, or appointments.' : 'Search trusted care, symptoms, and treatment costs.'}</p>
@@ -362,7 +363,7 @@ export default function AIGuidePage({
         <div className="ai-search-workspace">
           <div className="ai-prompt-shell">
           <form onSubmit={handleAISearch} className="ai-prompt-form">
-            <div className="ai-prompt-leading"><Sparkles size={19} /></div>
+            <div className="ai-prompt-leading"><AiMark size={20} /></div>
             <input
               type="text"
               value={searchQuery}
@@ -421,75 +422,56 @@ export default function AIGuidePage({
               {/* AI Estimated Treatment Cost & Scheme Coverage Card */}
               {searchResult.estimated_cost && (
                 <div
+                  className="treatment-cost-card"
                   style={{
                     background: '#ffffff',
-                    border: '1px solid #cbd5e1',
-                    borderLeft: '4px solid var(--primary-blue)',
-                    borderRadius: '3px',
-                    padding: '20px 22px',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                    border: '1px solid #e3e5df',
+                    borderRadius: '14px',
+                    padding: '22px',
+                    boxShadow: '0 8px 24px rgba(31, 39, 32, 0.055)'
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span
-                          style={{
-                            background: '#eff6ff',
-                            color: 'var(--primary-blue)',
-                            fontSize: '11px',
-                            fontWeight: 800,
-                            padding: '2px 8px',
-                            borderRadius: '3px',
-                            border: '1px solid #bfdbfe'
-                          }}
-                        >
-                          AI ESTIMATED TREATMENT COST
-                        </span>
-                        <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                          {searchResult.estimated_cost.disease_category}
-                        </span>
+                  <div className="cost-card-heading">
+                    <div className="cost-card-title">
+                      <div className="cost-card-meta">
+                        <span className="cost-ai-tag"><AiMark size={13} /> AI COST ESTIMATE</span>
+                        <span className="cost-category">{searchResult.estimated_cost.disease_category}</span>
                       </div>
-                      <h4 style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-main)', marginTop: '6px' }}>
-                        {searchResult.estimated_cost.condition_or_procedure}
-                      </h4>
+                      <h4>{searchResult.estimated_cost.condition_or_procedure}</h4>
                     </div>
-
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>Estimated Total Range</div>
-                      <div style={{ fontSize: '16px', fontWeight: 800, color: '#0d904f', marginTop: '2px' }}>
-                        {searchResult.estimated_cost.estimated_total_range}
-                      </div>
+                    <div className="cost-total">
+                      <span>Estimated total range</span>
+                      <strong>{searchResult.estimated_cost.estimated_total_range}</strong>
                     </div>
                   </div>
 
                   {/* Cost Breakdown Grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: '10px', marginBottom: '14px' }}>
-                    <div style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: '3px', border: '1px solid #e2e8f0' }}>
-                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>OPD Doctor Consultation</div>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)', marginTop: '4px' }}>
+                  <div className="cost-breakdown-grid">
+                    <div className="cost-breakdown-item">
+                      <div className="cost-item-label">OPD Doctor Consultation</div>
+                      <div className="cost-item-value">
                         {searchResult.estimated_cost.opd_consultation}
                       </div>
                     </div>
 
-                    <div style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: '3px', border: '1px solid #e2e8f0' }}>
-                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>Diagnostic Investigations</div>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)', marginTop: '4px' }}>
+                    <div className="cost-breakdown-item">
+                      <div className="cost-item-label">Diagnostic Investigations</div>
+                      <div className="cost-item-value">
                         {searchResult.estimated_cost.diagnostic_tests}
                       </div>
                     </div>
 
-                    <div style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: '3px', border: '1px solid #e2e8f0' }}>
-                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>Treatment & Procedures</div>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)', marginTop: '4px' }}>
+                    <div className="cost-breakdown-item">
+                      <div className="cost-item-label">Treatment & Procedures</div>
+                      <div className="cost-item-value">
                         {searchResult.estimated_cost.treatment_or_procedure}
                       </div>
                     </div>
 
                     {searchResult.estimated_cost.hospitalization_per_day && (
-                      <div style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: '3px', border: '1px solid #e2e8f0' }}>
-                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>Hospital Inpatient Stay</div>
-                        <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)', marginTop: '4px' }}>
+                      <div className="cost-breakdown-item">
+                        <div className="cost-item-label">Hospital Inpatient Stay</div>
+                        <div className="cost-item-value">
                           {searchResult.estimated_cost.hospitalization_per_day}
                         </div>
                       </div>
@@ -498,14 +480,14 @@ export default function AIGuidePage({
 
                   {/* Government Schemes Cashless Subsidies */}
                   {searchResult.estimated_cost.government_schemes_coverage?.length > 0 && (
-                    <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '3px', padding: '12px 16px', marginBottom: '10px' }}>
-                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#065f46', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <ShieldCheck size={14} color="#059669" /> Government Scheme Cashless Coverage Available:
+                    <div className="cost-coverage-panel">
+                      <div className="cost-panel-title">
+                        <ShieldCheck size={15} /> Government scheme coverage
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div className="cost-coverage-list">
                         {searchResult.estimated_cost.government_schemes_coverage.map((scheme, sIdx) => (
-                          <div key={sIdx} style={{ fontSize: '12px', color: '#047857', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span style={{ color: '#059669', fontWeight: 800 }}>✓</span> {scheme}
+                          <div key={sIdx} className="cost-coverage-item">
+                            <Check size={14} /> <span>{scheme}</span>
                           </div>
                         ))}
                       </div>
@@ -514,12 +496,13 @@ export default function AIGuidePage({
 
                   {/* Savings Tips & Disclaimer */}
                   {searchResult.estimated_cost.savings_tips && (
-                    <div style={{ fontSize: '12px', color: '#1e40af', background: '#eff6ff', padding: '8px 12px', borderRadius: '3px', marginBottom: '6px', border: '1px solid #bfdbfe' }}>
-                      <strong>Smart Cost Savings Tip:</strong> {searchResult.estimated_cost.savings_tips}
+                    <div className="cost-savings-panel">
+                      <span className="cost-savings-label">Cost saving tip</span>
+                      <span>{searchResult.estimated_cost.savings_tips}</span>
                     </div>
                   )}
 
-                  <div style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic', marginTop: '4px' }}>
+                  <div className="cost-disclaimer">
                     * {searchResult.estimated_cost.disclaimer}
                   </div>
                 </div>

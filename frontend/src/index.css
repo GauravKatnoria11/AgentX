@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  /* Google Classroom & Material Design Canvas */
-  --bg-app: #f7f8fc;
+  /* Warm neutral canvas and restrained sage accent */
+  --bg-app: #f6f6f4;
   --bg-card: #ffffff;
-  --border-subtle: #e6e8f0;
-  --border-focus: #6155d9;
+  --border-subtle: #e7e6e2;
+  --border-focus: #66756e;
 
-  /* Google Palette */
-  --primary-blue: #5b55d6;
-  --primary-blue-hover: #4842bd;
-  --primary-blue-light: #efefff;
-  --primary-blue-border: #dbdafb;
+  /* Primary accent */
+  --primary-blue: #66756e;
+  --primary-blue-hover: #53625b;
+  --primary-blue-light: #edf0ed;
+  --primary-blue-border: #d9dfda;
 
   --google-red: #d93025;
   --google-red-hover: #b3261e;
@@ -30,10 +30,10 @@
   --google-teal-light: #e0f2f1;
 
   /* Text Tokens */
-  --text-main: #17182a;
-  --text-body: #42445a;
-  --text-muted: #77798d;
-  --text-light: #989aab;
+  --text-main: #222622;
+  --text-body: #4c514d;
+  --text-muted: #7e837f;
+  --text-light: #a0a49f;
 
   /* Badges */
   --badge-green-bg: #e6f4ea;
@@ -44,7 +44,7 @@
   --badge-amber-text: #b06000;
 
   /* Typography */
-  --font-family: 'Inter', 'Segoe UI', sans-serif;
+  --font-family: 'DM Sans', 'Segoe UI', sans-serif;
   --radius-card: 16px;
   --radius-item: 12px;
   --radius-pill: 999px;
@@ -61,9 +61,9 @@
   --space-4xl: 40px;
 
   /* Google Material Shadows */
-  --shadow-sm: 0 2px 8px rgba(27, 30, 66, 0.045);
-  --shadow-md: 0 12px 32px rgba(27, 30, 66, 0.09);
-  --shadow-lg: 0 24px 64px rgba(27, 30, 66, 0.14);
+  --shadow-sm: 0 2px 8px rgba(28, 31, 28, 0.045);
+  --shadow-md: 0 10px 28px rgba(28, 31, 28, 0.085);
+  --shadow-lg: 0 20px 52px rgba(28, 31, 28, 0.12);
 }
 
 * {
