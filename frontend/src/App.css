@@ -650,15 +650,16 @@ textarea:focus {
   align-items: center;
   margin-bottom: 16px;
 }
+.signin-brand-logo { display: block; width: 44px; height: 44px; margin-bottom: 1px; object-fit: contain; }
 
-.signin-emergency-action { display: flex; justify-content: flex-end; margin: -2px 0 16px; }
-.signin-emergency-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 32px; padding: 0 13px; border: 0; border-radius: 8px; background: #d92f27; color: #fff; box-shadow: 0 2px 0 rgba(106, 28, 24, .2); font: inherit; font-size: 12px; font-weight: 650; white-space: nowrap; cursor: pointer; transition: background .16s ease, transform .16s ease, box-shadow .16s ease; }
+.signin-emergency-action { display: flex; justify-content: stretch; margin: -2px 0 16px; }
+.signin-emergency-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 42px; padding: 10px 16px; border: 0; border-radius: 8px; background: #d92f27; color: #fff; box-shadow: 0 2px 0 rgba(106, 28, 24, .2); font: inherit; font-size: 14px; font-weight: 650; white-space: nowrap; cursor: pointer; transition: background .16s ease, transform .16s ease, box-shadow .16s ease; }
 .signin-emergency-button:hover { background: #c62822; box-shadow: 0 3px 7px rgba(106, 28, 24, .2); transform: translateY(-1px); }
 .signin-emergency-button:active { transform: translateY(0); }
 .signin-emergency-button:focus-visible { outline: 3px solid rgba(217, 47, 39, .22); outline-offset: 2px; }
 @media (max-width: 480px) {
   .signin-emergency-action { margin-bottom: 13px; }
-  .signin-emergency-button { min-height: 34px; padding: 0 12px; font-size: 12px; }
+  .signin-emergency-button { min-height: 42px; padding: 10px 16px; font-size: 14px; }
 }
 
 .google-login-title {

@@ -9,8 +9,6 @@ import {
   EyeOff,
   CheckCircle2,
   AlertCircle,
-  Building2,
-  ShieldCheck,
   ShieldAlert
 } from 'lucide-react';
 import { loginUser, signupUser, oauthCallback } from '../api';
@@ -186,9 +184,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, onEmergencyC
       <div className="google-login-box">
         {/* Brand Icon & Title */}
         <div className="google-login-logo">
-          <div className="brand-icon" style={{ width: '40px', height: '40px', borderRadius: '3px' }}>
-            <Building2 size={22} />
-          </div>
+          <img className="signin-brand-logo" src="/favicon.jpeg" alt="Carelink" />
           <h1 className="google-login-title">
             {mode === 'login' ? 'Sign in to Carelink' : 'Create Carelink Account'}
           </h1>
@@ -403,23 +399,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, onEmergencyC
           )}
         </div>
 
-        {/* HIPAA & Security Note */}
-        <div
-          style={{
-            marginTop: '28px',
-            paddingTop: '16px',
-            borderTop: '1px solid var(--border-subtle)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '6px',
-            fontSize: '11px',
-            color: 'var(--text-muted)'
-          }}
-        >
-          <ShieldCheck size={14} color="var(--google-green)" />
-          <span>Encrypted patient authentication & verified health records</span>
-        </div>
       </div>
     </div>
   );
