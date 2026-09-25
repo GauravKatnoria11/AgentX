@@ -46,7 +46,8 @@ export default function DoctorsPage({
   preselectedHospital,
   initialDoctorToBook,
   onClearDoctorToBook,
-  onNavigateToAppointments
+  onNavigateToAppointments,
+  onRequireSignIn
 }) {
   const [doctors, setDoctors] = useState([]);
   const [hospitalsList, setHospitalsList] = useState([]);
@@ -95,30 +96,19 @@ export default function DoctorsPage({
 
   const openBookingModal = async (doc) => {
     if (!doc) return;
+    if (!currentUser) {
+      onRequireSignIn?.('Sign in to book an appointment. Your contact details will be used to confirm it.', 'doctors');
+      onClearDoctorToBook?.();
+      return;
+    }
     setBookingDoctor(doc);
     setBookingSuccess(null);
     setBookingError('');
     setSelectedSlot('');
     setReason('');
 
-    // Pre-populate phone and blood group from logged in user or auth storage
-    let activePhone = currentUser?.phone || '';
-    let activeBloodGroup = currentUser?.blood_group || '';
-    if (!activePhone || !activeBloodGroup) {
-      try {
-        const stored = JSON.parse(localStorage.getItem('auth_user') || '{}');
-        if (!activePhone && stored.phone) activePhone = stored.phone;
-        if (!activeBloodGroup && stored.blood_group) activeBloodGroup = stored.blood_group;
-      } catch (err) {
-        // ignore JSON parse error
-      }
-    }
-    // Reliable defaults so guest users are never roadblocked
-    if (!activePhone) activePhone = '9876543210';
-    if (!activeBloodGroup) activeBloodGroup = 'B+';
-
-    setPatientPhone(activePhone);
-    setBloodGroup(activeBloodGroup);
+    setPatientPhone(currentUser.phone || '');
+    setBloodGroup(currentUser.blood_group || '');
 
     await loadSlots(doc.id, appointmentDate);
   };
@@ -186,13 +176,21 @@ export default function DoctorsPage({
   };
 
   const handleConfirmBooking = async () => {
+    if (!currentUser) {
+      onRequireSignIn?.('Sign in to book an appointment.', 'doctors');
+      return;
+    }
     if (!selectedSlot) {
       setBookingError('Please select a time slot for your appointment.');
       return;
     }
 
-    const phoneToUse = patientPhone.trim() || '9876543210';
-    const bloodToUse = bloodGroup || 'B+';
+    const phoneToUse = patientPhone.trim();
+    if (!phoneToUse) {
+      setBookingError('Add a contact number to continue with your booking.');
+      return;
+    }
+    const bloodToUse = bloodGroup || null;
 
     setIsSubmitting(true);
     setBookingError('');

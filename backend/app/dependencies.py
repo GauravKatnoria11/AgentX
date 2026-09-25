@@ -32,6 +32,14 @@ async def get_current_user(credentials: Optional[HTTPAuthorizationCredentials] =
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    # Reject the publicly exposed legacy demo patient token even if it was issued earlier.
+    if str(payload.get("email", "")).lower() == "patient@example.com":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="This demo account is no longer available. Please sign in with your account.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     # Look up in profiles
     user = next((p for p in MOCK_DATA["profiles"] if str(p["id"]) == str(user_id)), None)
     if not user:

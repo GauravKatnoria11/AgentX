@@ -423,6 +423,20 @@ textarea:focus {
   transform: translateY(-2px);
 }
 
+.hospital-rank-change {
+  animation: hospital-rank-enter 360ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+  animation-delay: var(--rank-delay, 0ms);
+}
+
+@keyframes hospital-rank-enter {
+  from { opacity: 0.55; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hospital-rank-change { animation: none; }
+}
+
 /* Colored Header Banner Covers */
 .classroom-card-banner {
   position: relative;
@@ -604,7 +618,7 @@ textarea:focus {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 24px;
+  padding: clamp(16px, 4vh, 32px) 16px;
   overflow-y: auto;
   font-family: var(--font-family);
 }
@@ -621,9 +635,11 @@ textarea:focus {
 .google-login-box {
   width: 100%;
   max-width: 448px;
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
   border: 1px solid var(--border-subtle);
   border-radius: 3px;
-  padding: 40px;
+  padding: clamp(20px, 4vh, 32px) clamp(18px, 4vw, 36px);
   background: #ffffff;
   box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.15);
 }
@@ -632,7 +648,7 @@ textarea:focus {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .google-login-title {

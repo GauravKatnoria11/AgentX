@@ -71,6 +71,7 @@ class MedicalRecordSummaryResponse(BaseModel):
 class HealthcareChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=1000)
     context_hospital_id: Optional[str] = None
+    conversation_history: List[Dict[str, str]] = Field(default_factory=list)
 
 
 class HealthcareChatResponse(BaseModel):

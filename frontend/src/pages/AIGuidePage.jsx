@@ -34,6 +34,7 @@ export default function AIGuidePage({
   onSelectHospitalForRoute,
   onSelectHospitalForDoctors,
   onOpenHospitalDetail,
+  onNavigatePage,
   patientLocation
 }) {
   const [activeTab, setActiveTab] = useState('search'); // 'search' | 'symptoms' | 'chat'
@@ -136,7 +137,7 @@ export default function AIGuidePage({
     setChatLoading(true);
 
     try {
-      const res = await aiChat(msg);
+      const res = await aiChat(msg, chatMessages);
       if (res.success && res.data) {
         setChatMessages((prev) => [
           ...prev,
@@ -147,9 +148,18 @@ export default function AIGuidePage({
             links: res.data.suggested_links
           }
         ]);
+      } else {
+        setChatMessages((prev) => [...prev, {
+          sender: 'ai',
+          text: res.message || 'I could not get an answer just now. Please try again.'
+        }]);
       }
     } catch (e) {
       console.error(e);
+      setChatMessages((prev) => [...prev, {
+        sender: 'ai',
+        text: 'I could not connect to the care assistant. Please check your connection and try again.'
+      }]);
     } finally {
       setChatLoading(false);
     }
@@ -689,22 +699,30 @@ export default function AIGuidePage({
 
           <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', padding: '14px 16px', background: '#f8fafc', borderRadius: '3px', border: '1px solid var(--border-subtle)' }}>
             {chatMessages.map((m, idx) => (
-              <div
-                key={idx}
-                style={{
-                  alignSelf: m.sender === 'user' ? 'flex-end' : 'flex-start',
-                  maxWidth: '80%',
-                  background: m.sender === 'user' ? 'var(--primary-blue)' : '#ffffff',
-                  color: m.sender === 'user' ? '#ffffff' : 'var(--text-main)',
-                  padding: '11px 16px',
-                  borderRadius: '3px',
-                  border: m.sender === 'user' ? 'none' : '1px solid var(--border-subtle)',
-                  boxShadow: 'var(--shadow-sm)',
-                  fontSize: '13px',
-                  lineHeight: 1.5
-                }}
-              >
-                {m.text}
+              <div key={idx} className={`ai-chat-message ${m.sender === 'user' ? 'user' : 'assistant'} ${m.isEmergency ? 'emergency' : ''}`}>
+                <div>{m.text}</div>
+                {m.links?.length > 0 && (
+                  <div className="ai-chat-links">
+                    {m.links.map((link, linkIndex) => (
+                      <button
+                        key={`${link.url}-${linkIndex}`}
+                        type="button"
+                        onClick={() => {
+                          const path = link.url.split(/[?#]/)[0];
+                          const page = path.includes('hospital') ? 'hospitals'
+                            : path.includes('doctor') ? 'doctors'
+                              : path.includes('appointment') ? 'appointments'
+                                : path.includes('lab') ? 'labs'
+                                  : path.includes('pharmacy') ? 'pharmacy'
+                                    : path.includes('emergency') ? 'emergency' : null;
+                          if (page && onNavigatePage) onNavigatePage(page);
+                        }}
+                      >
+                        {link.title} <ArrowUp size={12} />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
             {chatLoading && (

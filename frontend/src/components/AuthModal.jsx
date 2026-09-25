@@ -22,7 +22,7 @@ import {
   isLiveSupabase
 } from '../supabase';
 
-export default function AuthModal({ isOpen, onClose, onAuthSuccess, onEmergencyClick }) {
+export default function AuthModal({ isOpen, onClose, onAuthSuccess, onEmergencyClick, reason = '' }) {
   const [mode, setMode] = useState('login'); // 'login' | 'signup'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -161,28 +161,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, onEmergencyC
       if (isLiveSupabase) {
         await signInWithGoogle();
       } else {
-        // Mock Google OAuth callback in development
-        const mockGoogleUser = {
-          id: '55555555-5555-5555-5555-555555555555',
-          email: 'gaganjitsingh003@gmail.com',
-          full_name: 'Gaganjit Singh',
-          role: 'patient',
-          phone: '+91-98765-12345',
-          avatar_url: 'https://lh3.googleusercontent.com/a/default-user=s96-c',
-          blood_group: 'B+'
-        };
-        const syncRes = await oauthCallback({
-          provider: 'google',
-          access_token: 'google-mock-token-xyz',
-          email: mockGoogleUser.email,
-          full_name: mockGoogleUser.full_name
-        });
-        const userToSet = syncRes.success && syncRes.data?.user ? syncRes.data.user : mockGoogleUser;
-        setSuccess('Signed in with Google successfully!');
-        setTimeout(() => {
-          onAuthSuccess(userToSet);
-          onClose();
-        }, 500);
+        setError('Google sign-in is not configured yet. Use email and password to continue.');
       }
     } catch (err) {
       setError(err.message || 'Google Sign-In failed.');
@@ -202,34 +181,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, onEmergencyC
           <ArrowLeft size={16} /> Back to Carelink
         </button>
 
-        {/* Emergency SOS Quick Button */}
-        <button
-          type="button"
-          onClick={() => {
-            if (onEmergencyClick) {
-              onEmergencyClick();
-            } else {
-              window.location.href = 'tel:108';
-            }
-          }}
-          className="btn-google-danger emergency-login-header-btn"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '8px 16px',
-            fontSize: '13px',
-            fontWeight: 800,
-            borderRadius: '3px',
-            background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
-            color: '#ffffff',
-            border: 'none',
-            cursor: 'pointer',
-            boxShadow: '0 2px 8px rgba(220, 38, 38, 0.3)'
-          }}
-        >
-          <ShieldAlert size={16} /> <span className="sos-full-text">EMERGENCY SOS (108 / 112)</span><span className="sos-short-text">108 SOS</span>
-        </button>
       </div>
 
       {/* Centered Google Style Login Box */}
@@ -242,39 +193,24 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, onEmergencyC
           <h1 className="google-login-title">
             {mode === 'login' ? 'Sign in to Carelink' : 'Create Carelink Account'}
           </h1>
-          <p className="google-login-subtitle">
-            {mode === 'login'
-              ? 'Access hospital bookings, prescriptions, and health records'
-              : 'Instant appointment booking and health tracking'}
-          </p>
         </div>
 
-        {/* Emergency Fast-Track Card (Skip Login in Critical Moments) */}
+        {/* Compact emergency action */}
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: '12px',
-            padding: '12px 14px',
+            gap: '8px',
+            padding: '7px 9px',
             background: '#fef2f2',
             border: '1px solid #fecaca',
             borderRadius: '3px',
             marginBottom: '16px'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ background: '#fee2e2', padding: '6px', borderRadius: '3px', color: '#dc2626', display: 'flex' }}>
-              <PhoneCall size={16} />
-            </div>
-            <div>
-              <div style={{ fontSize: '12.5px', fontWeight: 800, color: '#991b1b' }}>
-                Medical Emergency?
-              </div>
-              <div style={{ fontSize: '11px', color: '#b91c1c' }}>
-                Skip login for 108 ambulance dispatch
-              </div>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#991b1b', fontSize: '11px', fontWeight: 700 }}>
+            <PhoneCall size={14} /> Medical Emergency
           </div>
 
           <button
@@ -290,16 +226,16 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, onEmergencyC
               background: '#dc2626',
               color: '#ffffff',
               border: 'none',
-              padding: '6px 12px',
-              borderRadius: '8px',
-              fontSize: '11.5px',
+              padding: '4px 8px',
+              borderRadius: '5px',
+              fontSize: '10.5px',
               fontWeight: 800,
               cursor: 'pointer',
               whiteSpace: 'nowrap',
               boxShadow: '0 2px 6px rgba(220, 38, 38, 0.25)'
             }}
           >
-            Launch SOS 🚨
+            <ShieldAlert size={12} /> 108 SOS
           </button>
         </div>
 

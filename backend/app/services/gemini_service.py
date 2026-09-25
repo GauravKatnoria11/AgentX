@@ -369,67 +369,145 @@ class GeminiService:
             "disclaimer": "This summary is AI-generated for patient clarity only and does not alter original medical records."
         }
 
-    async def healthcare_faq_chat(self, message: str, context_hospital_id: Optional[str] = None) -> Dict[str, Any]:
-        """
-        Healthcare assistant for hospital services, visiting hours, and booking procedures.
-        Refuses to diagnose or prescribe.
-        """
-        m_lower = message.lower()
+    async def healthcare_faq_chat(
+        self,
+        message: str,
+        context_hospital_id: Optional[str] = None,
+        conversation_history: Optional[List[Dict[str, str]]] = None
+    ) -> Dict[str, Any]:
+        """Answer care and platform questions with Gemini when configured and useful local fallbacks."""
+        current = message.strip()
+        m_lower = current.lower()
+        history = conversation_history or []
+        recent_user_turns = [
+            str(item.get("text", ""))
+            for item in history[-6:]
+            if item.get("sender") == "user" and item.get("text")
+        ]
+        recent_user_context = recent_user_turns[-1].lower() if recent_user_turns else ""
+        search_text = f"{m_lower} {recent_user_context}" if len(m_lower.split()) <= 5 else m_lower
 
-        # Safety Check: AI must NOT diagnose or prescribe
-        if any(w in m_lower for w in ["what medicine should i take", "prescribe", "write prescription", "what illness do i have"]):
+        def result(reply: str, links: Optional[List[Dict[str, str]]] = None, emergency: bool = False):
             return {
-                "reply": (
-                    "As an AI assistant, I am not authorized to prescribe medication or diagnose medical conditions. "
-                    "Please book an appointment with one of our licensed physicians who can evaluate your situation safely."
-                ),
-                "suggested_links": [{"title": "Find a Doctor", "url": "/doctors"}, {"title": "Book Appointment", "url": "/appointments"}],
-                "is_emergency_detected": False
-            }
-
-        # Check emergency
-        if any(w in m_lower for w in ["chest pain", "can't breathe", "heavy bleeding", "heart attack", "poison", "unconscious"]):
-            return {
-                "reply": (
-                    "CRITICAL NOTICE: You are describing symptoms that require immediate medical attention. "
-                    "Please call emergency services (911 or 112) or proceed to the nearest emergency room immediately."
-                ),
-                "suggested_links": [{"title": "Find Emergency Hospitals", "url": "/hospitals?emergency_only=true"}],
-                "is_emergency_detected": True
+                "reply": reply,
+                "suggested_links": links or [],
+                "is_emergency_detected": emergency
             }
 
-        # Helpful FAQ information grounded in real platform data
-        if any(w in m_lower for w in ["book", "appointment", "schedule"]):
-            return {
-                "reply": "You can easily schedule a consultation with our verified doctors. Visit the Doctors directory, choose your preferred specialist, select a date and time slot, and confirm your booking.",
-                "suggested_links": [{"title": "Browse Doctors", "url": "/doctors"}],
-                "is_emergency_detected": False
-            }
-        elif any(w in m_lower for w in ["hour", "timing", "open"]):
-            return {
-                "reply": "City General Hospital provides 24/7 Emergency Care. Specialist Outpatient Clinics are open Monday through Friday from 8:00 AM to 6:00 PM.",
-                "suggested_links": [{"title": "Hospital Details", "url": "/hospitals/hosp-1"}],
-                "is_emergency_detected": False
-            }
-        elif any(w in m_lower for w in ["lab", "test", "blood"]):
-            return {
-                "reply": "Diagnostic laboratories offer fasting blood panels, MRI, CT scans, and X-Rays. For lipid and fasting glucose tests, 8-10 hours of overnight fasting is typically recommended.",
-                "suggested_links": [{"title": "Diagnostic Labs", "url": "/labs"}],
-                "is_emergency_detected": False
-            }
-        else:
-            return {
-                "reply": (
-                    "Hello! I am your AI Healthcare Guide. I can help you locate specialists, explain hospital departments, "
-                    "find available diagnostic services, or guide you through scheduling your doctor appointments."
-                ),
-                "suggested_links": [
-                    {"title": "Explore Hospitals", "url": "/hospitals"},
-                    {"title": "Find Doctors", "url": "/doctors"},
-                    {"title": "Pharmacies", "url": "/pharmacies"}
-                ],
-                "is_emergency_detected": False
-            }
+        if any(term in m_lower for term in (
+            "chest pain", "can't breathe", "cannot breathe", "trouble breathing", "heavy bleeding",
+            "heart attack", "poison", "unconscious", "stroke symptoms", "face is drooping"
+        )):
+            return result(
+                "This may be an emergency. Call 112 now or go to the nearest emergency department. Do not wait for an online reply.",
+                [{"title": "Emergency hospitals", "url": "/hospitals?emergency_only=true"}],
+                True
+            )
+
+        if any(term in m_lower for term in (
+            "what medicine should", "which medicine", "prescribe", "write prescription",
+            "what illness do i have", "diagnose me", "what disease do i have"
+        )):
+            return result(
+                "I can’t diagnose or recommend a medicine. A licensed clinician can assess your symptoms and medical history. I can help you find a doctor or book a visit.",
+                [{"title": "Find a doctor", "url": "/doctors"}, {"title": "Appointments", "url": "/appointments"}]
+            )
+
+        # Use the configured Gemini model for open-ended FAQ questions. The prompt keeps
+        # answers concise and avoids inventing facility-specific schedules or availability.
+        if self.client:
+            transcript = "\n".join(
+                f"{('Patient' if item.get('sender') == 'user' else 'Assistant')}: {str(item.get('text', ''))[:800]}"
+                for item in history[-8:]
+                if item.get("sender") in {"user", "ai"} and item.get("text")
+            )
+            prompt = (
+                "You are Carelink's healthcare FAQ assistant. Answer the patient's latest question directly, "
+                "briefly, and warmly. Use conversation history to understand short follow-ups. You may explain "
+                "general wellness information and how to use care services. Never diagnose, prescribe, or claim "
+                "a treatment is safe for this specific patient. For diet or health advice, give general guidance "
+                "and mention when a clinician should personalize it. Do not invent hospital hours, prices, doctors, "
+                "availability, or policies; say when a detail must be confirmed with the facility. If urgent symptoms "
+                "are mentioned, advise calling local emergency services immediately. Keep the response to 2-5 sentences.\n\n"
+                f"Conversation:\n{transcript or '(No earlier messages)'}\nPatient's latest question: {current}"
+            )
+            try:
+                response = await self.client.aio.models.generate_content(
+                    model=settings.GEMINI_CHAT_MODEL,
+                    contents=prompt
+                )
+                generated_reply = (response.text or "").strip()
+                if generated_reply:
+                    links = self._healthcare_chat_links(search_text)
+                    return result(generated_reply, links)
+            except Exception as exc:
+                logger.warning("Gemini FAQ response failed; using local FAQ fallback: %s", exc)
+
+        if any(term in search_text for term in ("heart", "cardiac", "cardiology", "cardiologist")) and any(
+            term in search_text for term in ("food", "eat", "diet", "meal", "nutrition")
+        ):
+            return result(
+                "For general heart-health eating, choose vegetables, fruit, beans, whole grains, and unsalted nuts; favor fish or other lean proteins, and limit salty, highly processed foods and foods high in saturated or trans fats. If you have heart failure, kidney disease, diabetes, or a prescribed diet, ask your clinician or dietitian what is right for you.",
+                [{"title": "Find a cardiologist", "url": "/doctors"}]
+            )
+
+        if any(term in search_text for term in ("heart", "cardiac", "cardiology", "cardiologist")) and any(
+            term in search_text for term in ("specialist", "doctor", "clinic", "who", "find")
+        ):
+            return result(
+                "A cardiologist (heart specialist) can assess heart-related concerns. Open Doctors and choose Cardiology to see available specialists; use Emergency for sudden chest pain, severe breathlessness, or fainting.",
+                [{"title": "Browse doctors", "url": "/doctors"}, {"title": "Emergency care", "url": "/emergency"}]
+            )
+
+        if any(term in search_text for term in ("book", "appointment", "schedule", "reschedule")):
+            return result(
+                "To book, open Doctors, choose a specialist, select an available time, and confirm the appointment. You can review or manage bookings in Appointments.",
+                [{"title": "Find a doctor", "url": "/doctors"}, {"title": "Appointments", "url": "/appointments"}]
+            )
+
+        if any(term in search_text for term in ("hour", "timing", "open", "visiting time")):
+            return result(
+                "Emergency services are listed as 24/7 where a facility provides them. Clinic and visiting hours vary by hospital, so open the hospital details or call the facility to confirm today's schedule.",
+                [{"title": "Browse hospitals", "url": "/hospitals"}]
+            )
+
+        if any(term in search_text for term in ("lab", "test", "blood", "fasting", "sample")):
+            return result(
+                "Preparation depends on the exact test. Check the instructions from your clinician or lab before fasting; some blood tests require it and many do not. The Diagnostics Labs section lists available services.",
+                [{"title": "Diagnostics labs", "url": "/labs"}]
+            )
+
+        if any(term in search_text for term in ("hospital", "department", "facility", "near me", "nearby")):
+            return result(
+                "I can help you find a facility. Open Hospital Search to compare nearby hospitals, services, ICU beds, and directions. Tell me the specialty or area you need and I can narrow it down.",
+                [{"title": "Hospital search", "url": "/hospitals"}]
+            )
+
+        if any(term in search_text for term in ("pharmacy", "medicine stock", "drug store", "medication availability")):
+            return result(
+                "Use Pharmacy & Rx to browse medicines and partner pharmacies. Stock can change, so confirm availability with the pharmacy before travelling. I can also help find a doctor, but I can’t recommend a medicine.",
+                [{"title": "Pharmacy & Rx", "url": "/pharmacy"}]
+            )
+
+        return result(
+            "I can help with hospital and doctor searches, appointments, lab preparation, pharmacy services, or general health information. What would you like to know?",
+            [
+                {"title": "Hospitals", "url": "/hospitals"},
+                {"title": "Doctors", "url": "/doctors"},
+                {"title": "Appointments", "url": "/appointments"}
+            ]
+        )
+
+    @staticmethod
+    def _healthcare_chat_links(message: str) -> List[Dict[str, str]]:
+        text = message.lower()
+        if any(word in text for word in ("appointment", "book", "doctor", "specialist", "cardio", "heart")):
+            return [{"title": "Find a doctor", "url": "/doctors"}]
+        if any(word in text for word in ("lab", "test", "blood", "fasting")):
+            return [{"title": "Diagnostics labs", "url": "/labs"}]
+        if any(word in text for word in ("pharmacy", "medicine", "medication")):
+            return [{"title": "Pharmacy & Rx", "url": "/pharmacy"}]
+        return [{"title": "Hospital search", "url": "/hospitals"}]
 
 
 gemini_service = GeminiService()

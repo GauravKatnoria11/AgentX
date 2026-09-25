@@ -28,7 +28,7 @@ const TEST_CATEGORIES = [
   { id: 'package', label: 'Full Body Packages', query: 'Package' }
 ];
 
-export default function LabsPage() {
+export default function LabsPage({ currentUser, onRequireSignIn }) {
   const [labs, setLabs] = useState([]);
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,8 +38,8 @@ export default function LabsPage() {
 
   // Booking Modal State
   const [selectedTestToBook, setSelectedTestToBook] = useState(null);
-  const [patientName, setPatientName] = useState('John Doe');
-  const [phone, setPhone] = useState('+91-98765-43210');
+  const [patientName, setPatientName] = useState(currentUser?.full_name || '');
+  const [phone, setPhone] = useState(currentUser?.phone || '');
   const [collectionType, setCollectionType] = useState('home_collection');
   const [preferredDate, setPreferredDate] = useState('2026-09-25');
   const [preferredTime, setPreferredTime] = useState('08:00 AM');
@@ -50,6 +50,13 @@ export default function LabsPage() {
   useEffect(() => {
     loadData();
   }, [selectedCategory]);
+
+  useEffect(() => {
+    if (currentUser) {
+      setPatientName(currentUser.full_name || '');
+      setPhone(currentUser.phone || '');
+    }
+  }, [currentUser]);
 
   const loadData = async () => {
     setLoading(true);
@@ -74,12 +81,20 @@ export default function LabsPage() {
   };
 
   const handleOpenBookModal = (testItem) => {
+    if (!currentUser) {
+      onRequireSignIn?.('Sign in to book a diagnostic test. Your contact details are needed to confirm the booking.', 'labs');
+      return;
+    }
     setSelectedTestToBook(testItem);
     setBookingResult(null);
   };
 
   const handleConfirmBooking = async (e) => {
     e.preventDefault();
+    if (!currentUser) {
+      onRequireSignIn?.('Sign in to book a diagnostic test.', 'labs');
+      return;
+    }
     if (!selectedTestToBook) return;
     setIsSubmitting(true);
     try {

@@ -77,7 +77,8 @@ async def ai_healthcare_chat(req: HealthcareChatRequest):
     """
     chat_reply = await gemini_service.healthcare_faq_chat(
         message=req.message,
-        context_hospital_id=req.context_hospital_id
+        context_hospital_id=req.context_hospital_id,
+        conversation_history=req.conversation_history[-8:]
     )
     return ApiResponse(
         success=True,

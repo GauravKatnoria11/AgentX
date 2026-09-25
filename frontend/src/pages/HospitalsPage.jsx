@@ -701,7 +701,11 @@ export default function HospitalsPage({
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '22px' }}>
           {hospitals.map((h, index) => (
-            <div key={h.id} className="classroom-card">
+            <div
+              key={h.id}
+              className="classroom-card hospital-rank-change"
+              style={{ '--rank-delay': `${Math.min(index, 8) * 45}ms` }}
+            >
               {/* Google Classroom Style Thematic Banner Cover */}
               <div
                 className={`classroom-card-banner ${getHospitalBannerTheme(h, index)}`}

@@ -12,21 +12,6 @@ MOCK_DATA = {
     "last_active_user_email": "g200004k@gmail.com",
     "profiles": [
         {
-            "id": "11111111-1111-1111-1111-111111111111",
-            "role": "patient",
-            "full_name": "John Doe",
-            "email": "patient@example.com",
-            "phone": "+91-98765-43210",
-            "date_of_birth": "1990-01-01",
-            "gender": "Male",
-            "blood_group": "O+",
-            "address": "Civil Lines, Hoshiarpur, Punjab",
-            "emergency_contact": "+91-98765-00000",
-            "metadata": {},
-            "created_at": "2026-01-01T00:00:00Z",
-            "updated_at": "2026-01-01T00:00:00Z"
-        },
-        {
             "id": "55555555-5555-5555-5555-555555555555",
             "role": "patient",
             "full_name": "Gaganjit Singh",

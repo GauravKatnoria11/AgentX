@@ -86,8 +86,8 @@ export default function EmergencyPage({ onNavigateToRoute, patientLocation }) {
   const [gpsAccuracyInfo, setGpsAccuracyInfo] = useState(
     patientLocation?.isExactGPS ? `±${patientLocation.accuracy || 8}m` : null
   );
-  const [patientName, setPatientName] = useState('John Doe');
-  const [patientPhone, setPatientPhone] = useState('+91-98765-43210');
+  const [patientName, setPatientName] = useState('');
+  const [patientPhone, setPatientPhone] = useState('');
   const [customNotes, setCustomNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sosResult, setSosResult] = useState(null);
@@ -133,7 +133,7 @@ export default function EmergencyPage({ onNavigateToRoute, patientLocation }) {
       const payload = {
         emergency_type: selectedCondition.label,
         patient_name: patientName || 'Emergency Patient',
-        phone: patientPhone || '+91-98765-43210',
+        phone: patientPhone || '',
         current_location: selectedLocation.name,
         current_lat: selectedLocation.lat,
         current_lon: selectedLocation.lon,

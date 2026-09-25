@@ -17,13 +17,10 @@ const configuredUrl = import.meta.env.VITE_API_URL ||
 const rawApiUrl = buildInjectedUrl || configuredUrl || (isLocalhost ? defaultLocalUrl : defaultRemoteUrl);
 export const API_BASE = rawApiUrl.replace(/\/+$/, '') + '/api/v1';
 
-// Default mock patient token for initial seamless viewing
-const DEFAULT_GUEST_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMTExMTExMS0xMTExLTExMTEtMTExMS0xMTExMTExMTExMTEiLCJyb2xlIjoicGF0aWVudCIsImVtYWlsIjoicGF0aWVudEBleGFtcGxlLmNvbSIsImZ1bGxfbmFtZSI6IkpvaG4gRG9lIiwiZXhwIjoxNzkwNzUwNzg5LCJpYXQiOjE3OTAxNDU5ODl9.x5ADEfCW0vbyW-bGc3uZswGbIF-0gL3of8dS7Pq3_eI";
-
-let authToken = localStorage.getItem('auth_token') || DEFAULT_GUEST_TOKEN;
+let authToken = localStorage.getItem('auth_token') || '';
 
 export const setAuthToken = (token) => {
-  authToken = token || DEFAULT_GUEST_TOKEN;
+  authToken = token || '';
   if (token) {
     localStorage.setItem('auth_token', token);
   } else {
@@ -31,32 +28,15 @@ export const setAuthToken = (token) => {
   }
 };
 
-export const getAuthToken = () => authToken || DEFAULT_GUEST_TOKEN;
+export const getAuthToken = () => authToken || localStorage.getItem('auth_token') || '';
 
 const headers = () => {
   const h = { 'Content-Type': 'application/json' };
-  const token = authToken || localStorage.getItem('auth_token') || DEFAULT_GUEST_TOKEN;
+  const token = authToken || localStorage.getItem('auth_token');
   if (token) {
     h['Authorization'] = `Bearer ${token}`;
   }
   return h;
-};
-
-// Get stored user or auto-authenticate guest patient
-export const initGuestAuth = async () => {
-  const stored = getStoredUser();
-  if (stored && localStorage.getItem('auth_token')) {
-    return stored;
-  }
-  try {
-    const res = await loginUser('patient@example.com', 'patient123');
-    if (res.success && res.data?.user) {
-      return res.data.user;
-    }
-  } catch (e) {
-    console.error('Guest auth failed:', e);
-  }
-  return null;
 };
 
 export const loginUser = async (email, password) => {
@@ -123,7 +103,7 @@ export const oauthCallback = async (payload) => {
 };
 
 export const fetchCurrentUser = async () => {
-  if (!authToken) return null;
+  if (!getAuthToken()) return null;
   try {
     const res = await fetch(`${API_BASE}/auth/me`, { headers: headers() });
     const json = await res.json();
@@ -134,7 +114,7 @@ export const fetchCurrentUser = async () => {
   } catch (e) {
     console.error('Failed to fetch current user:', e);
   }
-  return getStoredUser();
+  return null;
 };
 
 export const logoutUser = () => {
@@ -145,7 +125,14 @@ export const logoutUser = () => {
 export const getStoredUser = () => {
   try {
     const raw = localStorage.getItem('auth_user');
-    return raw ? JSON.parse(raw) : null;
+    const user = raw ? JSON.parse(raw) : null;
+    if (user?.email?.toLowerCase() === 'patient@example.com') {
+      localStorage.removeItem('auth_user');
+      localStorage.removeItem('auth_token');
+      authToken = '';
+      return null;
+    }
+    return user;
   } catch {
     return null;
   }
@@ -347,11 +334,11 @@ export const aiSummarizeRecord = async (recordId, content) => {
   return res.json();
 };
 
-export const aiChat = async (message) => {
+export const aiChat = async (message, conversationHistory = []) => {
   const res = await fetch(`${API_BASE}/ai/chat`, {
     method: 'POST',
     headers: headers(),
-    body: JSON.stringify({ message })
+    body: JSON.stringify({ message, conversation_history: conversationHistory.slice(-8) })
   });
   return res.json();
 };

@@ -22,7 +22,7 @@ import {
   X
 } from 'lucide-react';
 import './App.css';
-import { initGuestAuth, fetchCurrentUser, logoutUser, getStoredUser } from './api';
+import { fetchCurrentUser, logoutUser } from './api';
 import { initOAuthRedirectListener } from './supabase';
 import { getAccurateGPSLocation } from './utils/geolocation';
 
@@ -44,11 +44,10 @@ import AiMark from './components/AiMark';
 
 function App() {
   // Authentication State (genuine user or null)
-  const [currentUser, setCurrentUser] = useState(() => {
-    const u = getStoredUser();
-    return u && u.email !== 'patient@example.com' ? u : null;
-  });
+  const [currentUser, setCurrentUser] = useState(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authPrompt, setAuthPrompt] = useState('');
+  const [pendingProtectedPage, setPendingProtectedPage] = useState(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -99,23 +98,13 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const isOAuthRedirect =
-      window.location.hash.includes('access_token') ||
-      window.location.hash.includes('id_token') ||
-      window.location.search.includes('code=');
-
-    if (!isOAuthRedirect) {
-      initGuestAuth().then(user => {
-        if (user && !currentUser) setCurrentUser(user);
-      });
-    }
-
     initOAuthRedirectListener((user) => {
       if (user) setCurrentUser(user);
     });
 
     fetchCurrentUser().then(user => {
-      if (user) setCurrentUser(user);
+      setCurrentUser(user || null);
+      if (!user) logoutUser();
     });
 
     // Check secret query param, path, or hash for Hospital Authority Portal
@@ -148,7 +137,20 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  const requireSignIn = (reason, returnTo = null) => {
+    setAuthPrompt(reason);
+    setPendingProtectedPage(returnTo);
+    setIsAuthModalOpen(true);
+  };
+
   const handleNavigate = (page) => {
+    const privatePages = new Set(['appointments', 'records', 'pharmacy', 'followups']);
+    if (privatePages.has(page) && !currentUser) {
+      requireSignIn('Sign in to view your appointments, prescriptions, and personal health information.', page);
+      setIsMobileMenuOpen(false);
+      setIsProfileMenuOpen(false);
+      return;
+    }
     if (page !== 'doctors') {
       setDoctorToBook(null);
     }
@@ -463,8 +465,9 @@ function App() {
             ) : (
               <button
                 onClick={() => setIsAuthModalOpen(true)}
-                className="btn-google-primary"
-                style={{ padding: '8px 18px', borderRadius: '3px', fontSize: '13px' }}
+        className="btn-google-primary"
+        style={{ padding: '8px 18px', borderRadius: '3px', fontSize: '13px' }}
+        title={authPrompt || undefined}
               >
                 <LogIn size={15} /> Sign In
               </button>
@@ -502,7 +505,7 @@ function App() {
           )}
 
 
-          {currentPage === 'labs' && <LabsPage />}
+          {currentPage === 'labs' && <LabsPage currentUser={currentUser} onRequireSignIn={requireSignIn} />}
 
           {currentPage === 'emergency' && (
             <EmergencyPage
@@ -517,6 +520,7 @@ function App() {
           {currentPage === 'doctors' && (
             <DoctorsPage
               currentUser={currentUser}
+              onRequireSignIn={requireSignIn}
               onSelectDoctor={(doc) => setSelectedDoctor(doc)}
               preselectedHospital={preselectedHospital}
               initialDoctorToBook={doctorToBook}
@@ -550,6 +554,7 @@ function App() {
               onSelectHospitalForRoute={handleSelectHospitalForRoute}
               onSelectHospitalForDoctors={handleSelectHospitalForDoctors}
               onOpenHospitalDetail={handleOpenHospitalDetail}
+              onNavigatePage={handleNavigate}
               patientLocation={patientLocation}
             />
           )}
@@ -584,8 +589,12 @@ function App() {
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
+        reason={authPrompt}
         onAuthSuccess={(user) => {
           setCurrentUser(user);
+          setAuthPrompt('');
+          if (pendingProtectedPage) setCurrentPage(pendingProtectedPage);
+          setPendingProtectedPage(null);
         }}
         onEmergencyClick={() => {
           setIsAuthModalOpen(false);
