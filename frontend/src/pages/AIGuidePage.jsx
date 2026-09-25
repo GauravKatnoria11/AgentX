@@ -254,26 +254,12 @@ export default function AIGuidePage({
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                 {h.government_schemes.slice(0, 2).map((sch, sIdx) => (
-                  <span
-                    key={sIdx}
-                    style={{
-                      fontSize: '10.5px',
-                      fontWeight: 700,
-                      background: '#ecfdf5',
-                      color: '#065f46',
-                      border: '1px solid #a7f3d0',
-                      padding: '2px 7px',
-                      borderRadius: '3px',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '3px'
-                    }}
-                  >
-                    🏛️ {sch}
+                  <span key={sIdx} className="ai-scheme-name">
+                    <Landmark size={12} /> {sch}
                   </span>
                 ))}
                 {h.government_schemes.length > 2 && (
-                  <span style={{ fontSize: '10.5px', color: '#047857', fontWeight: 700, background: '#f0fdf4', padding: '2px 6px', borderRadius: '3px' }}>
+                  <span className="ai-scheme-more">
                     +{h.government_schemes.length - 2} more
                   </span>
                 )}

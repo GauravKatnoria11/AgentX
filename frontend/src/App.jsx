@@ -400,59 +400,59 @@ function App() {
                       position: 'absolute',
                       right: 0,
                       top: 'calc(100% + 8px)',
-                      width: '240px',
-                      background: '#0f172a',
-                      border: '1px solid #334155',
-                      borderRadius: '3px',
-                      padding: '12px',
-                      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)',
+                      width: '260px',
+                      background: '#ffffff',
+                      border: '1px solid #e5e6e1',
+                      borderRadius: '12px',
+                      padding: '10px',
+                      boxShadow: '0 16px 40px rgba(31, 39, 32, 0.14)',
                       zIndex: 1000,
-                      color: '#ffffff'
                     }}
+                    className="profile-dropdown"
                   >
-                    <div style={{ padding: '8px 10px 12px', borderBottom: '1px solid #1e293b' }}>
-                      <div style={{ fontWeight: 800, fontSize: '14px', color: '#ffffff' }}>
+                    <div className="profile-dropdown-account">
+                      <div className="profile-dropdown-name">
                         {currentUser.full_name}
                       </div>
-                      <div style={{ fontSize: '11px', color: '#94a3b8', wordBreak: 'break-all', marginTop: '2px' }}>
+                      <div className="profile-dropdown-email">
                         {currentUser.email}
                       </div>
-                      <div style={{ display: 'inline-block', marginTop: '6px', fontSize: '10px', background: '#1e293b', border: '1px solid #334155', padding: '2px 8px', borderRadius: '3px', color: '#38bdf8', fontWeight: 700 }}>
+                      <div className="profile-dropdown-badge">
                         {currentUser.role === 'patient' ? 'Verified Account' : (currentUser.role || 'Verified Account')}
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '8px 0' }}>
+                    <div className="profile-dropdown-links">
                       <button
                         onClick={() => { handleNavigate('records'); setIsProfileMenuOpen(false); }}
-                        style={{ textAlign: 'left', background: 'none', border: 'none', color: '#cbd5e1', padding: '8px 10px', borderRadius: '3px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                        className="profile-dropdown-link"
                       >
-                        <FileText size={14} color="#60a5fa" /> Personal Health Records
+                        <FileText size={15} /> Personal Health Records
                       </button>
 
                       <button
                         onClick={() => { handleNavigate('appointments'); setIsProfileMenuOpen(false); }}
-                        style={{ textAlign: 'left', background: 'none', border: 'none', color: '#cbd5e1', padding: '8px 10px', borderRadius: '3px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                        className="profile-dropdown-link"
                       >
-                        <Calendar size={14} color="#34d399" /> My Appointments
+                        <Calendar size={15} /> My Appointments
                       </button>
 
                       <button
                         onClick={() => { setIsAuthModalOpen(true); setIsProfileMenuOpen(false); }}
-                        style={{ textAlign: 'left', background: 'none', border: 'none', color: '#cbd5e1', padding: '8px 10px', borderRadius: '3px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                        className="profile-dropdown-link"
                       >
-                        <Sparkles size={14} color="#f59e0b" /> Switch / Add Account
+                        <Sparkles size={15} /> Switch / Add Account
                       </button>
                     </div>
 
-                    <div style={{ borderTop: '1px solid #1e293b', paddingTop: '8px' }}>
+                    <div className="profile-dropdown-logout-wrap">
                       <button
                         onClick={() => {
                           logoutUser();
                           setCurrentUser(null);
                           setIsProfileMenuOpen(false);
                         }}
-                        style={{ width: '100%', textAlign: 'left', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#f87171', padding: '8px 10px', borderRadius: '3px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                        className="profile-dropdown-signout"
                       >
                         <LogOut size={14} /> Sign Out
                       </button>

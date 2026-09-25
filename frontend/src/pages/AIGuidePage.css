@@ -30,6 +30,9 @@
 .ai-guide-page .classroom-card-banner { cursor: pointer; }
 .ai-guide-page .classroom-card-body { gap: 12px; }
 .ai-guide-page .classroom-card-footer { border-top: 1px solid #f0f0f5; }
+.ai-guide-page .ai-scheme-name { display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0; border-radius: 0; background: transparent; color: #626b63; font-size: 10.5px; font-weight: 550; line-height: 1.5; }
+.ai-guide-page .ai-scheme-name svg { flex: 0 0 auto; color: #849087; }
+.ai-guide-page .ai-scheme-more { padding: 0; border: 0; border-radius: 0; background: transparent; color: #858b84; font-size: 10.5px; font-weight: 600; }
 .ai-guide-page .section-header { margin: 0; }
 .ai-guide-page .section-title { color: #292e2a; font-size: 20px; letter-spacing: -.035em; }
 .ai-workflow-symptoms > .card, .ai-workflow-chat > .card { width: min(100%, 800px); align-self: center; padding: 25px !important; border: 1px solid #e5e4e0; border-radius: 14px !important; box-shadow: 0 6px 22px rgba(29,31,29,.045); }
@@ -60,7 +63,7 @@
 .cost-panel-title svg, .cost-coverage-item svg { flex: 0 0 auto; color: #748a78; }
 .cost-coverage-list { display: grid; gap: 8px; margin-top: 10px; }
 .cost-coverage-item { display: flex; align-items: flex-start; gap: 8px; color: #59665c; font-size: 12px; line-height: 1.5; }
-.cost-savings-panel { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border: 1px solid #e8e5db; border-radius: 8px; background: #faf9f5; color: #606257; font-size: 12px; line-height: 1.55; }
+.cost-savings-panel { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border: 0; border-radius: 8px; background: #faf9f5; color: #606257; font-size: 12px; line-height: 1.55; }
 .cost-savings-label { flex: 0 0 auto; color: #6d705f; font-weight: 700; }
 .cost-disclaimer { padding: 0 1px; color: #888d87; font-size: 10.5px; font-style: normal; line-height: 1.5; }
 @media (max-width: 768px) {

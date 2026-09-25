@@ -77,6 +77,11 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
   const mapEmbedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(
     hospital.name + ', ' + hospital.address + ', Hoshiarpur, Punjab'
   )}&t=&z=16&ie=UTF8&iwloc=&output=embed`;
+  const availableIcuBeds = Math.max(0, Number(hospital.available_icu_beds) || 0);
+  const totalBeds = Math.max(0, Number(hospital.total_beds) || 0);
+  const availableIcuBedShare = totalBeds > 0
+    ? Math.min(100, (availableIcuBeds / totalBeds) * 100)
+    : 0;
 
   const directionsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     hospital.name + ', ' + hospital.address + ', Hoshiarpur, Punjab'
@@ -192,21 +197,24 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
               Total Bed Capacity: <strong>{hospital.total_beds} beds</strong>
             </div>
-            <div style={{ marginTop: '12px', height: '6px', background: '#e2e8f0', borderRadius: '10px', overflow: 'hidden' }}>
+            <div className="hospital-bed-share">
               <div
                 style={{
-                  width: `${Math.min(100, (hospital.available_icu_beds / 20) * 100)}%`,
+                  width: `${availableIcuBedShare}%`,
                   height: '100%',
-                  background: '#059669',
-                  borderRadius: '10px'
+                  background: '#74877a',
+                  borderRadius: '999px'
                 }}
               />
+            </div>
+            <div className="hospital-bed-share-caption">
+              {availableIcuBedShare.toFixed(1)}% of total bed capacity
             </div>
           </div>
         </div>
 
         {/* Tab Navigation */}
-        <div style={{ display: 'flex', gap: '8px', marginTop: '24px', borderBottom: '1px solid var(--border-subtle)', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '2px', flexWrap: 'nowrap' }}>
+        <div className="hospital-detail-tabs" role="tablist" aria-label="Hospital information">
           {[
             { id: 'overview', label: 'Overview' },
             { id: 'departments', label: `Departments (${hospital.departments?.length || 0})` },
@@ -217,18 +225,9 @@ export default function HospitalDetailPage({ hospitalId, initialTab = 'overview'
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: '10px 16px',
-                fontSize: '13px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                color: activeTab === tab.id ? 'var(--primary-blue)' : 'var(--text-muted)',
-                borderBottom: activeTab === tab.id ? '2px solid var(--primary-blue)' : '2px solid transparent',
-                transition: 'all 0.15s ease'
-              }}
+              className={`hospital-detail-tab ${activeTab === tab.id ? 'active' : ''}`}
+              role="tab"
+              aria-selected={activeTab === tab.id}
             >
               {tab.label}
             </button>
