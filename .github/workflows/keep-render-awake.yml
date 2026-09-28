@@ -14,9 +14,16 @@ jobs:
           RENDER_HEALTH_URL: ${{ secrets.RENDER_HEALTH_URL }}
         run: |
           set -euo pipefail
-          if [ -z "${RENDER_HEALTH_URL:-}" ]; then
+          raw_url="${RENDER_HEALTH_URL:-}"
+          if [ -z "$raw_url" ]; then
             echo "Missing repository secret: RENDER_HEALTH_URL"
             exit 1
           fi
-          curl --fail --silent --show-error --max-time 30 "$RENDER_HEALTH_URL/health"
+
+          base_url="${raw_url%/}"
+          if [[ "$base_url" == *"/health" ]]; then
+            base_url="${base_url%/health}"
+          fi
+
+          curl --fail --silent --show-error --max-time 30 "${base_url}/health"
           echo
